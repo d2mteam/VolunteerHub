@@ -91,7 +91,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public List<String> rolesFromAccessToken(String token) {
+    public List<String> rolesFromToken(String token) {
         try {
             JWTClaimsSet claimsSet = getClaims(token);
             if (claimsSet == null) {

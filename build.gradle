@@ -36,7 +36,11 @@ dependencies {
     implementation 'com.nimbusds:nimbus-jose-jwt:10.5'
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-graphql'
+//    implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:7.0.3'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.graphql:spring-graphql-test'
+    testImplementation 'org.springframework:spring-webflux'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'

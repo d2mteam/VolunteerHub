@@ -7,5 +7,5 @@ public interface JwtService {
     String generateRefreshToken(String user);
     boolean validateToken(String token);
     String usernameFromToken(String token);
-    List<String> rolesFromAccessToken(String token);
+    List<String> rolesFromToken(String token);
 }

@@ -13,9 +13,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RoleEntity {
+
     @Id
     private UUID id;
 
     @Column(nullable = false, unique = true)
-    private String name;  //ADMIN //USER
+    private String name;
 }
