@@ -4,12 +4,10 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @Builder
-public class CreatePostInput {
-    private Long eventId;
-    private String postName;
-    private String content;
+public class EditUserProfileInput {
+    private String username;
+    private String email;
 }

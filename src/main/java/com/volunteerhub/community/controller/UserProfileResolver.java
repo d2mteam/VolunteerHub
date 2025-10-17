@@ -2,23 +2,20 @@ package com.volunteerhub.community.controller;
 
 
 import com.volunteerhub.community.dto.output.CommentDto;
+import com.volunteerhub.community.dto.output.EventDto;
 import com.volunteerhub.community.dto.output.PostDto;
-import com.volunteerhub.community.dto.output.TopicDto;
 import com.volunteerhub.community.dto.output.UserProfileDto;
 import com.volunteerhub.community.dto.page.GraphQLPage;
 import com.volunteerhub.community.dto.page.PageInfo;
 import com.volunteerhub.community.dto.page.PageUtils;
 import com.volunteerhub.community.entity.Comment;
 import com.volunteerhub.community.entity.Post;
-import com.volunteerhub.community.entity.Topic;
 import com.volunteerhub.community.entity.UserProfile;
 import com.volunteerhub.community.mapper.CommentMapper;
 import com.volunteerhub.community.mapper.PostMapper;
-import com.volunteerhub.community.mapper.TopicMapper;
 import com.volunteerhub.community.mapper.UserProfileMapper;
 import com.volunteerhub.community.repository.CommentRepository;
 import com.volunteerhub.community.repository.PostRepository;
-import com.volunteerhub.community.repository.TopicRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +25,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -37,7 +35,6 @@ public class UserProfileResolver {
     private final UserProfileRepository userProfileRepository;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final TopicRepository topicRepository;
 
     @QueryMapping
     public UserProfileDto getUserProfile(@Argument UUID userId) {
@@ -78,19 +75,22 @@ public class UserProfileResolver {
                 .build();
     }
 
-    @SchemaMapping(typeName = "UserProfile", field = "topics")
-    public GraphQLPage<TopicDto> topics(UserProfileDto userProfile, @Argument int page, @Argument int size) {
-        Page<Topic> page_ = topicRepository
-                .findByCreatedBy_UserIdOrderByCreatedAtDesc(userProfile.getUserId(), PageRequest.of(page, size));
+    @SchemaMapping(typeName = "UserProfile", field = "participatedEvents")
+    public GraphQLPage<EventDto> events(UserProfileDto userProfile, @Argument int page, @Argument int size) {
 
-        PageInfo pageInfo = PageUtils.from(page_);
+        PageInfo pageInfo = PageInfo.builder()
+                .hasNext(0)
+                .hasPrevious(0)
+                .totalElements(0)
+                .totalPages(0)
+                .page(page)
+                .size(size)
+                .build();
 
-        return GraphQLPage.<TopicDto>builder()
+        return GraphQLPage.<EventDto>builder()
                 .pageInfo(pageInfo)
-                .content(page_.getContent()
-                        .stream()
-                        .map(TopicMapper::toDto)
-                        .toList())
+                .content(List.of())
                 .build();
     }
+
 }

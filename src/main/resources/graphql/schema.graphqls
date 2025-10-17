@@ -1,43 +1,40 @@
 type UserProfile {
     userId: ID!
+    userAvatar: String
     username: String!
-    email: String!
-#   role: String!
+    email: String
+    role: String!
     createdAt: String!
 
     posts(page: Int = 0, size: Int = 10): PostPage!
 
     comments(page: Int = 0, size: Int = 10): CommentPage!
 
-    topics(page: Int = 0, size: Int = 10): TopicPage!
+    participatedEvents(page: Int = 0, size: Int = 10): EventPage!
 }
 
 type Post {
     postId: ID!
+    postName: String!
     content: String!
+    likeCount: Int!
     createdAt: String!
     updatedAt: String!
-    author: UserProfile!
+    create_by: UserSummary!
 
-    comments(page: Int = 1, size: Int = 10): CommentPage!
-}
-
-type Topic {
-    topicId: ID!
-    topicName: String!
-    eventId: ID!
-    createdBy: UserProfile!
-    createdAt: String!
-
-    posts(page: Int = 0, size: Int = 10): PostPage!
+    comments(page: Int = 0, size: Int = 10): CommentPage!
+    likes(page: Int = 0, size: Int = 10): LikePage!
 }
 
 type Comment {
     commentId: ID!
     content: String!
+    likeCount: Int!
     createdAt: String!
     post: Post!
-    author: UserProfile!
+    create_by: UserSummary!
+
+    likes(page: Int = 0, size: Int = 10): LikePage!
 }
 
 type Event {
@@ -45,13 +42,42 @@ type Event {
     eventName: String!
     eventDescription: String
     eventLocation: String
-    eventDate: String
-    createdBy: UserProfile!
+    likeCount: Int!
+    create_by: UserSummary!
     createdAt: String!
 
-    topics(page: Int = 0, size: Int = 10): TopicPage!
+    topics(page: Int = 0, size: Int = 10): PostPage!
+
+    likes(page: Int = 0, size: Int = 10): LikePage!
+
+    member(page: Int = 0, size: Int = 10): UserPage!
 }
 
+type EventSummary {
+    eventId: ID!
+    eventName: String!
+    eventDescription: String
+}
+
+type PostSummary {
+    postId: ID!
+    postName: String!
+    likeCount: Int!
+    create_by: UserSummary!
+}
+
+type UserSummary {
+    userId: ID!
+    username: String!
+    userAvatar: String
+    role: String!
+}
+
+type Like {
+    target_type: String!
+    target_id: ID!
+    create_by: UserSummary!
+}
 
 type PageInfo {
     page: Int!
@@ -62,8 +88,13 @@ type PageInfo {
     hasPrevious: Boolean!
 }
 
+type EventPage {
+    content: [EventSummary!]!
+    pageInfo: PageInfo!
+}
+
 type PostPage {
-    content: [Post!]!
+    content: [PostSummary!]!
     pageInfo: PageInfo!
 }
 
@@ -72,37 +103,22 @@ type CommentPage {
     pageInfo: PageInfo!
 }
 
-type TopicPage {
-    content: [Topic!]!
-    pageInfo: PageInfo!
-}
-
-type EventPage {
-    content: [Event!]!
-    pageInfo: PageInfo!
-}
-
 type UserPage {
-    content: [UserProfile!]!
+    content: [UserSummary!]!
     pageInfo: PageInfo!
 }
 
+type LikePage {
+    content: [Like!]!
+    pageInfo: PageInfo!
+}
 
 type Query {
-    getUserProfile(userId: ID!): UserProfile
-    listUserProfiles(page: Int = 1, size: Int = 10): UserPage!
+    getEvent(eventId: ID!): Event
 
     getPost(postId: ID!): Post
-    listPosts(authorId: ID, page: Int = 1, size: Int = 10): PostPage!
 
-    getCommentsByPost(postId: ID!, page: Int = 1, size: Int = 10): CommentPage!
-    getCommentsByUser(userId: ID!, page: Int = 1, size: Int = 10): CommentPage!
-
-    getTopic(topicId: ID!): Topic
-    listTopics(eventId: ID, page: Int = 1, size: Int = 10): TopicPage!
-
-    getEvent(eventId: ID!): Event
-    listEvents(page: Int = 1, size: Int = 10): EventPage!
+    getUserProfile(userId: ID!): UserProfile
 }
 
 
@@ -111,76 +127,53 @@ input CreateEventInput {
     eventDescription: String!
     eventLocation: String!
     eventDate: String!
-    createdBy: ID!
-}
-
-input CreateTopicInput {
-    topicName: String!
-    eventId: ID!
-    createdBy: ID!
 }
 
 input CreatePostInput {
     topicId: ID!
     content: String!
-    createdBy: ID!
 }
 
 input CreateCommentInput {
     postId: ID!
     content: String!
-    createdBy: ID!
+}
+
+input LikeInput {
+    target_type: String!
+    target_id: ID!
+}
+
+input EditEventInput {
+    eventName: String
+    eventDescription: String
+    eventLocation: String
+    eventDate: String
+}
+
+input EditPostInput {
+    content: String!
+}
+
+input EditCommentInput {
+    content: String!
 }
 
 
 type Mutation {
     createEvent(input: CreateEventInput!): Event!
+    editEvent(eventId: ID!, edit: EditEventInput!) : Boolean!
     deleteEvent(eventId: ID!) : Boolean!
-
-    createTopic(input: CreateTopicInput!): Topic!
-    deleteTopic(topicId: ID!) : Boolean!
-
+    
+    
     createPost(input: CreatePostInput!): Post!
-    deletePost(postId: ID!): Boolean!
+    editPost(id: ID!, edit: EditPostInput!) : Boolean!
+    deletePost(id: ID!): Boolean!
 
-    createComment(input: CreateCommentInput!): Comment!
-    deleteComment(commentId: ID!): Boolean!
+    createComment(id: CreateCommentInput!): Comment!
+    editComment(id: ID!, edit: EditCommentInput!): Boolean!
+    deleteComment(id: ID!): Boolean!
+
+    like(input: LikeInput): Boolean!
+    unlike(input: LikeInput): Boolean!
 }
-
-
-#query {
-#    getEvent(eventId: "EVT001") {
-#        eventId
-#        eventName
-#
-#        topics(page: 1, size: 1) {      # Lấy topic đầu tiên
-#            content {
-#                topicId
-#                name
-#
-#                posts(page: 1, size: 1) {   # Lấy post đầu tiên
-#                    content {
-#                        postId
-#                        content
-#
-#                        comments(page: 1, size: 10) {   # ✅ Lấy 10 comment đầu tiên
-#                            content {
-#                                commentId
-#                                content
-#                                author {
-#                                    userId
-#                                    username
-#                                }
-#                            }
-#                            pageInfo {
-#                                page
-#                                size
-#                                totalElements
-#                            }
-#                        }
-#                    }
-#                }
-#            }
-#        }
-#    }
-#}

@@ -32,8 +32,8 @@ public class Post {
     private UserProfile createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id", insertable = false, updatable = false)
-    private Topic topic;
+    @JoinColumn(name = "event_id", insertable = false, updatable = false)
+    private Event event;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;

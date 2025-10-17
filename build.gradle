@@ -10,7 +10,7 @@ description = 'VolunteerHubProject'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(24)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -31,16 +31,20 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
 //    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 //    implementation 'org.springframework.session:spring-session-jdbc'
-//    implementation 'org.springframework.session:spring-session-data-redis'
 //    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'com.nimbusds:nimbus-jose-jwt:10.5'
 
+//    implementation 'org.springframework.batch:spring-batch-core:6.0.0-M4'
+
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-graphql'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//    implementation 'io.netty:netty-all:4.2.0.Final'
+
 //    implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:7.0.3'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.graphql:spring-graphql-test'
-    testImplementation 'org.springframework:spring-webflux'
+//    testImplementation 'org.springframework:spring-webflux'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
@@ -49,7 +53,9 @@ dependencies {
 }
 
 tasks.named('bootRun') {
-    jvmArgs = ["-Duser.timezone=Asia/Ho_Chi_Minh"]
+    jvmArgs = ["-Duser.timezone=Asia/Ho_Chi_Minh"
+//               , "-Dio.netty.noUnsafe=true"
+    ]
 }
 
 tasks.named('test') {

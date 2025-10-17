@@ -3,10 +3,9 @@ package com.volunteerhub.community.dto.input;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.UUID;
-
 @Data
 @Builder
-public class CreateCommentInput {
+public class EditPostInput {
+    private String postName;
     private String content;
 }

@@ -1,27 +1,22 @@
-package com.volunteerhub.community.entity;
+package com.volunteerhub.community.mapper;
 
+import com.volunteerhub.community.entity.Event;
+import com.volunteerhub.community.entity.UserProfile;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "topics")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Topic {
+@Table(name = "registrations")
+public class Registration {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "topic_id")
-    private Long topicId;
+    @Column(name = "registration_id")
+    private Long registrationId;
 
-    @Column(name = "topic_name", nullable = false, length = 200)
-    private String topicName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", insertable = false, updatable = false)
+    private Event event;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -32,10 +27,6 @@ public class Topic {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", insertable = false, updatable = false)
     private UserProfile createdBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", insertable = false, updatable = false)
-    private Event event;
 
     @PrePersist
     public void prePersist() {

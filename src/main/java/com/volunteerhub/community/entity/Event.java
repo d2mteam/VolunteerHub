@@ -33,6 +33,10 @@ public class Event {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", insertable = false, updatable = false)
+    private Event event;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", insertable = false, updatable = false)
     private UserProfile createdBy;
 

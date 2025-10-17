@@ -9,5 +9,4 @@ import java.util.UUID;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByCreatedBy_UserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
-    Page<Post> findByTopic_TopicIdOrderByCreatedAtDesc(Long topicId, Pageable pageable);
 }
