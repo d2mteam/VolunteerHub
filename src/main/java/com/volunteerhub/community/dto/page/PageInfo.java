@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto.page;
+package com.volunteerhub.ultis.page;
 
 import lombok.Builder;
 import lombok.Data;
