@@ -31,6 +31,7 @@ type Comment {
     content: String!
     likeCount: Int!
     createdAt: String!
+    updatedAt: String!
     post: Post!
     create_by: UserSummary!
 
@@ -130,7 +131,7 @@ input CreateEventInput {
 }
 
 input CreatePostInput {
-    topicId: ID!
+    eventId: ID!
     content: String!
 }
 
@@ -162,16 +163,16 @@ input EditCommentInput {
 
 type Mutation {
     createEvent(input: CreateEventInput!): Event!
-    editEvent(eventId: ID!, edit: EditEventInput!) : Boolean!
+    editEvent(id: ID!, input: EditEventInput!) : Boolean!
     deleteEvent(eventId: ID!) : Boolean!
     
     
     createPost(input: CreatePostInput!): Post!
-    editPost(id: ID!, edit: EditPostInput!) : Boolean!
+    editPost(id: ID!, input: EditPostInput!) : Boolean!
     deletePost(id: ID!): Boolean!
 
-    createComment(id: CreateCommentInput!): Comment!
-    editComment(id: ID!, edit: EditCommentInput!): Boolean!
+    createComment(input: CreateCommentInput!): Comment
+    editComment(id: ID!, input: EditCommentInput!): Boolean!
     deleteComment(id: ID!): Boolean!
 
     like(input: LikeInput): Boolean!

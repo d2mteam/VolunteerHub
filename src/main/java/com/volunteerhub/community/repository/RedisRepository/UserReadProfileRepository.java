@@ -1,9 +1,9 @@
 package com.volunteerhub.community.repository.RedisRepository;
 
-import com.volunteerhub.community.cache_model.UserProfileRead;
-import org.springframework.data.repository.CrudRepository;
+import com.redis.om.spring.repository.RedisDocumentRepository;
+import com.volunteerhub.community.read_model.UserProfileRead;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserProfileRepository extends CrudRepository<UserProfileRead, String> {
+public interface UserReadProfileRepository extends RedisDocumentRepository<UserProfileRead, String> {
 }

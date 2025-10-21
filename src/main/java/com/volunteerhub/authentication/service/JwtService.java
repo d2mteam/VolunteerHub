@@ -8,4 +8,5 @@ public interface JwtService {
     boolean validateToken(String token);
     String usernameFromToken(String token);
     List<String> rolesFromToken(String token);
+    String userIdFromToken(String token);
 }

@@ -103,6 +103,19 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    @Override
+    public String userIdFromToken(String token) {
+        try {
+            JWTClaimsSet claimsSet = getClaims(token);
+            if (claimsSet == null) {
+                return null;
+            }
+            return  claimsSet.getClaim("id").toString();
+        } catch (ParseException | JOSEException e) {
+            return null;
+        }
+    }
+
     private JWTClaimsSet getClaims(String token) throws ParseException, JOSEException {
         JWSObject jws = JWSObject.parse(token);
 

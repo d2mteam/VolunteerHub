@@ -1,23 +1,35 @@
-package com.volunteerhub.community.cache_model;
+package com.volunteerhub.community.read_model;
 
+import com.redis.om.spring.annotations.Document;
+import lombok.Builder;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
+@Data
+@Builder
+@Document
 @RedisHash("post_read")
-public class Post {
+public class PostRead {
     @Id
-    private String id;
+    private UUID id;
 
+    @Indexed
     private String content;
-    private List<Comment> comments;
 
+    @Indexed
     private Integer likeCount;
+
     private UserSummary createdBy;
 
+    @Indexed
     private LocalDateTime createdAt;
+
+    @Indexed
     private LocalDateTime updatedAt;
 }

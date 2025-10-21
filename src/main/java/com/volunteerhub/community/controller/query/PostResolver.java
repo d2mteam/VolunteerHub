@@ -1,16 +1,12 @@
-package com.volunteerhub.community.controller;
+package com.volunteerhub.community.controller.query;
 
-import com.volunteerhub.community.dto.output.CommentDto;
-import com.volunteerhub.community.dto.output.PostDto;
-import com.volunteerhub.community.dto.page.GraphQLPage;
+import com.volunteerhub.community.dto.page.OffsetPage;
 import com.volunteerhub.community.dto.page.PageInfo;
 import com.volunteerhub.community.dto.page.PageUtils;
 import com.volunteerhub.community.entity.Comment;
 import com.volunteerhub.community.entity.Post;
-import com.volunteerhub.community.mapper.CommentMapper;
-import com.volunteerhub.community.mapper.PostMapper;
-import com.volunteerhub.community.repository.CommentRepository;
-import com.volunteerhub.community.repository.PostRepository;
+import com.volunteerhub.community.repository.JpaRepository.CommentRepository;
+import com.volunteerhub.community.repository.JpaRepository.PostRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,24 +22,20 @@ public class PostResolver {
     private final CommentRepository commentRepository;
 
     @QueryMapping
-    public PostDto getPost(@Argument long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-        return PostMapper.toDto(post);
+    public Post getPost(@Argument long postId) {
+        return postRepository.findById(postId)
+                .orElse(null);
     }
 
     @SchemaMapping(typeName = "Post", field = "comments")
-    public GraphQLPage<CommentDto> comments(PostDto post, @Argument int page, @Argument int size) {
+    public OffsetPage<Comment> comments(Post post, @Argument int page, @Argument int size) {
         Page<Comment> page_ = commentRepository.findByPost_PostIdOrderByCreatedAtDesc(post.getPostId(), PageRequest.of(page, size));
 
         PageInfo pageInfo = PageUtils.from(page_);
 
-        return GraphQLPage.<CommentDto>builder()
+        return OffsetPage.<Comment>builder()
                 .pageInfo(pageInfo)
-                .content(page_.getContent()
-                        .stream()
-                        .map(CommentMapper::toDto)
-                        .toList())
+                .content(page_.getContent())
                 .build();
     }
 }

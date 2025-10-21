@@ -38,9 +38,13 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-graphql'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//  https://mvnrepository.com/artifact/com.redis.om/redis-om-spring
+    implementation 'com.redis.om:redis-om-spring:1.0.4'
 //    implementation 'io.netty:netty-all:4.2.0.Final'
 
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
 //    implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:7.0.3'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.graphql:spring-graphql-test'
@@ -53,9 +57,7 @@ dependencies {
 }
 
 tasks.named('bootRun') {
-    jvmArgs = ["-Duser.timezone=Asia/Ho_Chi_Minh"
-//               , "-Dio.netty.noUnsafe=true"
-    ]
+    jvmArgs = ["-Duser.timezone=Asia/Ho_Chi_Minh"]
 }
 
 tasks.named('test') {

@@ -1,20 +1,16 @@
 package com.volunteerhub.ultis;
 
-import lombok.AllArgsConstructor;
-import org.springframework.context.annotation.Bean;
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 
 @Configuration
-@AllArgsConstructor
+@EnableRedisDocumentRepositories(basePackages = "com.volunteerhub.community.repository.RedisRepository")
 public class RedisConfiguration {
-    @Bean
-    @Primary
-    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<Object, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory);
-        return template;
-    }
+//    @Bean
+//    @Primary
+//    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+//        RedisTemplate<Object, Object> template = new RedisTemplate<>();
+//        template.setConnectionFactory(redisConnectionFactory);
+//        return template;
+//    }
 }

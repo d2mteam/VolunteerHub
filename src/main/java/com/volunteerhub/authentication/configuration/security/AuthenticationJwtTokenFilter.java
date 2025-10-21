@@ -1,7 +1,7 @@
 package com.volunteerhub.authentication.configuration.security;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.volunteerhub.authentication.service.JwtService;
+import com.volunteerhub.ultis.CustomPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @AllArgsConstructor
@@ -27,13 +28,18 @@ public class AuthenticationJwtTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = parseJwt(request);
         if (token != null && jwtService.validateToken(token)) {
-            JWTClaimsSet claims;
             String username = jwtService.usernameFromToken(token);
+            String userId = jwtService.userIdFromToken(token);
             List<String> roles = jwtService.rolesFromToken(token);
+
+            CustomPrincipal customPrincipal = CustomPrincipal.builder()
+                    .username(username)
+                    .userId(UUID.fromString(userId))
+                    .build();
 
             List<SimpleGrantedAuthority> grantedAuthorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, grantedAuthorities);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(customPrincipal, null, grantedAuthorities);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

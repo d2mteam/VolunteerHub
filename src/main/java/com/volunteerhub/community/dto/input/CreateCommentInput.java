@@ -8,5 +8,6 @@ import java.util.UUID;
 @Data
 @Builder
 public class CreateCommentInput {
+    private Long postId;
     private String content;
 }

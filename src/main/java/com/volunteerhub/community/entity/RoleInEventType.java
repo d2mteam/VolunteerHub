@@ -1,5 +1,5 @@
 package com.volunteerhub.community.entity;
 
-public enum RoleInEvent {
+public enum RoleInEventType {
     VOLUNTEER, EVENT_MANAGER
 }

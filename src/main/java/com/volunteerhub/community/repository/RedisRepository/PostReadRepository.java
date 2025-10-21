@@ -1,4 +1,7 @@
 package com.volunteerhub.community.repository.RedisRepository;
 
-public class PostReadRepository {
+import com.redis.om.spring.repository.RedisDocumentRepository;
+import com.volunteerhub.community.read_model.PostRead;
+
+public interface PostReadRepository extends RedisDocumentRepository<PostRead, String> {
 }

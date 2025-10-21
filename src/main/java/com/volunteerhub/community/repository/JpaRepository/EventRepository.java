@@ -1,4 +1,4 @@
-package com.volunteerhub.community.repository;
+package com.volunteerhub.community.repository.JpaRepository;
 
 import com.volunteerhub.community.entity.Event;
 import org.springframework.data.jpa.repository.JpaRepository;

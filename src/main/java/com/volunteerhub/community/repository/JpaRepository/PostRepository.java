@@ -1,4 +1,4 @@
-package com.volunteerhub.community.repository;
+package com.volunteerhub.community.repository.JpaRepository;
 
 import com.volunteerhub.community.entity.Post;
 import org.springframework.data.domain.Page;
