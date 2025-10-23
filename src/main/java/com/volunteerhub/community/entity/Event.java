@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Event {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "event_id")
     private Long eventId;
 
@@ -33,12 +32,12 @@ public class Event {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", insertable = false, updatable = false)
-    private Event event;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    @JoinColumn(name = "created_by", updatable = false)
     private UserProfile createdBy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_state", nullable = false)
+    private EventState eventState;
 
     @PrePersist
     public void prePersist() {

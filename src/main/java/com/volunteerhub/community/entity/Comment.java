@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Comment {
-
     @Id
     @Column(name = "comment_id")
     private Long commentId;
@@ -30,11 +29,11 @@ public class Comment {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    @JoinColumn(name = "created_by", updatable = false)
     private UserProfile createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", insertable = false, updatable = false)
+    @JoinColumn(name = "post_id", updatable = false)
     private Post post;
 
     @PrePersist

@@ -145,6 +145,7 @@ input LikeInput {
 }
 
 input EditEventInput {
+    eventId: ID!
     eventName: String
     eventDescription: String
     eventLocation: String
@@ -152,28 +153,35 @@ input EditEventInput {
 }
 
 input EditPostInput {
+    postId: ID!
     content: String!
 }
 
 input EditCommentInput {
+    commentId: ID!
     content: String!
 }
 
 
 type Mutation {
-    createEvent(input: CreateEventInput!): Event!
-    editEvent(eventId: ID!, edit: EditEventInput!) : Boolean!
-    deleteEvent(eventId: ID!) : Boolean!
-    
-    
-    createPost(input: CreatePostInput!): Post!
-    editPost(id: ID!, edit: EditPostInput!) : Boolean!
-    deletePost(id: ID!): Boolean!
+    createEvent(input: CreateEventInput!): Result!
+    editEvent(input: EditEventInput!) : Result!
+    deleteEvent(eventId: ID!) : Result!
 
-    createComment(id: CreateCommentInput!): Comment!
-    editComment(id: ID!, edit: EditCommentInput!): Boolean!
-    deleteComment(id: ID!): Boolean!
 
-    like(input: LikeInput): Boolean!
-    unlike(input: LikeInput): Boolean!
+    createPost(input: CreatePostInput!):  Result!
+    editPost(input: EditPostInput!) : Result!
+    deletePost(id: ID!): Result!
+
+    createComment(input: CreateCommentInput!):  Result!
+    editComment(input: EditCommentInput!): Result!
+    deleteComment(id: ID!): Result!
+
+    like(input: LikeInput): Result!
+    unlike(targetId: ID!): Result!
+}
+
+type Result {
+    state: String!
+    message: String!
 }

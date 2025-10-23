@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
     private Long postId;
 
@@ -28,11 +27,11 @@ public class Post {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    @JoinColumn(name = "created_by", updatable = false)
     private UserProfile createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", insertable = false, updatable = false)
+    @JoinColumn(name = "event_id", updatable = false)
     private Event event;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)

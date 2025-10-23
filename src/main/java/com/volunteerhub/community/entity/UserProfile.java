@@ -17,14 +17,28 @@ public class UserProfile {
     @Column(name = "user_id")
     private UUID userId;
 
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Column(name = "username", nullable = false, unique = true, length = 100)
     private String username;
+
+    @Column(name = "full_name", nullable = false, length = 50)
+    private String fullName;
 
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "role", nullable = false, length = 20)
-    private String role;
+    @Column(name = "password", nullable = false, unique = true, length = 100)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private RoleName role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private UserStatus status;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

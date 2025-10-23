@@ -16,9 +16,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Like {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "like_id")
-    private Long like_id;
+    private Long likeId;
 
     @Column(name = "target_id")
     private Long targetId;
@@ -28,9 +27,14 @@ public class Like {
     private TableType tableType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", insertable = false, updatable = false)
+    @JoinColumn(name = "created_by", updatable = false)
     private UserProfile createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
