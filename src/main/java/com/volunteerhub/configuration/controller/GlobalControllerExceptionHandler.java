@@ -1,4 +1,4 @@
-package com.volunteerhub.community.configuration.controller;
+package com.volunteerhub.configuration.controller;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;

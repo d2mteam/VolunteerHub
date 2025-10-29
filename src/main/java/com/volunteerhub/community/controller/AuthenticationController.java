@@ -1,4 +1,4 @@
-package com.volunteerhub.community.controller.controller;
+package com.volunteerhub.community.controller;
 
 import com.volunteerhub.community.dto.rest.request.LoginRequest;
 import com.volunteerhub.community.dto.rest.request.RefreshRequest;

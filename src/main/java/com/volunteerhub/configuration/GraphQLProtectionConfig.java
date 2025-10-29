@@ -1,4 +1,4 @@
-package com.volunteerhub.community.configuration;
+package com.volunteerhub.configuration;
 
 import org.springframework.context.annotation.Configuration;
 

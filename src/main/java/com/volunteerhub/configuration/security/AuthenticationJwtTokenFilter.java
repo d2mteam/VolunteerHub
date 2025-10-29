@@ -1,4 +1,4 @@
-package com.volunteerhub.community.configuration.security;
+package com.volunteerhub.configuration.security;
 
 import com.volunteerhub.community.service.auth_service.JwtService;
 import jakarta.servlet.FilterChain;

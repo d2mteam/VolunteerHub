@@ -1,4 +1,4 @@
-package com.volunteerhub.community.configuration.security;
+package com.volunteerhub.configuration.security;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

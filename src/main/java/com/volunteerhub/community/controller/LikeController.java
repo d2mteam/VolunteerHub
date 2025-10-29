@@ -1,4 +1,4 @@
-package com.volunteerhub.community.controller.controller;
+package com.volunteerhub.community.controller;
 
 import com.volunteerhub.community.dto.graphql.input.LikeInput;
 import com.volunteerhub.community.service.write_service.ILikeService;

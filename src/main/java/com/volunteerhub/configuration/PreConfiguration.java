@@ -1,4 +1,4 @@
-package com.volunteerhub.community.configuration;
+package com.volunteerhub.configuration;
 
 import com.volunteerhub.community.entity.RoleName;
 import com.volunteerhub.community.entity.UserProfile;
