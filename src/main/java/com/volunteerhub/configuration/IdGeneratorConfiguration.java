@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class IdGeneratorConfiguration {
     @Bean
-    public SnowflakeIdGenerator  snowflakeIdGenerator() {
+    public SnowflakeIdGenerator snowflakeIdGenerator() {
         return SnowflakeIdGenerator.builder()
                 .workerIdBits(5)
                 .datacenterIdBits(5)

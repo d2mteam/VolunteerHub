@@ -6,7 +6,6 @@ import com.volunteerhub.community.dto.rest.request.RegistrationRequest;
 import com.volunteerhub.community.dto.rest.response.LoginResponse;
 import com.volunteerhub.community.dto.rest.response.RefreshResponse;
 import com.volunteerhub.community.service.auth_service.AuthenticationService;
-
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

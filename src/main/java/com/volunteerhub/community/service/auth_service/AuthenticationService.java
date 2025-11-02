@@ -8,6 +8,8 @@ import com.volunteerhub.community.dto.rest.response.RefreshResponse;
 
 public interface AuthenticationService {
     RefreshResponse refresh(RefreshRequest request);
+
     LoginResponse login(LoginRequest request);
+
     void register(RegistrationRequest request);
 }

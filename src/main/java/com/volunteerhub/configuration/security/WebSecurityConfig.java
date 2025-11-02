@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 @AllArgsConstructor
 public class WebSecurityConfig {
-    private final AuthenticationJwtTokenFilter authTokenFilter;
+    private final JwtTokenFilter jwtTokenFilter;
     private final AuthEntryPointJwt unauthorizedHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
@@ -41,8 +41,7 @@ public class WebSecurityConfig {
                                 .anyRequest().authenticated()
                 );
 
-        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
+        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

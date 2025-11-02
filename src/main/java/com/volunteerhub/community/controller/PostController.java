@@ -4,6 +4,8 @@ import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
 import com.volunteerhub.community.dto.graphql.input.EditPostInput;
 import com.volunteerhub.community.service.write_service.IPostService;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,10 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/posts")
 public class PostController {
+
+    private static final Logger logger = LoggerFactory.getLogger(PostController.class);
+
 
     private final IPostService postService;
 
@@ -36,6 +42,7 @@ public class PostController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@AuthenticationPrincipal UUID userId,
                                            @PathVariable Long id) {
+
         postService.deletePost(userId, id);
         return ResponseEntity.noContent().build(); // 204 No Content
     }

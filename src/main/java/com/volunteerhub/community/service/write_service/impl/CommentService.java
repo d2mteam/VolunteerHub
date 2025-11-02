@@ -30,10 +30,10 @@ public class CommentService implements ICommentService {
         UserProfile userProfile = userProfileService.getReferenceById(userId);
         Post post = postRepository.getReferenceById(input.getPostId());
         commentRepository.save(Comment.builder()
-                        .commentId(idGenerator.nextId())
-                        .post(post)
-                        .createdBy(userProfile)
-                        .content(input.getContent())
+                .commentId(idGenerator.nextId())
+                .post(post)
+                .createdBy(userProfile)
+                .content(input.getContent())
                 .build());
     }
 

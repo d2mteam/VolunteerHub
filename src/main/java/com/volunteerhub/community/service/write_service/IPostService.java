@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public interface IPostService {
     void createPost(UUID userId, CreatePostInput input);
+
     void editPost(UUID userId, EditPostInput input);
+
     void deletePost(UUID userId, Long postId);
 }

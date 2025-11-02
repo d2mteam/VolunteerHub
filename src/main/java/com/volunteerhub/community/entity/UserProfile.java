@@ -1,7 +1,12 @@
 package com.volunteerhub.community.entity;
 
+import com.volunteerhub.community.entity.db_enum.RoleName;
+import com.volunteerhub.community.entity.db_enum.UserStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,7 +31,7 @@ public class UserProfile {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "password", nullable = false, unique = true, length = 100)
+    @Column(name = "password", nullable = false, length = 100)
     private String password;
 
     @Enumerated(EnumType.STRING)

@@ -1,5 +1,6 @@
 package com.volunteerhub.community.entity;
 
+import com.volunteerhub.community.entity.db_enum.TableType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

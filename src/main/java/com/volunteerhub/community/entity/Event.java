@@ -1,7 +1,11 @@
 package com.volunteerhub.community.entity;
 
+import com.volunteerhub.community.entity.db_enum.EventState;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

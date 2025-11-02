@@ -1,6 +1,7 @@
 package com.volunteerhub.configuration.security;
 
 import com.volunteerhub.community.service.auth_service.JwtService;
+import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,14 +21,14 @@ import java.util.UUID;
 
 @Component
 @AllArgsConstructor
-public class AuthenticationJwtTokenFilter extends OncePerRequestFilter {
+public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String token = parseJwt(request);
@@ -39,10 +40,8 @@ public class AuthenticationJwtTokenFilter extends OncePerRequestFilter {
             if (userId != null && roles != null) {
                 List<SimpleGrantedAuthority> authorities =
                         roles.stream().map(SimpleGrantedAuthority::new).toList();
-
                 Authentication authentication =
                         new UsernamePasswordAuthenticationToken(userId, null, authorities);
-
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

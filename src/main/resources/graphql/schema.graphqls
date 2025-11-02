@@ -1,82 +1,90 @@
+# ==========================================================
+# v1_read_models.graphqls
+# Phiên bản đầu tiên – đồng bộ với v1_read_models.sql
+# Được thiết kế cho CQRS Read Model (PostgreSQL Materialized Views)
+# ==========================================================
+
+# ============================
+# USER
+# ============================
+
 type UserProfile {
     userId: ID!
-    userAvatar: String
-    username: String!
+    username: String
+    fullName: String
+    avatarUrl: String
     email: String
-    role: String!
-    createdAt: String!
+    status: String
+    createdAt: String
+    postCount: Int
+    commentCount: Int
+    eventCount: Int
 
-    posts(page: Int = 0, size: Int = 10): PostPage!
+    listPosts(eventId: ID, page: Int = 0, size: Int = 10): PostPage
 
-    comments(page: Int = 0, size: Int = 10): CommentPage!
+    listComments(eventId: ID, page: Int = 0, size: Int = 10): PostPage
 
-    participatedEvents(page: Int = 0, size: Int = 10): EventPage!
+    listEvents(page: Int = 0, size: Int = 10): EventPage
 }
 
-type Post {
-    postId: ID!
-    postName: String!
-    content: String!
-    likeCount: Int!
-    createdAt: String!
-    updatedAt: String!
-    create_by: UserSummary!
-
-    comments(page: Int = 0, size: Int = 10): CommentPage!
-    likes(page: Int = 0, size: Int = 10): LikePage!
-}
-
-type Comment {
-    commentId: ID!
-    content: String!
-    likeCount: Int!
-    createdAt: String!
-    post: Post!
-    create_by: UserSummary!
-
-    likes(page: Int = 0, size: Int = 10): LikePage!
-}
+# ============================
+# EVENT
+# ============================
 
 type Event {
     eventId: ID!
-    eventName: String!
+    eventName: String
     eventDescription: String
     eventLocation: String
-    likeCount: Int!
-    create_by: UserSummary!
-    createdAt: String!
+    createdAt: String
+    updatedAt: String
+    creatorId: ID
+    creatorFullName: String
+    creatorUsername: String
+    creatorAvatar: String
+    memberCount: Int
+    postCount: Int
+    likeCount: Int
 
-    topics(page: Int = 0, size: Int = 10): PostPage!
-
-    likes(page: Int = 0, size: Int = 10): LikePage!
-
-    member(page: Int = 0, size: Int = 10): UserPage!
+    listUsers(page: Int = 0, size: Int = 10): EventPage
+    listPosts(page: Int = 0, size: Int = 10): PostPage
 }
 
-type EventSummary {
-    eventId: ID!
-    eventName: String!
-    eventDescription: String
-}
+# ============================
+# POST
+# ============================
 
-type PostSummary {
+type Post {
     postId: ID!
-    postName: String!
-    likeCount: Int!
-    create_by: UserSummary!
+    eventId: ID!
+    content: String
+    createdAt: String
+    updatedAt: String
+    creatorId: ID
+    creatorUsername: String
+    creatorFullName: String
+    creatorAvatar: String
+    commentCount: Int
+    likeCount: Int
+
+    listComment(page: Int = 0, size: Int = 10): CommentPage
 }
 
-type UserSummary {
-    userId: ID!
-    username: String!
-    userAvatar: String
-    role: String!
-}
-
-type Like {
-    target_type: String!
-    target_id: ID!
-    create_by: UserSummary!
+# ============================
+# COMMENT
+# ============================
+type Comment {
+    commentId: ID!
+    postId: ID!
+    content: String
+    createdAt: String
+    updatedAt: String
+    creatorId: ID
+    creatorFullName: String
+    creatorUsername: String
+    creatorAvatar: String
+    commentCount: Int
+    likeCount: Int
 }
 
 type PageInfo {
@@ -89,12 +97,12 @@ type PageInfo {
 }
 
 type EventPage {
-    content: [EventSummary!]!
+    content: [Event!]!
     pageInfo: PageInfo!
 }
 
 type PostPage {
-    content: [PostSummary!]!
+    content: [Post!]!
     pageInfo: PageInfo!
 }
 
@@ -103,24 +111,20 @@ type CommentPage {
     pageInfo: PageInfo!
 }
 
-type UserPage {
-    content: [UserSummary!]!
+type UserProfilePage {
+    content: [UserProfile!]!
     pageInfo: PageInfo!
 }
 
-type LikePage {
-    content: [Like!]!
-    pageInfo: PageInfo!
-}
+# ============================
+# ROOT QUERIES
+# ============================
 
 type Query {
-    getEvent(eventId: ID!): Event
-
-    getPost(postId: ID!): Post
-
     getUserProfile(userId: ID!): UserProfile
+    getEvent(eventId: ID!): Event
+    getPost(postId: ID!): Post
 }
-
 
 input CreateEventInput {
     eventName: String!
@@ -162,26 +166,27 @@ input EditCommentInput {
     content: String!
 }
 
-
-type Mutation {
-    createEvent(input: CreateEventInput!): Result!
-    editEvent(input: EditEventInput!) : Result!
-    deleteEvent(eventId: ID!) : Result!
-
-
-    createPost(input: CreatePostInput!):  Result!
-    editPost(input: EditPostInput!) : Result!
-    deletePost(id: ID!): Result!
-
-    createComment(input: CreateCommentInput!):  Result!
-    editComment(input: EditCommentInput!): Result!
-    deleteComment(id: ID!): Result!
-
-    like(input: LikeInput): Result!
-    unlike(targetId: ID!): Result!
+"MutationResult — sửa lại cho đúng use case forum"
+type MutationResult {
+    ok: Boolean!
+    id: ID            # client dùng để fetch lại
+    message: String   # debug / UI message
+    updatedAt: String # giúp client refresh chọn lọc
 }
 
-type Result {
-    state: String!
-    message: String!
+type Mutation {
+    createEvent(input: CreateEventInput!): MutationResult!
+    editEvent(input: EditEventInput!): MutationResult!
+    deleteEvent(eventId: ID!): MutationResult!
+
+    createPost(input: CreatePostInput!): MutationResult!
+    editPost(input: EditPostInput!): MutationResult!
+    deletePost(id: ID!): MutationResult!
+
+    createComment(input: CreateCommentInput!): MutationResult!
+    editComment(input: EditCommentInput!): MutationResult!
+    deleteComment(id: ID!): MutationResult!
+
+    like(input: LikeInput): MutationResult!
+    unlike(targetId: ID!): MutationResult!
 }

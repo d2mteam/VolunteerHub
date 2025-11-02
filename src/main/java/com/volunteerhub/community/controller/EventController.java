@@ -27,14 +27,14 @@ public class EventController {
 
     @PutMapping
     public ResponseEntity<Void> editEvent(@AuthenticationPrincipal UUID userId,
-                            @RequestBody EditEventInput input) {
+                                          @RequestBody EditEventInput input) {
         eventService.editEvent(userId, input);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{eventId}")
     public ResponseEntity<Void> deleteEvent(@AuthenticationPrincipal UUID userId,
-                              @PathVariable Long eventId) {
+                                            @PathVariable Long eventId) {
         eventService.deleteEvent(userId, eventId);
         return ResponseEntity.noContent().build();
     }

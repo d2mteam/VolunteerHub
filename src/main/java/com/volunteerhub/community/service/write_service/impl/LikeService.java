@@ -1,8 +1,8 @@
 package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.entity.Like;
-import com.volunteerhub.community.entity.TableType;
 import com.volunteerhub.community.entity.UserProfile;
+import com.volunteerhub.community.entity.db_enum.TableType;
 import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.ILikeService;

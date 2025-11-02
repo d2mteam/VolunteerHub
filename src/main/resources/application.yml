@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: VolunteerHubProject
+  datasource:
+    url: jdbc:postgresql://localhost:5431/volunteerhub
+    username: admin
+    password: admin123
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: 'true'
+#  data:
+#    redis:
+#      port: '6379'
+#      host: localhost
+
+security:
+  app:
+    jwtSecret: ==================Spring==================
+    jwtAccessExpirationMs: '300000'
+    jwtRefreshExpirationMs: '86400000'
+
+logging:
+  level:
+    org:
+      hibernate:
+        tool:
+          hbm2ddl: DEBUG
+        SQL: DEBUG
+        orm:
+          connections: DEBUG
+    com:
+      volunteerhub: DEBUG
