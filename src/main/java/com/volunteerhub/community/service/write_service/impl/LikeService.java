@@ -1,5 +1,6 @@
 package com.volunteerhub.community.service.write_service.impl;
 
+import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.entity.Like;
 import com.volunteerhub.community.entity.UserProfile;
 import com.volunteerhub.community.entity.db_enum.TableType;
@@ -7,33 +8,58 @@ import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Transactional
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LikeService implements ILikeService {
+
     private final LikeRepository likeRepository;
     private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    public void like(UUID userId, Long targetId, String targetType) {
+    public ActionResponse<Void> like(UUID userId, Long targetId, String targetType) {
         UserProfile userProfile = userProfileRepository.getReferenceById(userId);
-        likeRepository.save(Like.builder()
+
+        Like like = Like.builder()
                 .likeId(idGenerator.nextId())
                 .targetId(targetId)
                 .tableType(TableType.valueOf(targetType))
                 .createdBy(userProfile)
-                .build());
+                .build();
+
+        likeRepository.save(like);
+
+        LocalDateTime now = LocalDateTime.now();
+        return ActionResponse.success(
+                like.getLikeId().toString(),
+                now,
+                now
+        );
     }
 
     @Override
-    public void unLike(UUID userId, Long likeId) {
+    public ActionResponse<Void> unlike(UUID userId, Long likeId) {
+        Optional<Like> existing = likeRepository.findById(likeId);
+        if (existing.isEmpty()) {
+            return ActionResponse.failure("Like not found");
+        }
+
         likeRepository.deleteById(likeId);
+
+        LocalDateTime now = LocalDateTime.now();
+        return ActionResponse.success(
+                likeId.toString(),
+                now,
+                now
+        );
     }
 }

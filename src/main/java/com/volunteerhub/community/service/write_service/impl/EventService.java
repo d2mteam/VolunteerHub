@@ -2,6 +2,7 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
+import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.entity.Event;
 import com.volunteerhub.community.entity.UserProfile;
 import com.volunteerhub.community.entity.db_enum.EventState;
@@ -9,50 +10,86 @@ import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IEventService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Transactional
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class EventService implements IEventService {
+
     private final EventRepository eventRepository;
-    private final UserProfileRepository userProfileService;
+    private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    public void moderate(UUID userId, List<Long> eventIds) {
-
+    public ActionResponse<Void>  moderate(UUID userId, List<Long> eventIds) {
+        return ActionResponse.failure("Moderation logic not implemented yet");
     }
 
     @Override
-    public void createEvent(UUID userId, CreateEventInput input) {
-        UserProfile userProfile = userProfileService.getReferenceById(userId);
-        eventRepository.save(Event.builder()
+    public ActionResponse<Void>  createEvent(UUID userId, CreateEventInput input) {
+        UserProfile creator = userProfileRepository.getReferenceById(userId);
+
+        Event event = Event.builder()
                 .eventId(idGenerator.nextId())
+                .eventName(input.getEventName())
                 .eventDescription(input.getEventDescription())
                 .eventLocation(input.getEventLocation())
-                .eventName(input.getEventName())
                 .eventState(EventState.Pending)
-                .createdBy(userProfile)
-                .build());
+                .createdBy(creator)
+                .build();
+
+        eventRepository.save(event);
+
+        LocalDateTime now = LocalDateTime.now();
+        return ActionResponse.success(
+                event.getEventId().toString(),
+                now,
+                now
+        );
     }
 
     @Override
-    public void editEvent(UUID userId, EditEventInput input) {
-        eventRepository.findById(input.getEventId()).ifPresent(event -> {
-            event.setEventName(input.getEventName());
-            event.setEventDescription(input.getEventDescription());
-            event.setEventLocation(input.getEventLocation());
-        });
+    public ActionResponse<Void>  editEvent(UUID userId, EditEventInput input) {
+        Optional<Event> optional = eventRepository.findById(input.getEventId());
+        if (optional.isEmpty()) {
+            return ActionResponse.failure("Event not found");
+        }
+
+        Event event = optional.get();
+        event.setEventName(input.getEventName());
+        event.setEventDescription(input.getEventDescription());
+        event.setEventLocation(input.getEventLocation());
+        eventRepository.save(event);
+
+        return ActionResponse.success(
+                event.getEventId().toString(),
+                event.getCreatedAt(),
+                LocalDateTime.now()
+        );
     }
 
     @Override
-    public void deleteEvent(UUID userId, Long eventId) {
+    public ActionResponse<Void>  deleteEvent(UUID userId, Long eventId) {
+        boolean exists = eventRepository.existsById(eventId);
+        if (!exists) {
+            return ActionResponse.failure("Event with id " + eventId + " does not exist");
+        }
+
         eventRepository.deleteById(eventId);
+
+        LocalDateTime now = LocalDateTime.now();
+        return ActionResponse.success(
+                eventId.toString(),
+                now,
+                now
+        );
     }
 }

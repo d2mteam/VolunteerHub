@@ -1,4 +1,4 @@
-package com.volunteerhub.community.controller.graphql;
+package com.volunteerhub.community.controller.graphql.query;
 
 import com.volunteerhub.community.dto.graphql.page.OffsetPage;
 import com.volunteerhub.community.dto.graphql.page.PageInfo;

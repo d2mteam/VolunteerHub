@@ -6,5 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class EditPostInput {
+    private Long postId;
     private String content;
 }

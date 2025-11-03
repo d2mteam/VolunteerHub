@@ -1,5 +1,5 @@
 -- ============================================================
--- FILE: read_model_v2.sql
+-- FILE: materialized_views_001.sql
 -- PURPOSE: Materialized Views cho layer đọc (CQRS Read Model)
 -- ============================================================
 

@@ -17,7 +17,4 @@ public record EventDto(
         Long postCount,
         Long memberCount
 ) {
-    public UserSummaryDto createBy() {
-        return new UserSummaryDto(creatorId, creatorUsername, creatorAvatar, creatorRole);
-    }
 }

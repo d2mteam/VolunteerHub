@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class EditCommentInput {
     private Long commentId;
-    private String comment;
+    private String content;
 }

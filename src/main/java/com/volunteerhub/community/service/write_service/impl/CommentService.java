@@ -2,6 +2,7 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.CreateCommentInput;
 import com.volunteerhub.community.dto.graphql.input.EditCommentInput;
+import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.entity.Comment;
 import com.volunteerhub.community.entity.Post;
 import com.volunteerhub.community.entity.UserProfile;
@@ -10,42 +11,78 @@ import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.ICommentService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Transactional
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CommentService implements ICommentService {
+
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final UserProfileRepository userProfileService;
+    private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    public void createComment(UUID userId, CreateCommentInput input) {
-        UserProfile userProfile = userProfileService.getReferenceById(userId);
+    public ActionResponse<Void> createComment(UUID userId, CreateCommentInput input) {
+        UserProfile userProfile = userProfileRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(input.getPostId());
-        commentRepository.save(Comment.builder()
+
+        Comment saved = Comment.builder()
                 .commentId(idGenerator.nextId())
                 .post(post)
                 .createdBy(userProfile)
                 .content(input.getContent())
-                .build());
+                .build();
+
+        commentRepository.save(saved);
+
+        LocalDateTime now = LocalDateTime.now();
+        return ActionResponse.success(
+                saved.getCommentId().toString(),
+                now,
+                now
+        );
     }
 
     @Override
-    public void editComment(UUID userId, EditCommentInput input) {
-        commentRepository.findById(idGenerator.nextId()).ifPresent(comment -> {
-            comment.setContent(input.getComment());
-        });
+    public ActionResponse<Void> editComment(UUID userId, EditCommentInput input) {
+        Optional<Comment> optional = commentRepository.findById(input.getCommentId());
+        if (optional.isEmpty()) {
+            return ActionResponse.failure("Comment not found");
+        }
+
+        Comment comment = optional.get();
+        comment.setContent(input.getContent());
+        commentRepository.save(comment);
+
+        return ActionResponse.success(
+                comment.getCommentId().toString(),
+                comment.getCreatedAt(),
+                LocalDateTime.now()
+        );
     }
 
     @Override
-    public void deleteComment(UUID userId, Long commentId) {
+    public ActionResponse<Void> deleteComment(UUID userId, Long commentId) {
+        boolean exists = commentRepository.existsById(commentId);
+        if (!exists) {
+            return ActionResponse.failure("Comment not found");
+        }
+
         commentRepository.deleteById(commentId);
+        LocalDateTime now = LocalDateTime.now();
+
+        return ActionResponse.success(
+                commentId.toString(),
+                now,
+                now
+        );
     }
 }
