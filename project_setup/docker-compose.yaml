@@ -1,6 +1,6 @@
 services:
   postgresql:
-    image: sraoss/pg_ivm:15
+    image: postgres:15
     environment:
       POSTGRES_DB: volunteerhub
       POSTGRES_USER: admin
