@@ -1,8 +1,10 @@
 package com.volunteerhub.community.controller.graphql.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.volunteerhub.community.dto.graphql.page.OffsetPage;
 import com.volunteerhub.community.dto.graphql.page.PageInfo;
 import com.volunteerhub.community.dto.graphql.page.PageUtils;
+import com.volunteerhub.community.entity.UserProfile;
 import com.volunteerhub.community.entity.mv.EventDetail;
 import com.volunteerhub.community.entity.mv.UserProfileDetail;
 import com.volunteerhub.community.repository.mv.EventDetailRepository;
@@ -30,7 +32,8 @@ public class UserProfileResolver {
     }
 
     @SchemaMapping(typeName = "UserProfile", field = "listEvents")
-    public OffsetPage<EventDetail> listEvents(UserProfileDetail userProfileDetail, @Argument Integer page, @Argument Integer size) {
+    public OffsetPage<EventDetail> listEvents(UserProfileDetail userProfileDetail,
+                                              @Argument Integer page, @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
         Pageable pageable = PageRequest.of(safePage, safeSize);
@@ -41,4 +44,20 @@ public class UserProfileResolver {
                 .pageInfo(pageInfo)
                 .build();
     }
+
+
+    @QueryMapping
+    public OffsetPage<UserProfileDetail> findUserProfiles(@Argument Integer page, @Argument Integer size,
+                                              @Argument JsonNode filter) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size > 0 ? size : 10;
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<UserProfileDetail> userProfilePage = userProfileDetailRepository.findAll(pageable);
+        PageInfo pageInfo = PageUtils.from(userProfilePage);
+        return OffsetPage.<UserProfileDetail>builder()
+                .content(userProfilePage.getContent())
+                .pageInfo(pageInfo)
+                .build();
+    }
+
 }

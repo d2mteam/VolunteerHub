@@ -1,3 +1,5 @@
+scalar JSON
+
 type UserProfile {
     userId: ID!
     username: String
@@ -11,9 +13,7 @@ type UserProfile {
     eventCount: Int
 
     listPosts(eventId: ID, page: Int = 0, size: Int = 10): PostPage
-
     listComments(eventId: ID, page: Int = 0, size: Int = 10): PostPage
-
     listEvents(page: Int = 0, size: Int = 10): EventPage
 }
 
@@ -62,7 +62,6 @@ type Comment {
     creatorFullName: String
     creatorUsername: String
     creatorAvatar: String
-    commentCount: Int
     likeCount: Int
 }
 
@@ -99,6 +98,10 @@ type Query {
     getUserProfile(userId: ID!): UserProfile
     getEvent(eventId: ID!): Event
     getPost(postId: ID!): Post
+
+    findEvents(page: Int = 0, size: Int = 10, filter: JSON = null): EventPage
+    findPosts(page: Int = 0, size: Int = 10, filter: JSON = null): PostPage
+    findUserProfiles(page: Int = 0, size: Int = 10, filter: JSON = null): UserProfilePage
 }
 
 input CreateEventInput {

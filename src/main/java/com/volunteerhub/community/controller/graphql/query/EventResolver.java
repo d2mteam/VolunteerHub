@@ -16,6 +16,8 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.Map;
+
 @Controller
 @AllArgsConstructor
 public class EventResolver {
@@ -28,7 +30,9 @@ public class EventResolver {
     }
 
     @SchemaMapping(typeName = "Event", field = "listPosts")
-    public OffsetPage<PostDetail> listPosts(EventDetail eventDetail, @Argument Integer page, @Argument Integer size) {
+    public OffsetPage<PostDetail> listPosts(EventDetail eventDetail,
+                                            @Argument Integer page,
+                                            @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
@@ -37,6 +41,24 @@ public class EventResolver {
         PageInfo pageInfo = PageUtils.from(postPage);
         return OffsetPage.<PostDetail>builder()
                 .content(postPage.getContent())
+                .pageInfo(pageInfo)
+                .build();
+    }
+
+
+    @QueryMapping
+    public OffsetPage<EventDetail> findEvents(@Argument Integer page,
+                                                @Argument Integer size,
+                                                @Argument Map<String, Object> filter) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size > 0 ? size : 10;
+
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<EventDetail> eventPage = eventDetailRepository.findAll(pageable);
+        PageInfo pageInfo = PageUtils.from(eventPage);
+
+        return OffsetPage.<EventDetail>builder()
+                .content(eventPage.getContent())
                 .pageInfo(pageInfo)
                 .build();
     }

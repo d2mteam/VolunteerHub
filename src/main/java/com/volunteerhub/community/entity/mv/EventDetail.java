@@ -8,8 +8,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -34,6 +37,10 @@ public class EventDetail {
 
     @Column(name = "event_location", length = Integer.MAX_VALUE)
     private String eventLocation;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "event_metadata", columnDefinition = "jsonb")
+    private Map<String, Object> eventMetadata;
 
     @Column(name = "created_at")
     private Instant createdAt;
