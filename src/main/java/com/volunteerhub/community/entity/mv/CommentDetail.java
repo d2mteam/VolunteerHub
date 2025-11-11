@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Immutable;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -31,11 +32,17 @@ public class CommentDetail {
     @Column(name = "content", length = Integer.MAX_VALUE)
     private String content;
 
+//    @Column(name = "created_at")
+//    private Instant createdAt;
+//
+//    @Column(name = "updated_at")
+//    private Instant updatedAt;
+
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "creator_id")
     private UUID creatorId;

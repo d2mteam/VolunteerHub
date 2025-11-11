@@ -3,17 +3,18 @@ package com.volunteerhub.community.entity;
 import com.volunteerhub.community.entity.db_enum.RoleName;
 import com.volunteerhub.community.entity.db_enum.UserStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_profiles")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,16 +32,12 @@ public class UserProfile {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 100)
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private RoleName role;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private UserStatus status;
+
+    @Column(name = "bio")
+    private String bio;
 
     @Column(name = "avatar_url")
     private String avatarUrl;
@@ -48,8 +45,30 @@ public class UserProfile {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    @Column(name = "extra_info", columnDefinition = "jsonb")
+//    private Map<String, Object> extraInfo;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // deprecated soon
+    @Column(name = "password", nullable = false, length = 100)
+    private String password;
+
+    // deprecated soon
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private RoleName role;
 }

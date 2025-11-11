@@ -2,19 +2,14 @@ package com.volunteerhub.community.entity;
 
 import com.volunteerhub.community.entity.db_enum.EventState;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Entity
 @Table(name = "events")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,10 +40,6 @@ public class Event {
     @Enumerated(EnumType.STRING)
     @Column(name = "event_state", nullable = false)
     private EventState eventState;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "event_metadata", columnDefinition = "jsonb")
-    private Map<String, Object> eventMetadata;
 
     @PrePersist
     public void prePersist() {

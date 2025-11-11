@@ -441,3 +441,5 @@ Lỗi hoặc không tìm thấy:
 - `id` luôn trả về dạng **string** (Snowflake hoặc UUID).  
 - Sau khi mutation thành công, frontend nên `refetch` query tương ứng (`getPost`, `getEvent`, v.v.).  
 - Các truy vấn con như `listPosts`, `listComments` hỗ trợ phân trang và nested fetch.
+
+- @MappedSuperclass

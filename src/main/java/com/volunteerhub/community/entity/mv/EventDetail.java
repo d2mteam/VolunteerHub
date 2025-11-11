@@ -12,6 +12,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,15 +39,21 @@ public class EventDetail {
     @Column(name = "event_location", length = Integer.MAX_VALUE)
     private String eventLocation;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "event_metadata", columnDefinition = "jsonb")
-    private Map<String, Object> eventMetadata;
+//    @JdbcTypeCode(SqlTypes.JSON)
+//    @Column(name = "event_metadata", columnDefinition = "jsonb")
+//    private Map<String, Object> eventMetadata;
+//
+//    @Column(name = "created_at")
+//    private Instant createdAt;
+//
+//    @Column(name = "updated_at")
+//    private Instant updatedAt;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
     @Size(max = 100)
     @Column(name = "creator_full_name", length = 100)

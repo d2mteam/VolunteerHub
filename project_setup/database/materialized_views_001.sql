@@ -26,7 +26,7 @@ SELECT e.event_id,
        e.created_at,
        e.updated_at,
        e.created_by                      AS creator_id, -- GraphQL: createdBy
-       e.event_metadata ,
+--        e.event_metadata ,
 
        -- Denormalized summary: username, avatar của người tạo
        (SELECT u.username
@@ -137,6 +137,7 @@ SELECT u.user_id,
        u.username,
        u.full_name,
        u.created_at,
+       u.updated_at,
        u.avatar_url,
        u.email,
        u.status,

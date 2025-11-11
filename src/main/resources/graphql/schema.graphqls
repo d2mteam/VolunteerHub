@@ -144,7 +144,6 @@ input EditCommentInput {
     content: String!
 }
 
-"MutationResult — sửa lại cho đúng use case forum"
 type MutationResult {
     ok: Boolean!
     id: ID

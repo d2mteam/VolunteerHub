@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Immutable;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -34,7 +35,10 @@ public class UserProfileDetail {
     private String fullName;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Size(max = 255)
     @Column(name = "avatar_url")
