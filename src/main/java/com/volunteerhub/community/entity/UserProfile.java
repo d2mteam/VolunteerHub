@@ -4,11 +4,8 @@ import com.volunteerhub.community.entity.db_enum.RoleName;
 import com.volunteerhub.community.entity.db_enum.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 @Entity

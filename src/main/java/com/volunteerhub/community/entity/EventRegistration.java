@@ -4,8 +4,16 @@ import com.volunteerhub.community.entity.db_enum.RegistrationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
-@Table(name = "event_registration")
+@Table(name = "event_registration", indexes = {
+        @Index(
+                name = "idx_user_event",
+                columnList = "user_id, event_id"
+        )
+})
 @Getter
 @Setter
 @Builder
@@ -15,6 +23,12 @@ public class EventRegistration {
     @Id
     @Column(name = "registration_id")
     private Long registrationId;
+
+    @Column(name = "event_id", insertable = false, updatable = false)
+    private Long eventId;
+
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
@@ -28,4 +42,21 @@ public class EventRegistration {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private RegistrationStatus status = RegistrationStatus.PENDING;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

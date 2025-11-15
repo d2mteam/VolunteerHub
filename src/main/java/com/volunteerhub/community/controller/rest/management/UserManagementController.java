@@ -2,7 +2,6 @@ package com.volunteerhub.community.controller.rest.management;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.dto.rest.request.UpdateRoleRequest;
-import com.volunteerhub.community.entity.db_enum.SystemRole;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +11,7 @@ import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/manager/users")
+@RequestMapping("/api/system-admin/users")
 public class UserManagementController {
     @PostMapping("/{userId}/ban")
     public ResponseEntity<ActionResponse<Void>> banUser(@PathVariable UUID userId) {

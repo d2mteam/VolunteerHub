@@ -12,8 +12,8 @@ type UserProfile {
     commentCount: Int
     eventCount: Int
 
-    listPosts(eventId: ID, page: Int = 0, size: Int = 10): PostPage
-    listComments(eventId: ID, page: Int = 0, size: Int = 10): PostPage
+#    listPosts(eventId: ID, page: Int = 0, size: Int = 10): PostPage
+#    listComments(eventId: ID, page: Int = 0, size: Int = 10): PostPage
     listEvents(page: Int = 0, size: Int = 10): EventPage
 }
 
@@ -153,6 +153,7 @@ type MutationResult {
     id: ID
     message: String
     updatedAt: String
+    createdAt: String
 }
 
 type Mutation {
@@ -169,8 +170,8 @@ type Mutation {
     deleteComment(commentId: ID!): MutationResult!
 
     like(input: LikeInput): MutationResult!
-    unlike(targetId: ID!): MutationResult!
+    unlike(input: LikeInput): MutationResult!
 
-    registerEvent(input: RegistrationInput!): MutationResult!
-    unregisterEvent(registrationId: ID!): MutationResult!
+    registerEvent(eventId: ID!): MutationResult!
+    unregisterEvent(eventId: ID!): MutationResult!
 }

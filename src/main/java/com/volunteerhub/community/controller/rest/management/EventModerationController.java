@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/manager/event")
+@RequestMapping("/api/system-admin/event")
 public class EventModerationController {
     @GetMapping("/pending")
     public Object getPendingEvents() {

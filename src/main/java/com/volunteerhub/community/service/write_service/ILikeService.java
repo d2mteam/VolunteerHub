@@ -7,5 +7,5 @@ import java.util.UUID;
 
 public interface ILikeService {
     ActionResponse<Void> like(UUID userId, Long targetId, String targetType);
-    ActionResponse<Void> unlike(UUID userId, Long likeId);
+    ActionResponse<Void> unlike(UUID userId, Long targetId, String targetType);
 }

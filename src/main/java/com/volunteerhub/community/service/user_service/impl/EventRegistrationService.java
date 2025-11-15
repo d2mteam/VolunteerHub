@@ -1,39 +1,53 @@
-package com.volunteerhub.community.service.user_service;
+package com.volunteerhub.community.service.user_service.impl;
 
-import com.volunteerhub.community.dto.graphql.input.RegistrationInput;
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.entity.Event;
 import com.volunteerhub.community.entity.EventRegistration;
 import com.volunteerhub.community.entity.UserProfile;
+import com.volunteerhub.community.entity.db_enum.ParticipationStatus;
 import com.volunteerhub.community.entity.db_enum.RegistrationStatus;
 import com.volunteerhub.community.repository.EventRegistrationRepository;
 import com.volunteerhub.community.repository.EventRepository;
+import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.user_service.IEventRegistrationService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @Transactional
 @AllArgsConstructor
 public class EventRegistrationService implements IEventRegistrationService {
-
     private final EventRegistrationRepository eventRegistrationRepo;
+    private final RoleInEventRepository roleInEventRepo;
     private final EventRepository eventRepo;
     private final UserProfileRepository userProfileRepo;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
-    public ActionResponse<Void> registerEvent(UUID userId, RegistrationInput input) {
-        if (!eventRepo.existsById(input.getEventId())) {
-            return ActionResponse.failure("Event not found" + input.getEventId());
+    public ActionResponse<Void> registerEvent(UUID userId, Long eventId) {
+        if (eventRegistrationRepo.existsByUserIdAndEventIdAndStatus(
+                userId, eventId, RegistrationStatus.PENDING)) {
+            return ActionResponse.failure("Event registration has already been pending.");
         }
+
+        if (!eventRepo.existsById(eventId)) {
+            return ActionResponse.failure("Event not found, eventId: " + eventId);
+        }
+
+        if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
+                userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
+            return ActionResponse.failure("User already registered this event, eventId: " + eventId);
+        }
+
         UserProfile userProfile = userProfileRepo.getReferenceById(userId);
-        Event event = eventRepo.getReferenceById(input.getEventId());
+        Event event = eventRepo.getReferenceById(eventId);
         EventRegistration reg = EventRegistration.builder()
                 .registrationId(snowflakeIdGenerator.nextId())
                 .userProfile(userProfile)
@@ -47,17 +61,15 @@ public class EventRegistrationService implements IEventRegistrationService {
     }
 
     @Override
-    public ActionResponse<Void> unregisterEvent(UUID userId, Long registrationId) {
-        EventRegistration reg = eventRegistrationRepo.findById(registrationId).orElse(null);
+    public ActionResponse<Void> unregisterEvent(UUID userId, Long eventId) {
+        EventRegistration reg = eventRegistrationRepo.findByUserIdAndEventIdAndStatus(
+                userId, eventId, RegistrationStatus.PENDING).orElse(null);
+
         if (reg == null) {
-            return ActionResponse.failure("Registration not found" + registrationId);
+            return ActionResponse.failure("Cannot unregister. " +
+                    "This registration is either not found or already processed.");
         }
-
-        if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ActionResponse.failure("Cannot unregister this registration because it is already approved or rejected " + registrationId);
-        }
-
-        reg.setStatus(RegistrationStatus.REJECTED);
+        reg.setStatus(RegistrationStatus.CANCELLED_BY_USER);
         eventRegistrationRepo.save(reg);
         return ActionResponse.success(
                 reg.getRegistrationId().toString(),

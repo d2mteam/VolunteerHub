@@ -47,17 +47,17 @@ public class LikeService implements ILikeService {
     }
 
     @Override
-    public ActionResponse<Void> unlike(UUID userId, Long likeId) {
-        Optional<Like> existing = likeRepository.findById(likeId);
+    public ActionResponse<Void> unlike(UUID userId, Long targetId, String targetType) {
+        Optional<Like> existing = likeRepository.findByTargetIdAndTableType(targetId, TableType.valueOf(targetType));
         if (existing.isEmpty()) {
             return ActionResponse.failure("Like not found");
         }
 
-        likeRepository.deleteById(likeId);
+        likeRepository.deleteById(existing.get().getLikeId());
 
         LocalDateTime now = LocalDateTime.now();
         return ActionResponse.success(
-                likeId.toString(),
+                existing.get().getLikeId().toString(),
                 now,
                 now
         );

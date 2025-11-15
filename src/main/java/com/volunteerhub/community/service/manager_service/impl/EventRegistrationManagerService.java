@@ -1,16 +1,20 @@
-package com.volunteerhub.community.service.manager_service;
+package com.volunteerhub.community.service.manager_service.impl;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.entity.EventRegistration;
 import com.volunteerhub.community.entity.RoleInEvent;
+import com.volunteerhub.community.entity.db_enum.ParticipationStatus;
 import com.volunteerhub.community.entity.db_enum.RegistrationStatus;
 import com.volunteerhub.community.repository.EventRegistrationRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
+import com.volunteerhub.community.service.manager_service.IEventRegistrationManagerService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -25,12 +29,20 @@ public class EventRegistrationManagerService implements IEventRegistrationManage
         EventRegistration reg = eventRegistrationRepo.findById(registrationId).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure("Registration not found" + registrationId);
+            return ActionResponse.failure("Registration not found, registrationId: " + registrationId);
         }
 
         if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ActionResponse.failure("Cannot unregister this registration because it has already been approved or rejected "
-                    + registrationId);
+            return ActionResponse.failure("Cannot register this registration " +
+                    "because it is already approved, rejected or cancelled, registrationId: " + registrationId);
+        }
+
+        Long eventId = reg.getEventId();
+        UUID userId = reg.getUserId();
+
+        if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
+                userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
+            return ActionResponse.failure("User already registered this event, eventId: " + eventId);
         }
 
         reg.setStatus(RegistrationStatus.APPROVED);
@@ -40,7 +52,6 @@ public class EventRegistrationManagerService implements IEventRegistrationManage
                 .userProfile(reg.getUserProfile())
                 .build();
         roleInEventRepo.save(roleInEvent);
-
         return ActionResponse.success(
                 registrationId.toString(),
                 null,
@@ -52,12 +63,20 @@ public class EventRegistrationManagerService implements IEventRegistrationManage
         EventRegistration reg = eventRegistrationRepo.findById(registrationId).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure("Registration not found" + registrationId);
+            return ActionResponse.failure("Registration not found, registrationId: " + registrationId);
         }
 
         if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ActionResponse.failure("Cannot unregister this registration because it has already been approved or rejected "
-                    + registrationId);
+            return ActionResponse.failure("Cannot unregister this registration " +
+                    "because it is already approved, rejected or cancelled, registrationId: " + registrationId);
+        }
+
+        Long eventId = reg.getEventId();
+        UUID userId = reg.getUserId();
+
+        if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
+                userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
+            return ActionResponse.failure("User already registered this event, eventId: " + eventId);
         }
 
         reg.setStatus(RegistrationStatus.REJECTED);

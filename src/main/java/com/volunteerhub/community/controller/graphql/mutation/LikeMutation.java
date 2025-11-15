@@ -23,8 +23,9 @@ public class LikeMutation {
     }
 
     @MutationMapping
-    public ActionResponse<Void> unlike(@Argument Long targetId) {
+    public ActionResponse<Void> unlike(@Argument LikeInput input) {
         return likeService.unlike(UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-                targetId);
+                input.getTargetId(),
+                input.getTargetType());
     }
 }
