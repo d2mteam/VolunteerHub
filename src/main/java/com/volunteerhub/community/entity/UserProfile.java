@@ -36,7 +36,7 @@ public class UserProfile {
     @Column(name = "status")
     private UserStatus status;
 
-    @Column(name = "bio")
+    @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
     @Column(name = "avatar_url")
@@ -47,10 +47,6 @@ public class UserProfile {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-//    @JdbcTypeCode(SqlTypes.JSON)
-//    @Column(name = "extra_info", columnDefinition = "jsonb")
-//    private Map<String, Object> extraInfo;
 
     @PrePersist
     public void prePersist() {

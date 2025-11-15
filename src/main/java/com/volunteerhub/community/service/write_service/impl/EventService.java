@@ -4,9 +4,12 @@ import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.entity.Event;
+import com.volunteerhub.community.entity.RoleInEvent;
 import com.volunteerhub.community.entity.UserProfile;
+import com.volunteerhub.community.entity.db_enum.EventRole;
 import com.volunteerhub.community.entity.db_enum.EventState;
 import com.volunteerhub.community.repository.EventRepository;
+import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IEventService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
@@ -25,6 +28,7 @@ import java.util.UUID;
 public class EventService implements IEventService {
 
     private final EventRepository eventRepository;
+    private final RoleInEventRepository roleInEventRepository;
     private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator idGenerator;
 
@@ -42,13 +46,23 @@ public class EventService implements IEventService {
                 .eventName(input.getEventName())
                 .eventDescription(input.getEventDescription())
                 .eventLocation(input.getEventLocation())
-                .eventState(EventState.Pending)
+                .eventState(EventState.PENDING)
                 .createdBy(creator)
                 .build();
 
         eventRepository.save(event);
 
+        RoleInEvent roleInEvent = RoleInEvent.builder()
+                .id(idGenerator.nextId())
+                .eventRole(EventRole.EVENT_ADMIN)
+                .event(event)
+                .userProfile(creator)
+                .build();
+
+        roleInEventRepository.save(roleInEvent);
+
         LocalDateTime now = LocalDateTime.now();
+
         return ActionResponse.success(
                 event.getEventId().toString(),
                 now,

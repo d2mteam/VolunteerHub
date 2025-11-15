@@ -1,10 +1,9 @@
 package com.volunteerhub.community.controller.graphql.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.volunteerhub.community.dto.graphql.page.OffsetPage;
-import com.volunteerhub.community.dto.graphql.page.PageInfo;
-import com.volunteerhub.community.dto.graphql.page.PageUtils;
-import com.volunteerhub.community.entity.UserProfile;
+import com.volunteerhub.community.dto.page.OffsetPage;
+import com.volunteerhub.community.dto.page.PageInfo;
+import com.volunteerhub.community.dto.page.PageUtils;
 import com.volunteerhub.community.entity.mv.EventDetail;
 import com.volunteerhub.community.entity.mv.UserProfileDetail;
 import com.volunteerhub.community.repository.mv.EventDetailRepository;

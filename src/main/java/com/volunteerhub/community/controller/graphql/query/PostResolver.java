@@ -1,8 +1,8 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.volunteerhub.community.dto.graphql.page.OffsetPage;
-import com.volunteerhub.community.dto.graphql.page.PageInfo;
-import com.volunteerhub.community.dto.graphql.page.PageUtils;
+import com.volunteerhub.community.dto.page.OffsetPage;
+import com.volunteerhub.community.dto.page.PageInfo;
+import com.volunteerhub.community.dto.page.PageUtils;
 import com.volunteerhub.community.entity.mv.CommentDetail;
 import com.volunteerhub.community.entity.mv.PostDetail;
 import com.volunteerhub.community.repository.mv.CommentDetailRepository;

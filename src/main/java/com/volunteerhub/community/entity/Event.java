@@ -39,7 +39,7 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_state", nullable = false)
-    private EventState eventState;
+    private EventState eventState =  EventState.PENDING;
 
     @PrePersist
     public void prePersist() {

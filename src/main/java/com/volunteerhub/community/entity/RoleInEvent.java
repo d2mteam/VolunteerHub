@@ -1,12 +1,16 @@
 package com.volunteerhub.community.entity;
 
+import com.volunteerhub.community.entity.db_enum.EventRole;
+import com.volunteerhub.community.entity.db_enum.ParticipationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "role_in_event")
+@Table(name = "role_in_event", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_profile_id", "event_id"})
+})
 @Getter
 @Setter
 @Builder
@@ -31,8 +35,14 @@ public class RoleInEvent {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "event_role")
-    private String eventRole;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_role", nullable = false)
+    private EventRole eventRole = EventRole.EVENT_MEMBER;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "participation_status", nullable = false)
+    private ParticipationStatus participationStatus = ParticipationStatus.APPROVED;
 
     @PrePersist
     public void prePersist() {

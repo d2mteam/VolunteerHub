@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto.graphql.page;
+package com.volunteerhub.community.dto.page;
 
 import lombok.Builder;
 import lombok.Data;

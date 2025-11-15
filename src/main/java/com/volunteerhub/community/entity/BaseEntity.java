@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", updatable = false)
+    @JoinColumn(name = "created_by", nullable = false, updatable = false)
     private UserProfile createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)

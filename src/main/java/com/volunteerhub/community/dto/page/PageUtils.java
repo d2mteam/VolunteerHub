@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto.graphql.page;
+package com.volunteerhub.community.dto.page;
 
 import org.springframework.data.domain.Page;
 
@@ -12,5 +12,9 @@ public class PageUtils {
                 .hasNext(page.hasNext() ? 1 : 0)
                 .hasPrevious(page.hasPrevious() ? 1 : 0)
                 .build();
+    }
+
+    public static PageInfo empty() {
+        return PageInfo.builder().build();
     }
 }

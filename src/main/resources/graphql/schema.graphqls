@@ -144,6 +144,10 @@ input EditCommentInput {
     content: String!
 }
 
+input RegistrationInput {
+    eventId: ID!
+}
+
 type MutationResult {
     ok: Boolean!
     id: ID
@@ -166,4 +170,7 @@ type Mutation {
 
     like(input: LikeInput): MutationResult!
     unlike(targetId: ID!): MutationResult!
+
+    registerEvent(input: RegistrationInput!): MutationResult!
+    unregisterEvent(registrationId: ID!): MutationResult!
 }
