@@ -27,7 +27,7 @@ public class GatewayAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        UUID userId = safeUUID(request.getParameter("X-User-Id"));
+        UUID userId = safeUUID(request.getHeader("X-User-Id"));
         String rolesHeader = request.getHeader("X-User-Roles");
 
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {

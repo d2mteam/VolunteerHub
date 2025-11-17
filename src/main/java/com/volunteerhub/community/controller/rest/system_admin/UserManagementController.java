@@ -1,4 +1,4 @@
-package com.volunteerhub.community.controller.rest.management;
+package com.volunteerhub.community.controller.rest.system_admin;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.community.dto.rest.request.UpdateRoleRequest;

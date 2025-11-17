@@ -56,12 +56,12 @@ public class UserProfile {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // deprecated soon
-    @Column(name = "password", nullable = false, length = 100)
-    private String password;
+//    // deprecated soon
+//    @Column(name = "password", nullable = false, length = 100)
+//    private String password;
 
     // deprecated soon
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private RoleName role;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "role")
+//    private RoleName role;
 }

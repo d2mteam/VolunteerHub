@@ -19,7 +19,7 @@ public class WebSecurityConfig {
     private final JwtTokenFilter jwtTokenFilter;
     private final AuthEntryPointJwt unauthorizedHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
-
+//    private final GatewayAuthFilter  gatewayAuthFilter;
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

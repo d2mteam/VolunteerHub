@@ -2,18 +2,21 @@ package com.volunteerhub.ultis;
 
 import lombok.Builder;
 
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SnowflakeIdGenerator {
-    private final long startEpoch;
 
+    private final long startEpoch;
     private final long workerId;
     private final long datacenterId;
+
     private final long sequenceMask;
     private final long workerIdShift;
     private final long datacenterIdShift;
     private final long timestampLeftShift;
-    private long sequence = 0L;
-    private long lastTimestamp = -1L;
+
+    private final AtomicLong lastTimestamp = new AtomicLong(-1L);
+    private final AtomicLong sequence = new AtomicLong(0L);
 
     @Builder
     public SnowflakeIdGenerator(
@@ -24,9 +27,9 @@ public class SnowflakeIdGenerator {
             long datacenterId,
             long startEpoch
     ) {
+        this.startEpoch = startEpoch;
         this.workerId = workerId;
         this.datacenterId = datacenterId;
-        this.startEpoch = startEpoch;
 
         long maxDatacenterId = (1L << datacenterIdBits) - 1;
         long maxWorkerId = (1L << workerIdBits) - 1;
@@ -42,36 +45,43 @@ public class SnowflakeIdGenerator {
             throw new IllegalArgumentException("datacenterId out of range (0-" + maxDatacenterId + ")");
     }
 
-    public synchronized long nextId() {
-        long timestamp = System.currentTimeMillis();
+    public long nextId() {
+        while (true) {
+            long current = System.currentTimeMillis();
+            long last = lastTimestamp.get();
 
-        if (timestamp < lastTimestamp) {
-            throw new RuntimeException("Clock moved backwards. Refusing to generate id.");
-        }
-
-        if (lastTimestamp == timestamp) {
-            sequence = (sequence + 1) & sequenceMask;
-
-            if (sequence == 0) {
-                timestamp = waitNextMillis(lastTimestamp);
+            if (current < last) {
+                throw new RuntimeException("Clock moved backwards.");
             }
-        } else {
-            sequence = 0L;
+
+            if (current == last) {
+                long seq = (sequence.incrementAndGet()) & sequenceMask;
+                if (seq == 0) {
+                    current = waitNextMillis(last);
+                } else {
+                    return makeId(current, seq);
+                }
+            } else {
+                if (lastTimestamp.compareAndSet(last, current)) {
+                    sequence.set(0);
+                    return makeId(current, 0);
+                }
+            }
         }
+    }
 
-        lastTimestamp = timestamp;
-
+    private long makeId(long timestamp, long seq) {
         return ((timestamp - startEpoch) << timestampLeftShift)
-                | datacenterId << datacenterIdShift
-                | workerId << workerIdShift
-                | sequence;
+                | (datacenterId << datacenterIdShift)
+                | (workerId << workerIdShift)
+                | seq;
     }
 
     private long waitNextMillis(long lastTimestamp) {
-        long timestamp = System.currentTimeMillis();
-        while (timestamp <= lastTimestamp) {
-            timestamp = System.currentTimeMillis();
+        long ts = System.currentTimeMillis();
+        while (ts <= lastTimestamp) {
+            ts = System.currentTimeMillis();
         }
-        return timestamp;
+        return ts;
     }
 }

@@ -2,7 +2,6 @@ package com.volunteerhub.community.repository;
 
 import com.volunteerhub.community.entity.Like;
 import com.volunteerhub.community.entity.db_enum.TableType;
-import org.hibernate.tool.schema.TargetType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
