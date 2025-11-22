@@ -1,6 +1,6 @@
 package com.volunteerhub.community.repository.mv;
 
-import com.volunteerhub.community.entity.mv.EventDetail;
+import com.volunteerhub.community.model.mv.EventDetail;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

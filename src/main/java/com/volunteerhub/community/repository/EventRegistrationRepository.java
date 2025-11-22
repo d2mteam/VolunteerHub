@@ -1,7 +1,7 @@
 package com.volunteerhub.community.repository;
 
-import com.volunteerhub.community.entity.EventRegistration;
-import com.volunteerhub.community.entity.db_enum.RegistrationStatus;
+import com.volunteerhub.community.model.table.EventRegistration;
+import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

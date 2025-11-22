@@ -2,7 +2,7 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.EditUserProfileInput;
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
-import com.volunteerhub.community.entity.UserProfile;
+import com.volunteerhub.community.model.table.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserProfileService;
 import lombok.RequiredArgsConstructor;

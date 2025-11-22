@@ -1,6 +1,8 @@
 package com.volunteerhub.schedule;
 
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -9,10 +11,10 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-@EnableScheduling
 @AllArgsConstructor
 public class DemoRefresh {
 
+    private static final Logger log = LoggerFactory.getLogger(DemoRefresh.class);
     private final JdbcTemplate jdbcTemplate;
 
     public void refreshEventDetail() {
@@ -34,7 +36,7 @@ public class DemoRefresh {
 
     @Scheduled(cron = "0 * * * * *")
     public void updateViews() {
-        System.out.println("Running job at: " + LocalDateTime.now());
+        log.info("Running job at: {}", LocalDateTime.now());
         refreshEventDetail();
         refreshPostDetail();
         refreshCommentDetail();

@@ -1,10 +1,10 @@
 package com.volunteerhub.community.service.manager_service.impl;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
-import com.volunteerhub.community.entity.EventRegistration;
-import com.volunteerhub.community.entity.RoleInEvent;
-import com.volunteerhub.community.entity.db_enum.ParticipationStatus;
-import com.volunteerhub.community.entity.db_enum.RegistrationStatus;
+import com.volunteerhub.community.model.table.EventRegistration;
+import com.volunteerhub.community.model.table.RoleInEvent;
+import com.volunteerhub.community.model.db_enum.ParticipationStatus;
+import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import com.volunteerhub.community.repository.EventRegistrationRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.service.manager_service.IEventRegistrationManagerService;
