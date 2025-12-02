@@ -41,21 +41,6 @@ public class EventDetail {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Size(max = 100)
-    @Column(name = "creator_full_name", length = 100)
-    private String creatorFullName;
-
-    @Column(name = "creator_id")
-    private UUID creatorId;
-
-    @Size(max = 100)
-    @Column(name = "creator_username", length = 100)
-    private String creatorUsername;
-
-    @Size(max = 255)
-    @Column(name = "creator_avatar")
-    private String creatorAvatar;
-
     @Column(name = "member_count")
     private Long memberCount;
 

@@ -7,6 +7,7 @@ import com.volunteerhub.community.service.write_service.ICommentService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.util.UUID;
@@ -17,18 +18,21 @@ public class CommentMutation {
     private final ICommentService commentService;
 
     @MutationMapping
-    public ActionResponse<Void> createComment(@Argument CreateCommentInput input) {
-        return commentService.createComment(UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), input);
+    public ActionResponse<Void> createComment(@AuthenticationPrincipal UUID userId,
+                                              @Argument CreateCommentInput input) {
+        return commentService.createComment(userId, input);
     }
 
     @MutationMapping
-    public ActionResponse<Void> editComment(@Argument EditCommentInput input) {
-        return commentService.editComment(UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), input);
+    public ActionResponse<Void> editComment(@AuthenticationPrincipal UUID userId,
+                                            @Argument EditCommentInput input) {
+        return commentService.editComment(userId, input);
     }
 
     @MutationMapping
-    public ActionResponse<Void> deleteComment(@Argument Long commentId) {
-        return commentService.deleteComment(UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), commentId);
+    public ActionResponse<Void> deleteComment(@AuthenticationPrincipal UUID userId,
+                                              @Argument Long commentId) {
+        return commentService.deleteComment(userId, commentId);
     }
 
 }

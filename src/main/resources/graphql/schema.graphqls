@@ -4,7 +4,9 @@ type UserProfile {
     userId: ID!
     username: String
     fullName: String
-    avatarUrl: String
+
+    avatarId: String
+
     email: String
     status: String
     createdAt: String
@@ -14,7 +16,13 @@ type UserProfile {
 
 #    listPosts(eventId: ID, page: Int = 0, size: Int = 10): PostPage
 #    listComments(eventId: ID, page: Int = 0, size: Int = 10): PostPage
-    listEvents(page: Int = 0, size: Int = 10): EventPage
+#    listEvents(page: Int = 0, size: Int = 10): EventPage
+}
+
+type UserProfileMini {
+    userId: ID!
+    username: String
+    avatarId: String
 }
 
 type Event {
@@ -24,13 +32,12 @@ type Event {
     eventLocation: String
     createdAt: String
     updatedAt: String
-    creatorId: ID
-    creatorFullName: String
-    creatorUsername: String
-    creatorAvatar: String
+
     memberCount: Int
     postCount: Int
     likeCount: Int
+
+    creatorInfo: UserProfileMini
 
     listUsers(page: Int = 0, size: Int = 10): EventPage
     listPosts(page: Int = 0, size: Int = 10): PostPage
@@ -42,12 +49,12 @@ type Post {
     content: String
     createdAt: String
     updatedAt: String
-    creatorId: ID
-    creatorUsername: String
-    creatorFullName: String
-    creatorAvatar: String
+
     commentCount: Int
+
     likeCount: Int
+
+    creatorInfo: UserProfileMini
 
     listComment(page: Int = 0, size: Int = 10): CommentPage
 }
@@ -58,11 +65,10 @@ type Comment {
     content: String
     createdAt: String
     updatedAt: String
-    creatorId: ID
-    creatorFullName: String
-    creatorUsername: String
-    creatorAvatar: String
+
     likeCount: Int
+
+    creatorInfo: UserProfileMini
 }
 
 type PageInfo {
@@ -108,7 +114,7 @@ input CreateEventInput {
     eventName: String!
     eventDescription: String!
     eventLocation: String!
-    eventDate: String!
+    eventDate: String
 }
 
 input CreatePostInput {

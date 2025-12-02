@@ -1,9 +1,9 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.volunteerhub.community.dto.page.OffsetPage;
-import com.volunteerhub.community.dto.page.PageInfo;
-import com.volunteerhub.community.dto.page.PageUtils;
-import com.volunteerhub.community.model.mv.CommentDetail;
+import com.volunteerhub.community.model.mv.*;
+import com.volunteerhub.ultis.page.OffsetPage;
+import com.volunteerhub.ultis.page.PageInfo;
+import com.volunteerhub.ultis.page.PageUtils;
 import com.volunteerhub.community.model.mv.PostDetail;
 import com.volunteerhub.community.repository.mv.CommentDetailRepository;
 import com.volunteerhub.community.repository.mv.PostDetailRepository;
@@ -39,5 +39,20 @@ public class PostResolver {
                 .content(commentPage.getContent())
                 .pageInfo(pageInfo)
                 .build();
+    }
+
+    @SchemaMapping(typeName = "Post", field = "commentCount")
+    public Integer commentCount(UserProfileDetail userProfileDetail) {
+        return -1;
+    }
+
+    @SchemaMapping(typeName = "Post", field = "likeCount")
+    public Integer likeCount(PostDetail PostDetail) {
+        return -1;
+    }
+
+    @SchemaMapping(typeName = "Comment", field = "likeCount")
+    public Integer likeCount(EventDetail EventDetail) {
+        return -1;
     }
 }

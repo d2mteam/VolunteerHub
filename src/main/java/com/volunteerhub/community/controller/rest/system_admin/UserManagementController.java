@@ -1,7 +1,6 @@
 package com.volunteerhub.community.controller.rest.system_admin;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
-import com.volunteerhub.community.dto.rest.request.UpdateRoleRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +22,5 @@ public class UserManagementController {
     public ResponseEntity<ActionResponse<Void>> unbanUser(@PathVariable UUID userId) {
         ActionResponse<Void> resp = ActionResponse.success(userId.toString(), LocalDateTime.now(), LocalDateTime.now());
         return ResponseEntity.ok(resp);
-    }
-
-    @PostMapping("/{userId}/system-role")
-    public ResponseEntity<ActionResponse<Void>> updateSystemRole(@PathVariable UUID userId,
-                                                                 @RequestBody UpdateRoleRequest newSystemRole) {
-        return ResponseEntity.ok(ActionResponse.success("", LocalDateTime.now(), LocalDateTime.now()));
     }
 }

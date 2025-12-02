@@ -39,10 +39,6 @@ public class UserProfileDetail {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Size(max = 255)
-    @Column(name = "avatar_url")
-    private String avatarUrl;
-
     @Size(max = 100)
     @Column(name = "email", length = 100)
     private String email;

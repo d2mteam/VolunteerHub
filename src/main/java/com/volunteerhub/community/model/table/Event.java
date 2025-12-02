@@ -45,6 +45,10 @@ public class Event {
     @Column(name = "event_state", nullable = false)
     private EventState eventState =  EventState.PENDING;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "metadata")
+    private Map<String, Object> metadata = new HashMap<>();
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

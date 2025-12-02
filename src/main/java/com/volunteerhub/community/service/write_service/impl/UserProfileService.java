@@ -30,7 +30,27 @@ public class UserProfileService implements IUserProfileService {
         UserProfile userProfile = optional.get();
         userProfile.setEmail(input.getEmail());
         userProfile.setFullName(input.getFullName());
-        userProfile.setAvatarUrl(input.getAvatarUrl());
+        userProfileRepository.save(userProfile);
+
+        return ActionResponse.success(
+                userProfile.getUserId().toString(),
+                null,
+                LocalDateTime.now()
+        );
+    }
+
+    @Override
+    public ActionResponse<Void> createUserProfile(UUID userId, EditUserProfileInput input) {
+        if (userProfileRepository.existsById(userId)) {
+            return ActionResponse.failure("User profile already exists");
+        }
+
+        UserProfile userProfile = UserProfile.builder()
+                .userId(userId)
+                .email(input.getEmail())
+                .fullName(input.getFullName())
+                .build();
+
         userProfileRepository.save(userProfile);
 
         return ActionResponse.success(

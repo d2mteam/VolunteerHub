@@ -48,10 +48,6 @@ public class PostDetail {
     @Column(name = "creator_username", length = 100)
     private String creatorUsername;
 
-    @Size(max = 255)
-    @Column(name = "creator_avatar")
-    private String creatorAvatar;
-
     @Column(name = "comment_count")
     private Long commentCount;
 

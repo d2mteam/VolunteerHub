@@ -132,3 +132,72 @@ VALUES
 -- Tổng: 6 users | 2 events | 4 posts | 40 comments | 10 likes
 -- Mật khẩu: 12345 (BCrypt)
 -- =============================================
+
+
+-- bcrypt for password "123456789abc"
+-- $2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm
+
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        'admin@charity.com',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'ADMIN',
+        'ACTIVE');
+
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('b2c3d4e5-f6a7-8901-bcde-f2345678901a',
+        'manager@charity.com',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'EVENT_MANAGER',
+        'ACTIVE');
+
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('f6a7b8c9-d0e1-2345-f012-6789012345ef',
+        'tuan@volunteer.com',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'USER',
+        'ACTIVE');
+
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('d4e5f6a7-b8c9-0123-def0-4567890123cd',
+        'minh@volunteer.com',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'USER',
+        'ACTIVE');
+
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('c3d4e5f6-a7b8-9012-cdef-3456789012bc',
+        'van@volunteer.com',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'USER',
+        'ACTIVE');
+
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('e5f6a7b8-c9d0-1234-ef01-5678901234de',
+        'lan@volunteer.com',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'USER',
+        'ACTIVE');
+
+-- auto-generated email users
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('208eafed-390f-4f8a-abbe-db3d56a2f3c9',
+        '208eafed@auto.local',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'USER',
+        'ACTIVE');
+
+INSERT INTO user_auth (user_id, email, email_verified, password_hash, role, status)
+VALUES ('35040e69-cdd4-4c3e-a74d-544ba46ce572',
+        '35040e69@auto.local',
+        true,
+        '$2b$10$5LHgOeGZwoMPmxjSPdZnegBtWDypYyXAmd6O9GOVBLe7gOkg5WAdm',
+        'USER',
+        'ACTIVE');

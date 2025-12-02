@@ -1,8 +1,10 @@
 # 📘 VolunteerHub GraphQL API — Read & Write Layer
 
-**Base URL:**  
+**Base URL:**
+
 ```
 GRAPHQL http://localhost:8080/graphql
+Authorization: Bearer xxx
 ```
 
 ---
@@ -20,43 +22,16 @@ Tất cả thao tác được gửi qua **một endpoint duy nhất** bằng ph�
 
 ```graphql
 query {
-  getPost(postId: 1) {
-    postId
-    eventId
-    content
-    createdAt
-    updatedAt
-    creatorId
-    creatorUsername
-    creatorFullName
-    creatorAvatar
-    commentCount
-    likeCount
-
-    listComment(page: 0, size: 10) {
-      pageInfo {
-        page
-        size
-        totalElements
-        totalPages
-        hasNext
-        hasPrevious
-      }
-      content {
-        commentId
+    getPost(postId: 1) {
         postId
+        eventId
         content
         createdAt
         updatedAt
-        creatorId
-        creatorFullName
-        creatorUsername
-        creatorAvatar
         commentCount
         likeCount
-      }
     }
-  }
+}
 }
 ```
 
@@ -66,69 +41,39 @@ query {
 
 ```graphql
 query {
-  getEvent(eventId: 1) {
-    eventId
-    eventName
-    eventDescription
-    eventLocation
-    createdAt
-    updatedAt
-    creatorId
-    creatorFullName
-    creatorUsername
-    creatorAvatar
-    memberCount
-    postCount
-    likeCount
-
-    listPosts(page: 0, size: 10) {
-      pageInfo {
-        page
-        size
-        totalElements
-        totalPages
-        hasNext
-        hasPrevious
-      }
-      content {
-        postId
+    getEvent(eventId: 1) {
         eventId
-        content
+        eventName
+        eventDescription
+        eventLocation
         createdAt
         updatedAt
-        creatorId
-        creatorUsername
-        creatorFullName
-        creatorAvatar
-        commentCount
+        memberCount
+        postCount
         likeCount
 
-        listComment(page: 0, size: 10) {
-          pageInfo {
-            page
-            size
-            totalElements
-            totalPages
-            hasNext
-            hasPrevious
-          }
-          content {
-            commentId
-            postId
-            content
-            createdAt
-            updatedAt
-            creatorId
-            creatorFullName
-            creatorUsername
-            creatorAvatar
-            commentCount
-            likeCount
-          }
+        listPosts(page: 0, size: 10) {
+            pageInfo {
+                page
+                size
+                totalElements
+                totalPages
+                hasNext
+                hasPrevious
+            }
+            content {
+                postId
+                eventId
+                content
+                createdAt
+                updatedAt
+                commentCount
+                likeCount
+            }
         }
-      }
     }
-  }
+}
+}
 }
 ```
 
@@ -138,44 +83,39 @@ query {
 
 ```graphql
 query {
-  getUserProfile(userId: "d4e5f6a7-b8c9-0123-def0-4567890123cd") {
-    userId
-    username
-    fullName
-    avatarUrl
-    email
-    status
-    createdAt
-    postCount
-    commentCount
-    eventCount
-
-    listEvents(page: 0, size: 10) {
-      pageInfo {
-        page
-        size
-        totalElements
-        totalPages
-        hasNext
-        hasPrevious
-      }
-      content {
-        eventId
-        eventName
-        eventDescription
-        eventLocation
+    getUserProfile(userId: "d4e5f6a7-b8c9-0123-def0-4567890123cd") {
+        userId
+        username
+        fullName
+        email
+        status
         createdAt
-        updatedAt
-        creatorId
-        creatorFullName
-        creatorUsername
-        creatorAvatar
-        memberCount
         postCount
-        likeCount
-      }
+        commentCount
+        eventCount
+
+        listEvents(page: 0, size: 10) {
+            pageInfo {
+                page
+                size
+                totalElements
+                totalPages
+                hasNext
+                hasPrevious
+            }
+            content {
+                eventId
+                eventName
+                eventDescription
+                eventLocation
+                createdAt
+                updatedAt
+                memberCount
+                postCount
+                likeCount
+            }
+        }
     }
-  }
 }
 ```
 
@@ -187,10 +127,11 @@ Mỗi mutation trả về `MutationResult`:
 
 ```graphql
 {
-  ok
-  id
-  message
-  updatedAt
+    ok
+    id
+    message
+    createAt
+    updatedAt
 }
 ```
 
@@ -199,53 +140,55 @@ Mỗi mutation trả về `MutationResult`:
 ### 🧭 Event
 
 #### ➕ Tạo Event
+
 ```graphql
 mutation {
-  createEvent(
-    input: {
-      eventName: "Dọn rác ven hồ"
-      eventDescription: "Chiến dịch dọn rác khu vực hồ Tây"
-      eventLocation: "Hồ Tây, Hà Nội"
-      eventDate: "2025-12-01"
+    createEvent(
+        input: {
+            eventName: "Dọn rác ven hồ"
+            eventDescription: "Chiến dịch dọn rác khu vực hồ Tây"
+            eventLocation: "Hồ Tây, Hà Nội"
+        }
+    ) {
+        ok
+        id
+        message
+        updatedAt
     }
-  ) {
-    ok
-    id
-    message
-    updatedAt
-  }
 }
 ```
 
 #### ✏️ Sửa Event
+
 ```graphql
 mutation {
-  editEvent(
-    input: {
-      eventId: "773316679898759168"
-      eventName: "Dọn rác ven hồ (tuần 2)"
-      eventDescription: "Bổ sung thêm hoạt động trồng cây"
-      eventLocation: "Hồ Tây khu Nhật Tân"
-      eventDate: "2025-12-08"
+    editEvent(
+        input: {
+            eventId: "773316679898759168"
+            eventName: "Dọn rác ven hồ (tuần 2)"
+            eventDescription: "Bổ sung thêm hoạt động trồng cây"
+            eventLocation: "Hồ Tây khu Nhật Tân"
+            eventDate: "2025-12-08"
+        }
+    ) {
+        ok
+        id
+        message
+        updatedAt
     }
-  ) {
-    ok
-    id
-    message
-    updatedAt
-  }
 }
 ```
 
 #### ❌ Xoá Event
+
 ```graphql
 mutation {
-  deleteEvent(eventId: "773316679898759168") {
-    ok
-    id
-    message
-    updatedAt
-  }
+    deleteEvent(eventId: "773316679898759168") {
+        ok
+        id
+        message
+        updatedAt
+    }
 }
 ```
 
@@ -254,48 +197,51 @@ mutation {
 ### 🧭 Post
 
 #### ➕ Tạo Post
+
 ```graphql
 mutation {
-  createPost(
-    input: {
-      eventId: "1"
-      content: "Ai đi được sáng chủ nhật thì confirm giúp nhé!"
+    createPost(
+        input: {
+            eventId: "1"
+            content: "Ai đi được sáng chủ nhật thì confirm giúp nhé!"
+        }
+    ) {
+        ok
+        id
+        message
+        updatedAt
     }
-  ) {
-    ok
-    id
-    message
-    updatedAt
-  }
 }
 ```
 
 #### ✏️ Sửa Post
+
 ```graphql
 mutation {
-  editPost(
-    input: {
-      postId: "773317579212062720"
-      content: "Update: tập trung 7h tại bãi đỗ xe số 2."
+    editPost(
+        input: {
+            postId: "773317579212062720"
+            content: "Update: tập trung 7h tại bãi đỗ xe số 2."
+        }
+    ) {
+        ok
+        id
+        message
+        updatedAt
     }
-  ) {
-    ok
-    id
-    message
-    updatedAt
-  }
 }
 ```
 
 #### ❌ Xoá Post
+
 ```graphql
 mutation {
-  deletePost(postId: "773317579212062720") {
-    ok
-    id
-    message
-    updatedAt
-  }
+    deletePost(postId: "773317579212062720") {
+        ok
+        id
+        message
+        updatedAt
+    }
 }
 ```
 
@@ -304,48 +250,51 @@ mutation {
 ### 🧭 Comment
 
 #### ➕ Tạo Comment
+
 ```graphql
 mutation {
-  createComment(
-    input: {
-      postId: "773317579212062720"
-      content: "Tôi sẽ mang bao tay và nước uống."
+    createComment(
+        input: {
+            postId: "773317579212062720"
+            content: "Tôi sẽ mang bao tay và nước uống."
+        }
+    ) {
+        ok
+        id
+        message
+        updatedAt
     }
-  ) {
-    ok
-    id
-    message
-    updatedAt
-  }
 }
 ```
 
 #### ✏️ Sửa Comment
+
 ```graphql
 mutation {
-  editComment(
-    input: {
-      commentId: "773318226313478144"
-      content: "Mang thêm vài túi rác to nữa nhé."
+    editComment(
+        input: {
+            commentId: "773318226313478144"
+            content: "Mang thêm vài túi rác to nữa nhé."
+        }
+    ) {
+        ok
+        id
+        message
+        updatedAt
     }
-  ) {
-    ok
-    id
-    message
-    updatedAt
-  }
 }
 ```
 
 #### ❌ Xoá Comment
+
 ```graphql
 mutation {
-  deleteComment(commentId: "773318226313478144") {
-    ok
-    id
-    message
-    updatedAt
-  }
+    deleteComment(commentId: "773318226313478144") {
+        ok
+        id
+        message
+        updatedAt
+    }
 }
 ```
 
@@ -354,31 +303,37 @@ mutation {
 ### ❤️ Like / Unlike
 
 #### Like
+
 ```graphql
 mutation {
-  like(
-    input: {
-      targetType: "POST"
-      targetId: "1"
+    like(
+        input: {
+            targetType: "POST"
+            targetId: "1"
+        }
+    ) {
+        ok
+        id
+        message
+        updatedAt
     }
-  ) {
-    ok
-    id
-    message
-    updatedAt
-  }
 }
 ```
 
 #### Unlike
+
 ```graphql
 mutation {
-  unlike(targetId: "773322338421702656") {
-    ok
-    id
-    message
-    updatedAt
-  }
+    unlike(
+        input: {
+            targetType: "POST"
+            targetId: "1"
+        }) {
+        ok
+        id
+        message
+        updatedAt
+    }
 }
 ```
 
@@ -387,6 +342,7 @@ mutation {
 ## 🔹 Response Format
 
 Thành công:
+
 ```json
 {
   "data": {
@@ -401,6 +357,7 @@ Thành công:
 ```
 
 Lỗi hoặc không tìm thấy:
+
 ```json
 {
   "data": {
@@ -427,7 +384,10 @@ Lỗi hoặc không tìm thấy:
     "hasPrevious": false
   },
   "content": [
-    { "postId": "1", "content": "..." }
+    {
+      "postId": "1",
+      "content": "..."
+    }
   ]
 }
 ```
@@ -436,10 +396,8 @@ Lỗi hoặc không tìm thấy:
 
 ## 🔹 Notes
 
-- `page` bắt đầu từ **0** (zero-based pagination).  
-- `ok = false` → nên hiển thị `message` cho người dùng.  
-- `id` luôn trả về dạng **string** (Snowflake hoặc UUID).  
-- Sau khi mutation thành công, frontend nên `refetch` query tương ứng (`getPost`, `getEvent`, v.v.).  
+- `page` bắt đầu từ **0** (zero-based pagination).
+- `ok = false` → nên hiển thị `message` cho người dùng.
+- `id` luôn trả về dạng **string** (Snowflake hoặc UUID).
+- Sau khi mutation thành công, frontend nên `refetch` query tương ứng (`getPost`, `getEvent`, v.v.).
 - Các truy vấn con như `listPosts`, `listComments` hỗ trợ phân trang và nested fetch.
-
-- @MappedSuperclass

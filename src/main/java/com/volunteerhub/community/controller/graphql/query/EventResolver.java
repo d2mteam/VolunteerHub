@@ -1,13 +1,16 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.volunteerhub.community.dto.page.OffsetPage;
-import com.volunteerhub.community.dto.page.PageInfo;
-import com.volunteerhub.community.dto.page.PageUtils;
 import com.volunteerhub.community.model.mv.EventDetail;
+import com.volunteerhub.ultis.page.OffsetPage;
+import com.volunteerhub.ultis.page.PageInfo;
+import com.volunteerhub.ultis.page.PageUtils;
 import com.volunteerhub.community.model.mv.PostDetail;
 import com.volunteerhub.community.repository.mv.EventDetailRepository;
 import com.volunteerhub.community.repository.mv.PostDetailRepository;
+import graphql.schema.DataFetchingEnvironment;
 import lombok.AllArgsConstructor;
+import org.dataloader.DataLoader;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +20,7 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 @AllArgsConstructor
@@ -61,5 +65,20 @@ public class EventResolver {
                 .content(eventPage.getContent())
                 .pageInfo(pageInfo)
                 .build();
+    }
+
+    @SchemaMapping(typeName = "Event", field = "memberCount")
+    public Integer memberCount(EventDetail EventDetail) {
+        return -1;
+    }
+
+    @SchemaMapping(typeName = "Event", field = "postCount")
+    public Integer postCount(EventDetail EventDetail) {
+        return -1;
+    }
+
+    @SchemaMapping(typeName = "Event", field = "likeCount")
+    public Integer likeCount(EventDetail EventDetail) {
+        return -1;
     }
 }

@@ -1,12 +1,11 @@
 package com.volunteerhub.community.controller.rest.system_admin;
 
-import com.volunteerhub.community.dto.rest.request.RejectEventRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/system-admin/event")
+@RequestMapping("/api/admin/event")
 public class EventModerationController {
     @GetMapping("/pending")
     public Object getPendingEvents() {
@@ -28,8 +27,7 @@ public class EventModerationController {
 
     @PostMapping("/{eventId}/reject")
     public Object rejectEvent(
-            @PathVariable Long eventId,
-            @RequestBody RejectEventRequest request
+            @PathVariable Long eventId
     ) {
         return null;
     }

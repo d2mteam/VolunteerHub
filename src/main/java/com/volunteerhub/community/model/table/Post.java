@@ -2,9 +2,13 @@ package com.volunteerhub.community.model.table;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "posts")
@@ -35,8 +39,9 @@ public class Post {
     @JoinColumn(name = "event_id", updatable = false)
     private Event event;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "metadata")
+    private Map<String, Object> metadata = new HashMap<>();
 
     @PrePersist
     public void prePersist() {

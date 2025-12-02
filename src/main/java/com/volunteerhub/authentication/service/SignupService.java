@@ -1,6 +1,6 @@
 package com.volunteerhub.authentication.service;
 
-import com.volunteerhub.authentication.dto.SignUpRequest;
+import com.volunteerhub.authentication.dto.request.SignUpRequest;
 import com.volunteerhub.authentication.model.UserAuth;
 import com.volunteerhub.authentication.repository.UserAuthRepository;
 import jakarta.transaction.Transactional;
@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SignupService {
     private final UserAuthRepository userAuthRepository;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional

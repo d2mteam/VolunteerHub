@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface IUserProfileService {
     ActionResponse<Void> editUserProfile(UUID userId, EditUserProfileInput input);
+
+    ActionResponse<Void> createUserProfile(UUID userId, EditUserProfileInput input);
 }

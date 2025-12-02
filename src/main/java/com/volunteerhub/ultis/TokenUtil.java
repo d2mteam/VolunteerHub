@@ -1,10 +1,13 @@
 package com.volunteerhub.ultis;
 
+import org.springframework.stereotype.Component;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+@Component
 public class TokenUtil {
     private static final SecureRandom RNG = new SecureRandom();
 

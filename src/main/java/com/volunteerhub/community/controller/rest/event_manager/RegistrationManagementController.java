@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.rest.event_manager;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
-import com.volunteerhub.community.dto.page.OffsetPage;
+import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.community.model.table.EventRegistration;
 import com.volunteerhub.community.service.manager_service.IEventRegistrationManagerService;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/event-manager/events/{eventId}/registrations")
 public class RegistrationManagementController {
-    
+
     private final IEventRegistrationManagerService service;
 
     @GetMapping
@@ -24,7 +24,7 @@ public class RegistrationManagementController {
     public ResponseEntity<OffsetPage<EventRegistration>> listPendingRegistrations(@PathVariable Long eventId) {
         return null;
     }
-    
+
     @PostMapping("/{registrationId}/approve")
     public ResponseEntity<ActionResponse<Void>> approveRegistration(
             @PathVariable Long eventId,
@@ -37,8 +37,8 @@ public class RegistrationManagementController {
     @PostMapping("/{registrationId}/reject")
     public Object rejectRegistration(
             @PathVariable Long eventId,
-            @PathVariable Long registrationId
-    ) {
+            @PathVariable Long registrationId)
+    {
         return ResponseEntity.ok(service.rejectRegistration(registrationId));
     }
 }

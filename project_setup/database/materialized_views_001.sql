@@ -25,21 +25,21 @@ SELECT e.event_id,
        e.event_location,
        e.created_at,
        e.updated_at,
-       e.created_by                      AS creator_id, -- GraphQL: createdBy
+--        e.created_by                      AS creator_id, -- GraphQL: createdBy
 --        e.event_metadata ,
 
        -- Denormalized summary: username, avatar của người tạo
-       (SELECT u.username
-        FROM user_profiles u
-        WHERE u.user_id = e.created_by)  AS creator_username,
+--        (SELECT u.username
+--         FROM user_profiles u
+--         WHERE u.user_id = e.created_by)  AS creator_username,
 
-       (SELECT u.avatar_url
-        FROM user_profiles u
-        WHERE u.user_id = e.created_by)  AS creator_avatar,
+--        (SELECT u.avatar_url
+--         FROM user_profiles u
+--         WHERE u.user_id = e.created_by)  AS creator_avatar,
 
-       (SELECT u.full_name
-        FROM user_profiles u
-        WHERE u.user_id = e.created_by)  AS creator_full_name,
+--        (SELECT u.full_name
+--         FROM user_profiles u
+--         WHERE u.user_id = e.created_by)  AS creator_full_name,
 
        -- Tổng số thành viên tham gia event
        (SELECT COUNT(DISTINCT rie.user_profile_id)
@@ -58,7 +58,7 @@ SELECT e.event_id,
           AND l.target_id = e.event_id)  AS like_count
 
 FROM events e
-WHERE e.event_state IN ('Accepted', 'Pending');
+WHERE e.event_state IN ('ACCEPTED', 'PENDING');
 
 
 -- ============================================================
@@ -73,16 +73,16 @@ SELECT p.post_id,
        p.updated_at,
        p.created_by                     AS creator_id,
 
-       -- Denormalized thông tin người tạo
-       (SELECT u.username
-        FROM user_profiles u
-        WHERE u.user_id = p.created_by) AS creator_username,
-       (SELECT u.avatar_url
-        FROM user_profiles u
-        WHERE u.user_id = p.created_by) AS creator_avatar,
-       (SELECT u.full_name
-        FROM user_profiles u
-        WHERE u.user_id = p.created_by) AS creator_full_name,
+--        -- Denormalized thông tin người tạo
+--        (SELECT u.username
+--         FROM user_profiles u
+--         WHERE u.user_id = p.created_by) AS creator_username,
+--        (SELECT u.avatar_url
+--         FROM user_profiles u
+--         WHERE u.user_id = p.created_by) AS creator_avatar,
+--        (SELECT u.full_name
+--         FROM user_profiles u
+--         WHERE u.user_id = p.created_by) AS creator_full_name,
        -- Tổng số comment trong post
        (SELECT COUNT(*)
         FROM comments c
@@ -110,15 +110,15 @@ SELECT c.comment_id,
        c.created_by                       AS creator_id,
 
        -- Denormalized thông tin người tạo
-       (SELECT u.username
-        FROM user_profiles u
-        WHERE u.user_id = c.created_by)   AS creator_username,
-       (SELECT u.avatar_url
-        FROM user_profiles u
-        WHERE u.user_id = c.created_by)   AS creator_avatar,
-       (SELECT u.full_name
-        FROM user_profiles u
-        WHERE u.user_id = c.created_by)   AS creator_full_name,
+--        (SELECT u.username
+--         FROM user_profiles u
+--         WHERE u.user_id = c.created_by)   AS creator_username,
+-- --        (SELECT u.avatar_url
+--         FROM user_profiles u
+--         WHERE u.user_id = c.created_by)   AS creator_avatar,
+--        (SELECT u.full_name
+--         FROM user_profiles u
+--         WHERE u.user_id = c.created_by)   AS creator_full_name,
        -- Tổng số like của comment
        (SELECT COUNT(*)
         FROM likes l
@@ -138,7 +138,7 @@ SELECT u.user_id,
        u.full_name,
        u.created_at,
        u.updated_at,
-       u.avatar_url,
+--        u.avatar_url,
        u.email,
        u.status,
 

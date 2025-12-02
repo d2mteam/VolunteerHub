@@ -7,6 +7,7 @@ import com.volunteerhub.community.service.write_service.IEventService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.util.UUID;
@@ -17,17 +18,20 @@ public class EventMutation {
     private IEventService eventService;
 
     @MutationMapping
-    public ActionResponse<Void> createEvent(@Argument CreateEventInput input) {
-        return eventService.createEvent(UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), input); // placeholder for test
+    public ActionResponse<Void> createEvent(@AuthenticationPrincipal UUID userId,
+                                            @Argument CreateEventInput input) {
+        return eventService.createEvent(userId, input);
     }
 
     @MutationMapping
-    public ActionResponse<Void> editEvent(@Argument EditEventInput input) {
-        return eventService.editEvent(UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), input);
+    public ActionResponse<Void> editEvent(@AuthenticationPrincipal UUID userId,
+                                          @Argument EditEventInput input) {
+        return eventService.editEvent(userId, input);
     }
 
     @MutationMapping
-    public ActionResponse<Void> deleteEvent(@Argument Long eventId) {
-        return eventService.deleteEvent(UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"), eventId);
+    public ActionResponse<Void> deleteEvent(@AuthenticationPrincipal UUID userId,
+                                            @Argument Long eventId) {
+        return eventService.deleteEvent(userId, eventId);
     }
 }

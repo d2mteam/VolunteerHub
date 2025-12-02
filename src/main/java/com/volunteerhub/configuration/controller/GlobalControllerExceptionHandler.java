@@ -1,45 +1,65 @@
 package com.volunteerhub.configuration.controller;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalControllerExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String message = error.getDefaultMessage();
-            errors.put(fieldName, message);
-        });
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
 
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        Map<String, String> fieldErrors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                fieldErrors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        return buildValidationError(fieldErrors);
     }
 
+    // --- 2. @Validated trên method params / @RequestParam lỗi ---
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleConstraintViolationException(ConstraintViolationException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getConstraintViolations().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String message = error.getMessage();
-            errors.put(fieldName, message);
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+
+        Map<String, String> fieldErrors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String field = violation.getPropertyPath().toString();
+            fieldErrors.put(field, violation.getMessage());
         });
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+
+        return buildValidationError(fieldErrors);
+    }
+
+    // --- formatter chung ---
+    private ResponseEntity<Map<String, Object>> buildValidationError(Map<String, String> fieldErrors) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", "VALIDATION_ERROR");
+        body.put("message", "Validation failed");
+        body.put("errors", fieldErrors);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleOtherExceptions(Exception ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleOtherExceptions(Exception ex) {
+        String requestId = UUID.randomUUID().toString();
+
+        log.error("Unhandled exception - requestId={}", requestId, ex);
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", "Internal server error");
+        error.put("code", "INTERNAL_ERROR");
+        error.put("requestId", requestId);
+
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

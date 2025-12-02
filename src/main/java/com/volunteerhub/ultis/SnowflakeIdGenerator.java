@@ -5,7 +5,6 @@ import lombok.Builder;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SnowflakeIdGenerator {
-
     private final long startEpoch;
     private final long workerId;
     private final long datacenterId;

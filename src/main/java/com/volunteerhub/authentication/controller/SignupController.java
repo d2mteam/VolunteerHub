@@ -1,23 +1,26 @@
 package com.volunteerhub.authentication.controller;
 
-import com.volunteerhub.authentication.dto.SignUpRequest;
-import com.volunteerhub.authentication.service.EmailService;
+import com.volunteerhub.authentication.dto.request.SignUpRequest;
 import com.volunteerhub.authentication.service.SignupService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 @AllArgsConstructor
 public class SignupController {
     private final SignupService signupService;
-    private final EmailService emailService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignUpRequest request) {
+    public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest request) {
         signupService.signup(request);
-        return ResponseEntity.ok("Signup successful. Please check your email to verify.");
+        return ResponseEntity.ok(Map.of("message", "Signup successful. "
+               // + "Please check your email to verify."
+        ));
     }
 
     @GetMapping("/verify")

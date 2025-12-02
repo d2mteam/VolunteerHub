@@ -35,6 +35,11 @@ public class UserAuth {
     private UserAuthStatus status = UserAuthStatus.ACTIVE;
 
     @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 30, nullable = false)
+    private Role role = Role.USER;
+
+    @Builder.Default
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
 }

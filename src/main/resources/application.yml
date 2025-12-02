@@ -27,7 +27,7 @@ spring:
 
 security:
   app:
-    jwtSecret: ==================Spring==================
+    jwtSecret: ${JWT_SECRET}
     jwtAccessExpirationMs: '300000'
     jwtRefreshExpirationMs: '86400000'
 
@@ -40,5 +40,13 @@ logging:
         SQL: DEBUG
         orm:
           connections: DEBUG
-    com:
-      volunteerhub: DEBUG
+    com.volunteerhub: DEBUG
+
+redis:
+  syn_queue_key: 'queue:like_sync'
+
+app:
+  public-url: "https://myapp.com"
+  api-url: "https://api.myapp.com"
+  verify-path: "/verify-email"
+  reset-path: "/reset-password"

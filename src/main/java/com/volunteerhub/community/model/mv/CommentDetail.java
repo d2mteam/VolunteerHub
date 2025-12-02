@@ -48,10 +48,6 @@ public class CommentDetail {
     @Column(name = "creator_full_name", length = 100)
     private String creatorFullName;
 
-    @Size(max = 255)
-    @Column(name = "creator_avatar")
-    private String creatorAvatar;
-
     @Column(name = "like_count")
     private Long likeCount;
 
