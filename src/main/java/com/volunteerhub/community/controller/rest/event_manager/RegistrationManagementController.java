@@ -2,7 +2,7 @@ package com.volunteerhub.community.controller.rest.event_manager;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
 import com.volunteerhub.ultis.page.OffsetPage;
-import com.volunteerhub.community.model.table.EventRegistration;
+import com.volunteerhub.community.model.EventRegistration;
 import com.volunteerhub.community.service.manager_service.IEventRegistrationManagerService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

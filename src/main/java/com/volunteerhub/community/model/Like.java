@@ -1,4 +1,4 @@
-package com.volunteerhub.community.model.table;
+package com.volunteerhub.community.model;
 
 import com.volunteerhub.community.model.db_enum.TableType;
 import jakarta.persistence.*;

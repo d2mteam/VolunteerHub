@@ -1,6 +1,5 @@
-package com.volunteerhub.community.model.table;
+package com.volunteerhub.community.model;
 
-import com.volunteerhub.community.model.db_enum.EventState;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -9,27 +8,28 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Entity
-@Table(name = "events")
+@Table(name = "posts")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Event {
+public class Post {
     @Id
-    @Column(name = "event_id")
+    @Column(name = "post_id")
+    private Long postId;
+
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
+
+    @Column(name = "event_id", insertable = false, updatable = false)
     private Long eventId;
 
-    @Column(name = "event_name", nullable = false, length = 200)
-    private String eventName;
-
-    @Column(name = "event_description", columnDefinition = "TEXT")
-    private String eventDescription;
-
-    @Column(name = "event_location", columnDefinition = "TEXT")
-    private String eventLocation;
+    @Column(name = "created_by", insertable = false, updatable = false)
+    private UUID creatorId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -41,9 +41,9 @@ public class Event {
     @JoinColumn(name = "created_by", updatable = false)
     private UserProfile createdBy;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "event_state", nullable = false)
-    private EventState eventState =  EventState.PENDING;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", updatable = false)
+    private Event event;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata")
@@ -60,3 +60,4 @@ public class Event {
         this.updatedAt = LocalDateTime.now();
     }
 }
+

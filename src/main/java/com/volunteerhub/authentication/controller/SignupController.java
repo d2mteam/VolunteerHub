@@ -18,9 +18,7 @@ public class SignupController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest request) {
         signupService.signup(request);
-        return ResponseEntity.ok(Map.of("message", "Signup successful. "
-               // + "Please check your email to verify."
-        ));
+        return ResponseEntity.ok(Map.of("message", "Signup successful."));
     }
 
     @GetMapping("/verify")

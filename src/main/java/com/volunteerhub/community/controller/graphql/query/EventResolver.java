@@ -1,16 +1,18 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.volunteerhub.community.model.mv.EventDetail;
+
+import com.volunteerhub.community.model.Event;
+import com.volunteerhub.community.model.Post;
+import com.volunteerhub.community.repository.EventRepository;
+import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
-import com.volunteerhub.community.model.mv.PostDetail;
-import com.volunteerhub.community.repository.mv.EventDetailRepository;
-import com.volunteerhub.community.repository.mv.PostDetailRepository;
+
 import graphql.schema.DataFetchingEnvironment;
 import lombok.AllArgsConstructor;
-import org.dataloader.DataLoader;
 
+import org.dataloader.DataLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,25 +27,25 @@ import java.util.concurrent.CompletableFuture;
 @Controller
 @AllArgsConstructor
 public class EventResolver {
-    private final EventDetailRepository eventDetailRepository;
-    private final PostDetailRepository postDetailRepository;
+    private final EventRepository eventRepository;
+    private final PostRepository postRepository;
 
     @QueryMapping
-    public EventDetail getEvent(@Argument Long eventId) {
-        return eventDetailRepository.findById(eventId).orElse(null);
+    public Event getEvent(@Argument Long eventId) {
+        return eventRepository.findById(eventId).orElse(null);
     }
 
     @SchemaMapping(typeName = "Event", field = "listPosts")
-    public OffsetPage<PostDetail> listPosts(EventDetail eventDetail,
-                                            @Argument Integer page,
-                                            @Argument Integer size) {
+    public OffsetPage<Post> listPosts(Event event,
+                                      @Argument Integer page,
+                                      @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<PostDetail> postPage = postDetailRepository.findByEventId(eventDetail.getEventId(), pageable);
+        Page<Post> postPage = postRepository.findByEvent_EventId(event.getEventId(), pageable);
         PageInfo pageInfo = PageUtils.from(postPage);
-        return OffsetPage.<PostDetail>builder()
+        return OffsetPage.<Post>builder()
                 .content(postPage.getContent())
                 .pageInfo(pageInfo)
                 .build();
@@ -51,34 +53,35 @@ public class EventResolver {
 
 
     @QueryMapping
-    public OffsetPage<EventDetail> findEvents(@Argument Integer page,
+    public OffsetPage<Event> findEvents(@Argument Integer page,
                                                 @Argument Integer size,
                                                 @Argument Map<String, Object> filter) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<EventDetail> eventPage = eventDetailRepository.findAll(pageable);
+        Page<Event> eventPage = eventRepository.findAll(pageable);
         PageInfo pageInfo = PageUtils.from(eventPage);
 
-        return OffsetPage.<EventDetail>builder()
+        return OffsetPage.<Event>builder()
                 .content(eventPage.getContent())
                 .pageInfo(pageInfo)
                 .build();
     }
 
     @SchemaMapping(typeName = "Event", field = "memberCount")
-    public Integer memberCount(EventDetail EventDetail) {
+    public Integer memberCount(Event event, DataFetchingEnvironment env) {
         return -1;
     }
 
     @SchemaMapping(typeName = "Event", field = "postCount")
-    public Integer postCount(EventDetail EventDetail) {
+    public Integer postCount(Event event, DataFetchingEnvironment env) {
         return -1;
     }
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
-    public Integer likeCount(EventDetail EventDetail) {
-        return -1;
+    public CompletableFuture<Integer> likeCount(Event event, DataFetchingEnvironment env) {
+        DataLoader<Long, Integer> dataloader = env.getDataLoader("likeCountLoader");
+        return dataloader.load(event.getEventId());
     }
 }

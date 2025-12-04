@@ -17,6 +17,6 @@ public class GraphQLProtectionConfig {
 
     @Bean
     public MaxQueryDepthInstrumentation depthInstrumentation() {
-        return new MaxQueryDepthInstrumentation(3);
+        return new MaxQueryDepthInstrumentation(6);
     }
 }

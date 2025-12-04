@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto;
+package com.volunteerhub.community.dto.redis;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

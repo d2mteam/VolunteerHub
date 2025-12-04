@@ -19,7 +19,7 @@ public class BatchLoaderConfig {
                     // postIds: Set<Long>
                     Map<Long, Integer> map = new HashMap<>();
                     for (Long id : postIds) {
-                        map.put(id, -1111);  // default –1 cho mỗi postId
+                        map.put(id, -1);  // default –1 cho mỗi postId
                     }
                     return Mono.just(map);
                 });
@@ -31,7 +31,7 @@ public class BatchLoaderConfig {
                     // postIds: Set<Long>
                     Map<Long, Integer> map = new HashMap<>();
                     for (Long id : postIds) {
-                        map.put(id, -1);  // default –1 cho mỗi postId
+                        map.put(id, -11312323);  // default –1 cho mỗi postId
                     }
                     return Mono.just(map);
                 });

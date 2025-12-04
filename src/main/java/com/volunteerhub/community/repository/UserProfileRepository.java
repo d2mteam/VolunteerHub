@@ -1,6 +1,6 @@
 package com.volunteerhub.community.repository;
 
-import com.volunteerhub.community.model.table.UserProfile;
+import com.volunteerhub.community.model.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

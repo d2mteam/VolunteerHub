@@ -1,8 +1,8 @@
 package com.volunteerhub.community.service.manager_service.impl;
 
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
-import com.volunteerhub.community.model.table.EventRegistration;
-import com.volunteerhub.community.model.table.RoleInEvent;
+import com.volunteerhub.community.model.EventRegistration;
+import com.volunteerhub.community.model.RoleInEvent;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import com.volunteerhub.community.repository.EventRegistrationRepository;

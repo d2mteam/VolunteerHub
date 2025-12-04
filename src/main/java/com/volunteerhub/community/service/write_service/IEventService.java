@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IEventService {
-    ActionResponse<Void> moderate(UUID userId, List<Long> eventIds);
     ActionResponse<Void> createEvent(UUID userId, CreateEventInput input);
     ActionResponse<Void> editEvent(UUID userId, EditEventInput input);
     ActionResponse<Void> deleteEvent(UUID userId, Long eventId);

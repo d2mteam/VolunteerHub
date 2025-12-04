@@ -3,9 +3,9 @@ package com.volunteerhub.community.service.write_service.impl;
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
 import com.volunteerhub.community.dto.graphql.output.ActionResponse;
-import com.volunteerhub.community.model.table.Event;
-import com.volunteerhub.community.model.table.RoleInEvent;
-import com.volunteerhub.community.model.table.UserProfile;
+import com.volunteerhub.community.model.Event;
+import com.volunteerhub.community.model.RoleInEvent;
+import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.model.db_enum.EventRole;
 import com.volunteerhub.community.model.db_enum.EventState;
 import com.volunteerhub.community.repository.EventRepository;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,11 +30,6 @@ public class EventService implements IEventService {
     private final RoleInEventRepository roleInEventRepository;
     private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator idGenerator;
-
-    @Override
-    public ActionResponse<Void>  moderate(UUID userId, List<Long> eventIds) {
-        return ActionResponse.failure("Moderation logic not implemented yet");
-    }
 
     @Override
     public ActionResponse<Void>  createEvent(UUID userId, CreateEventInput input) {
@@ -85,7 +79,7 @@ public class EventService implements IEventService {
 
         return ActionResponse.success(
                 event.getEventId().toString(),
-                event.getCreatedAt(),
+                null,
                 LocalDateTime.now()
         );
     }
@@ -102,7 +96,7 @@ public class EventService implements IEventService {
         LocalDateTime now = LocalDateTime.now();
         return ActionResponse.success(
                 eventId.toString(),
-                now,
+                null,
                 now
         );
     }

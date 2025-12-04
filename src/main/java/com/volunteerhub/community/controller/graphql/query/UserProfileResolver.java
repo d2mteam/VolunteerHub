@@ -1,13 +1,12 @@
 package com.volunteerhub.community.controller.graphql.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.volunteerhub.community.model.UserProfile;
+import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
-import com.volunteerhub.community.model.mv.EventDetail;
-import com.volunteerhub.community.model.mv.UserProfileDetail;
-import com.volunteerhub.community.repository.mv.EventDetailRepository;
-import com.volunteerhub.community.repository.mv.UserProfileDetailRepository;
+
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,41 +21,44 @@ import java.util.UUID;
 @Controller
 @AllArgsConstructor
 public class UserProfileResolver {
-    private final UserProfileDetailRepository userProfileDetailRepository;
-    private final EventDetailRepository eventDetailRepository;
+    private final UserProfileRepository UserProfileRepository;
 
     @QueryMapping
-    public OffsetPage<UserProfileDetail> findUserProfiles(@Argument Integer page, @Argument Integer size,
-                                                          @Argument JsonNode filter) {
+    public OffsetPage<UserProfile> findUserProfiles(@Argument Integer page,
+                                                    @Argument Integer size,
+                                                    @Argument JsonNode filter)
+    {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
+
         Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<UserProfileDetail> userProfilePage = userProfileDetailRepository.findAll(pageable);
+        Page<UserProfile> userProfilePage = UserProfileRepository.findAll(pageable);
         PageInfo pageInfo = PageUtils.from(userProfilePage);
-        return OffsetPage.<UserProfileDetail>builder()
+
+        return OffsetPage.<UserProfile>builder()
                 .content(userProfilePage.getContent())
                 .pageInfo(pageInfo)
                 .build();
     }
 
     @QueryMapping
-    public UserProfileDetail getUserProfile(@Argument UUID userId) {
-        return userProfileDetailRepository.findById(userId).orElse(null);
+    public UserProfile getUserProfile(@Argument UUID userId) {
+        return UserProfileRepository.findById(userId).orElse(null);
     }
 
 
     @SchemaMapping(typeName = "UserProfile", field = "commentCount")
-    public Integer commentCount(UserProfileDetail userProfileDetail) {
+    public Integer commentCount(UserProfile UserProfile) {
         return -1;
     }
 
     @SchemaMapping(typeName = "UserProfile", field = "eventCount")
-    public Integer eventCount(UserProfileDetail userProfileDetail) {
+    public Integer eventCount(UserProfile UserProfile) {
         return -1;
     }
 
     @SchemaMapping(typeName = "UserProfile", field = "postCount")
-    public Integer postCount(UserProfileDetail userProfileDetail) {
+    public Integer postCount(UserProfile UserProfile) {
         return -1;
     }
 }

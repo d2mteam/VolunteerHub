@@ -1,4 +1,4 @@
-package com.volunteerhub.community.model.table;
+package com.volunteerhub.community.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,23 +7,26 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "comments")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Post {
+public class Comment {
     @Id
-    @Column(name = "post_id")
-    private Long postId;
+    @Column(name = "comment_id")
+    private Long commentId;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @Column(name = "created_by", insertable = false, updatable = false)
+    private UUID creatorId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -36,8 +39,8 @@ public class Post {
     private UserProfile createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", updatable = false)
-    private Event event;
+    @JoinColumn(name = "post_id", updatable = false)
+    private Post post;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata")
@@ -54,4 +57,3 @@ public class Post {
         this.updatedAt = LocalDateTime.now();
     }
 }
-
