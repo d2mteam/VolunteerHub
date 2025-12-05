@@ -1,13 +1,14 @@
 scalar JSON
 
+#"yyyy-MM-dd'T'HH:mm:ss"
+
 type UserProfile {
     userId: ID!
     username: String
     fullName: String
-
     avatarId: String
-
     email: String
+    bio: String
     status: String
     createdAt: String
     postCount: Int
@@ -39,7 +40,7 @@ type Event {
 
     creatorInfo: UserProfileMini
 
-    listUsers(page: Int = 0, size: Int = 10): EventPage
+#    listUsers(page: Int = 0, size: Int = 10): EventPage
     listPosts(page: Int = 0, size: Int = 10): PostPage
 }
 
@@ -100,6 +101,41 @@ type UserProfilePage {
     pageInfo: PageInfo!
 }
 
+# Dashboard
+
+type EventSummary {
+    eventId: ID!
+    eventName: String
+    createdAt: String
+    memberCount: Int
+    postCount: Int
+    likeCount: Int
+    creatorInfo: UserProfileMini
+}
+
+
+type PostSummary {
+    postId: ID!
+    eventId: ID!
+    createdAt: String
+    commentCount: Int
+    likeCount: Int
+}
+
+input EventFilter {
+    recentlyCreated: Boolean
+    trending: Boolean
+    limit: Int
+    since: String
+}
+
+input PostFilter {
+    recent: Boolean
+    limit: Int
+    eventIds: [ID!]
+}
+
+
 type Query {
     getUserProfile(userId: ID!): UserProfile
     getEvent(eventId: ID!): Event
@@ -108,6 +144,18 @@ type Query {
     findEvents(page: Int = 0, size: Int = 10, filter: JSON = null): EventPage
     findPosts(page: Int = 0, size: Int = 10, filter: JSON = null): PostPage
     findUserProfiles(page: Int = 0, size: Int = 10, filter: JSON = null): UserProfilePage
+
+    # Dashboard
+    dashboardEvents(filter: EventFilter): [EventSummary!]
+    dashboardPosts(filter: PostFilter): [PostSummary!]
+}
+
+input CreateUserProfile {
+    username: String
+    fullName: String
+    bio: String
+    avatarId: String
+    email: String
 }
 
 input CreateEventInput {
@@ -150,10 +198,6 @@ input EditCommentInput {
     content: String!
 }
 
-input RegistrationInput {
-    eventId: ID!
-}
-
 type MutationResult {
     ok: Boolean!
     id: ID
@@ -163,9 +207,8 @@ type MutationResult {
 }
 
 type Mutation {
-    createEvent(input: CreateEventInput!): MutationResult!
-    editEvent(input: EditEventInput!): MutationResult!
-    deleteEvent(eventId: ID!): MutationResult!
+    #USER
+    createUserProfile(input: CreateUserProfile!): MutationResult!
 
     createPost(input: CreatePostInput!): MutationResult!
     editPost(input: EditPostInput!): MutationResult!
@@ -180,4 +223,18 @@ type Mutation {
 
     registerEvent(eventId: ID!): MutationResult!
     unregisterEvent(eventId: ID!): MutationResult!
+
+    #EVENT MANAGER
+    createEvent(input: CreateEventInput!): MutationResult!
+    editEvent(input: EditEventInput!): MutationResult!
+    deleteEvent(eventId: ID!): MutationResult!
+
+    approveRegistration(registrationId: ID!) : MutationResult!
+    rejectRegistration(registrationId: ID!) : MutationResult!
+
+    #ADMIN
+    approveEvent(eventId: ID!) : MutationResult!
+
+    banUser(userId: ID!) : MutationResult!
+    unbanUser(userId: ID!) : MutationResult!
 }

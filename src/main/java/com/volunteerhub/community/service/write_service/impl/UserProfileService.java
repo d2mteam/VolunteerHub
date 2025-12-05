@@ -1,7 +1,7 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.graphql.input.EditUserProfileInput;
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.rest.request.EditUserProfile;
+import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserProfileService;
@@ -21,7 +21,7 @@ public class UserProfileService implements IUserProfileService {
     private final UserProfileRepository userProfileRepository;
 
     @Override
-    public ActionResponse<Void> editUserProfile(UUID userId, EditUserProfileInput input) {
+    public ActionResponse<Void> editUserProfile(UUID userId, EditUserProfile input) {
         Optional<UserProfile> optional = userProfileRepository.findById(userId);
         if (optional.isEmpty()) {
             return ActionResponse.failure("User profile not found");
@@ -40,7 +40,7 @@ public class UserProfileService implements IUserProfileService {
     }
 
     @Override
-    public ActionResponse<Void> createUserProfile(UUID userId, EditUserProfileInput input) {
+    public ActionResponse<Void> createUserProfile(UUID userId, EditUserProfile input) {
         if (userProfileRepository.existsById(userId)) {
             return ActionResponse.failure("User profile already exists");
         }

@@ -17,15 +17,33 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.Map;
+
 @Controller
 @AllArgsConstructor
 public class PostResolver {
-    private final PostRepository PostRepository;
+    private final PostRepository postRepository;
     private final CommentRepository commentRepository;
 
     @QueryMapping
     public Post getPost(@Argument Long postId) {
-        return PostRepository.findById(postId).orElse(null);
+        return postRepository.findById(postId).orElse(null);
+    }
+
+    @QueryMapping
+    public OffsetPage<Post> findPosts(@Argument Integer page,
+                                      @Argument Integer size,
+                                      @Argument Map<String, Object> filter) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size > 0 ? size : 10;
+
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<Post> postPage = postRepository.findAll(pageable);
+        PageInfo pageInfo = PageUtils.from(postPage);
+        return OffsetPage.<Post>builder()
+                .content(postPage.getContent())
+                .pageInfo(pageInfo)
+                .build();
     }
 
     @SchemaMapping(typeName = "Post", field = "listComment")

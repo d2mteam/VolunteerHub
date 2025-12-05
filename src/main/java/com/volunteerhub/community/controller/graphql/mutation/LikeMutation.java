@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.graphql.mutation;
 
 import com.volunteerhub.community.dto.graphql.input.LikeInput;
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;

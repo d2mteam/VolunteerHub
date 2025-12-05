@@ -2,7 +2,7 @@ package com.volunteerhub.community.service.write_service;
 
 import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
 import com.volunteerhub.community.dto.graphql.input.EditPostInput;
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.ActionResponse;
 
 import java.util.UUID;
 

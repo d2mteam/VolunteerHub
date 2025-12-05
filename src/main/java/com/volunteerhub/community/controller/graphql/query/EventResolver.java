@@ -35,6 +35,23 @@ public class EventResolver {
         return eventRepository.findById(eventId).orElse(null);
     }
 
+    @QueryMapping
+    public OffsetPage<Event> findEvents(@Argument Integer page,
+                                        @Argument Integer size,
+                                        @Argument Map<String, Object> filter) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size > 0 ? size : 10;
+
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<Event> eventPage = eventRepository.findAll(pageable);
+        PageInfo pageInfo = PageUtils.from(eventPage);
+
+        return OffsetPage.<Event>builder()
+                .content(eventPage.getContent())
+                .pageInfo(pageInfo)
+                .build();
+    }
+
     @SchemaMapping(typeName = "Event", field = "listPosts")
     public OffsetPage<Post> listPosts(Event event,
                                       @Argument Integer page,
@@ -51,23 +68,6 @@ public class EventResolver {
                 .build();
     }
 
-
-    @QueryMapping
-    public OffsetPage<Event> findEvents(@Argument Integer page,
-                                                @Argument Integer size,
-                                                @Argument Map<String, Object> filter) {
-        int safePage = Math.max(page, 0);
-        int safeSize = size > 0 ? size : 10;
-
-        Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<Event> eventPage = eventRepository.findAll(pageable);
-        PageInfo pageInfo = PageUtils.from(eventPage);
-
-        return OffsetPage.<Event>builder()
-                .content(eventPage.getContent())
-                .pageInfo(pageInfo)
-                .build();
-    }
 
     @SchemaMapping(typeName = "Event", field = "memberCount")
     public Integer memberCount(Event event, DataFetchingEnvironment env) {

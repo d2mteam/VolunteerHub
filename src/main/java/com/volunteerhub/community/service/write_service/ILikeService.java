@@ -1,6 +1,6 @@
 package com.volunteerhub.community.service.write_service;
 
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.ActionResponse;
 
 import java.util.UUID;
 

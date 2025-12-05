@@ -32,8 +32,8 @@ public class Event {
     @Column(name = "event_location", columnDefinition = "TEXT")
     private String eventLocation;
 
-    @Column(name = "created_by", insertable = false, updatable = false)
-    private UUID creatorId;
+//    @Column(name = "created_by", insertable = false, updatable = false)
+//    private UUID creatorId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

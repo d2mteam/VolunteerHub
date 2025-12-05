@@ -1,169 +1,84 @@
-create table user_profiles
-(
-    user_id    uuid         not null
-        primary key,
-    created_at timestamp(6) not null,
-    email      varchar(100)
-        constraint ukdqltqkaw58m11jbov0udx8xqg
-            unique,
-    full_name  varchar(50)  not null,
-    status     varchar(255)
-        constraint user_profiles_status_check
-            check ((status)::text = ANY
-        ((ARRAY ['PENDING'::character varying, 'ACTIVE'::character varying, 'INACTIVE'::character varying, 'SUSPENDED'::character varying, 'BANNED'::character varying, 'DEACTIVATED'::character varying, 'LOCKED'::character varying, 'ARCHIVED'::character varying])::text[])),
-    username   varchar(100) not null
-        constraint uk5vlt12tabpccuckq0e84nhs4c
-            unique,
-    updated_at timestamp(6),
-    bio        varchar(255),
-    avatar_id  varchar(255)
+CREATE TABLE user_profiles (
+                               user_id    UUID PRIMARY KEY,
+                               created_at TIMESTAMP(6) NOT NULL,
+                               email      VARCHAR(100) UNIQUE,
+                               full_name  VARCHAR(50) NOT NULL,
+                               status     VARCHAR(255) CHECK (status IN (
+                                                                         'PENDING','ACTIVE','INACTIVE','SUSPENDED','BANNED','DEACTIVATED','LOCKED','ARCHIVED')),
+                               username   VARCHAR(100) UNIQUE NOT NULL,
+                               updated_at TIMESTAMP(6),
+                               bio        VARCHAR(255),
+                               avatar_id  VARCHAR(255)
 );
 
-alter table user_profiles
-    owner to admin;
-
-create table events
-(
-    event_id          bigint       not null
-        primary key,
-    created_at        timestamp(6) not null,
-    event_description text,
-    event_location    text,
-    event_name        varchar(200) not null,
-    event_state       varchar(255) not null,
-    updated_at        timestamp(6),
-    created_by        uuid
-        constraint fk6dfe0ve0fje5r0pag124burr9
-            references user_profiles,
-    metadata          jsonb
+CREATE TABLE events (
+                        event_id          BIGINT PRIMARY KEY,
+                        created_at        TIMESTAMP(6) NOT NULL,
+                        event_description TEXT,
+                        event_location    TEXT,
+                        event_name        VARCHAR(200) NOT NULL,
+                        event_state       VARCHAR(255) NOT NULL,
+                        updated_at        TIMESTAMP(6),
+                        created_by        UUID REFERENCES user_profiles(user_id),
+                        metadata          JSONB
 );
 
-alter table events
-    owner to admin;
-
-create table likes
-(
-    like_id     bigint       not null
-        primary key,
-    created_at  timestamp(6) not null,
-    target_type varchar(255)
-        constraint likes_target_type_check
-            check ((target_type)::text = ANY
-        ((ARRAY ['COMMENT'::character varying, 'POST'::character varying, 'EVENT'::character varying, 'LIKE'::character varying])::text[])),
-    target_id   bigint,
-    created_by  uuid
-        constraint fkp2a6gdawsoxi0g9207cnhbe8g
-            references user_profiles
+CREATE TABLE likes (
+                       like_id     BIGINT PRIMARY KEY,
+                       created_at  TIMESTAMP(6) NOT NULL,
+                       target_type VARCHAR(255) CHECK (target_type IN ('COMMENT','POST','EVENT','LIKE')),
+                       target_id   BIGINT,
+                       created_by  UUID REFERENCES user_profiles(user_id)
 );
 
-alter table likes
-    owner to admin;
-
-create table posts
-(
-    post_id    bigint       not null
-        primary key,
-    content    text         not null,
-    created_at timestamp(6) not null,
-    updated_at timestamp(6),
-    created_by uuid
-        constraint fklna1w38qag86tkf2rnr6tlwi7
-            references user_profiles,
-    event_id   bigint
-        constraint fktnoimyc2wv6tiasoiioxy0rnq
-            references events,
-    metadata   jsonb
+CREATE TABLE posts (
+                       post_id    BIGINT PRIMARY KEY,
+                       content    TEXT NOT NULL,
+                       created_at TIMESTAMP(6) NOT NULL,
+                       updated_at TIMESTAMP(6),
+                       created_by UUID REFERENCES user_profiles(user_id),
+                       event_id   BIGINT REFERENCES events(event_id),
+                       metadata   JSONB
 );
 
-alter table posts
-    owner to admin;
-
-create table comments
-(
-    comment_id bigint       not null
-        primary key,
-    content    text         not null,
-    created_at timestamp(6) not null,
-    updated_at timestamp(6),
-    created_by uuid
-        constraint fkecka9ukasgv47r4fsqvia2jfa
-            references user_profiles,
-    post_id    bigint
-        constraint fkh4c7lvsc298whoyd4w9ta25cr
-            references posts,
-    metadata   jsonb
+CREATE TABLE comments (
+                          comment_id BIGINT PRIMARY KEY,
+                          content    TEXT NOT NULL,
+                          created_at TIMESTAMP(6) NOT NULL,
+                          updated_at TIMESTAMP(6),
+                          created_by UUID REFERENCES user_profiles(user_id),
+                          post_id    BIGINT REFERENCES posts(post_id),
+                          metadata   JSONB
 );
 
-alter table comments
-    owner to admin;
-
-create table role_in_event
-(
-    id                   bigint       not null
-        primary key,
-    created_at           timestamp(6) not null,
-    event_role           varchar(255),
-    updated_at           timestamp(6),
-    event_id             bigint
-        constraint fkfnjhn8jf75tdvkyr43kq5wsk4
-            references events,
-    user_profile_id      uuid
-        constraint fk5ikt6w2lkqjasjtwhj638djgi
-            references user_profiles,
-    participation_status varchar(255),
-    constraint ukrhap0m4gtbixvvoe16i1gt5mb
-        unique (user_profile_id, event_id)
+CREATE TABLE role_in_event (
+                               id                   BIGINT PRIMARY KEY,
+                               created_at           TIMESTAMP(6) NOT NULL,
+                               event_role           VARCHAR(255),
+                               updated_at           TIMESTAMP(6),
+                               event_id             BIGINT REFERENCES events(event_id),
+                               user_profile_id      UUID REFERENCES user_profiles(user_id),
+                               participation_status VARCHAR(255),
+                               UNIQUE (user_profile_id, event_id)
 );
 
-alter table role_in_event
-    owner to admin;
-
-create table event_registration
-(
-    registration_id bigint       not null
-        primary key,
-    status          varchar(255) not null
-        constraint event_registration_status_check
-            check ((status)::text = ANY
-        ((ARRAY ['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'CANCELLED_BY_USER'::character varying])::text[])),
-    event_id        bigint       not null
-        constraint fkotr797f33uue7c7dtu72c8q5i
-            references events,
-    user_id         uuid         not null
-        constraint fkbr1ftuu28f8ehfs0bhrqggli0
-            references user_profiles,
-    updated_at      timestamp(6),
-    created_at      timestamp(6)
+CREATE TABLE event_registration (
+                                    registration_id BIGINT PRIMARY KEY,
+                                    status          VARCHAR(255) NOT NULL CHECK (status IN ('PENDING','APPROVED','REJECTED','CANCELLED_BY_USER')),
+                                    event_id        BIGINT NOT NULL REFERENCES events(event_id),
+                                    user_id         UUID NOT NULL REFERENCES user_profiles(user_id),
+                                    updated_at      TIMESTAMP(6),
+                                    created_at      TIMESTAMP(6)
 );
 
-alter table event_registration
-    owner to admin;
+CREATE INDEX idx_user_event_status ON event_registration (user_id, event_id, status);
+CREATE INDEX idx_user_event        ON event_registration (user_id, event_id);
 
-create index idx_user_event_status
-    on event_registration (user_id, event_id, status);
-
-create index idx_user_event
-    on event_registration (user_id, event_id);
-
-create table user_auth
-(
-    user_id        uuid         not null
-        primary key,
-    email          varchar(100) not null
-        constraint uniq_email
-            unique,
-    email_verified boolean      not null,
-    password_hash  text         not null,
-    role           varchar(30)  not null
-        constraint user_auth_role_check
-            check ((role)::text = ANY
-        ((ARRAY ['USER'::character varying, 'EVENT_MANAGER'::character varying, 'ADMIN'::character varying])::text[])),
-    status         varchar(30)  not null
-        constraint user_auth_status_check
-            check ((status)::text = ANY
-                   ((ARRAY ['ACTIVE'::character varying, 'DISABLED'::character varying, 'LOCKED'::character varying])::text[]))
+CREATE TABLE user_auth (
+                           user_id        UUID PRIMARY KEY,
+                           email          VARCHAR(100) NOT NULL UNIQUE,
+                           email_verified BOOLEAN NOT NULL,
+                           password_hash  TEXT NOT NULL,
+                           role           VARCHAR(30) NOT NULL CHECK (role IN ('USER','EVENT_MANAGER','ADMIN')),
+                           status         VARCHAR(30) NOT NULL CHECK (status IN ('ACTIVE','DISABLED','LOCKED'))
 );
-
-alter table user_auth
-    owner to admin;
-

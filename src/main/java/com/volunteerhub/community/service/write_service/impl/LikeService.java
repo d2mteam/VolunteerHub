@@ -1,6 +1,6 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.model.Like;
 import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.model.db_enum.TableType;

@@ -2,7 +2,7 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.CreateCommentInput;
 import com.volunteerhub.community.dto.graphql.input.EditCommentInput;
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.model.Comment;
 import com.volunteerhub.community.model.Post;
 import com.volunteerhub.community.model.UserProfile;

@@ -21,7 +21,7 @@ import java.util.UUID;
 @Controller
 @AllArgsConstructor
 public class UserProfileResolver {
-    private final UserProfileRepository UserProfileRepository;
+    private final UserProfileRepository userProfileRepository;
 
     @QueryMapping
     public OffsetPage<UserProfile> findUserProfiles(@Argument Integer page,
@@ -32,7 +32,7 @@ public class UserProfileResolver {
         int safeSize = size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<UserProfile> userProfilePage = UserProfileRepository.findAll(pageable);
+        Page<UserProfile> userProfilePage = userProfileRepository.findAll(pageable);
         PageInfo pageInfo = PageUtils.from(userProfilePage);
 
         return OffsetPage.<UserProfile>builder()
@@ -43,22 +43,22 @@ public class UserProfileResolver {
 
     @QueryMapping
     public UserProfile getUserProfile(@Argument UUID userId) {
-        return UserProfileRepository.findById(userId).orElse(null);
+        return userProfileRepository.findById(userId).orElse(null);
     }
 
 
     @SchemaMapping(typeName = "UserProfile", field = "commentCount")
-    public Integer commentCount(UserProfile UserProfile) {
+    public Integer commentCount(UserProfile userProfile) {
         return -1;
     }
 
     @SchemaMapping(typeName = "UserProfile", field = "eventCount")
-    public Integer eventCount(UserProfile UserProfile) {
+    public Integer eventCount(UserProfile userProfile) {
         return -1;
     }
 
     @SchemaMapping(typeName = "UserProfile", field = "postCount")
-    public Integer postCount(UserProfile UserProfile) {
+    public Integer postCount(UserProfile userProfile) {
         return -1;
     }
 }

@@ -2,7 +2,7 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.RoleInEvent;
 import com.volunteerhub.community.model.UserProfile;
@@ -32,7 +32,21 @@ public class EventService implements IEventService {
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    public ActionResponse<Void>  createEvent(UUID userId, CreateEventInput input) {
+    public ActionResponse<Void> approveEvent(Long eventId) {
+        int result = eventRepository.updateEventStatus(eventId, EventState.ACCEPTED);
+
+        if (result == 0) {
+            return ActionResponse.failure("Event failure ..");
+        }
+
+        return ActionResponse.success(eventId.toString(),
+                null,
+                LocalDateTime.now(),
+                null);
+    }
+
+    @Override
+    public ActionResponse<Void> createEvent(UUID userId, CreateEventInput input) {
         UserProfile creator = userProfileRepository.getReferenceById(userId);
 
         Event event = Event.builder()
@@ -55,17 +69,14 @@ public class EventService implements IEventService {
 
         roleInEventRepository.save(roleInEvent);
 
-        LocalDateTime now = LocalDateTime.now();
-
         return ActionResponse.success(
                 event.getEventId().toString(),
-                now,
-                now
-        );
+                LocalDateTime.now(),
+                null);
     }
 
     @Override
-    public ActionResponse<Void>  editEvent(UUID userId, EditEventInput input) {
+    public ActionResponse<Void> editEvent(UUID userId, EditEventInput input) {
         Optional<Event> optional = eventRepository.findById(input.getEventId());
         if (optional.isEmpty()) {
             return ActionResponse.failure("Event not found");
@@ -80,12 +91,11 @@ public class EventService implements IEventService {
         return ActionResponse.success(
                 event.getEventId().toString(),
                 null,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
     }
 
     @Override
-    public ActionResponse<Void>  deleteEvent(UUID userId, Long eventId) {
+    public ActionResponse<Void> deleteEvent(UUID userId, Long eventId) {
         boolean exists = eventRepository.existsById(eventId);
         if (!exists) {
             return ActionResponse.failure("Event with id " + eventId + " does not exist");
@@ -93,11 +103,9 @@ public class EventService implements IEventService {
 
         eventRepository.deleteById(eventId);
 
-        LocalDateTime now = LocalDateTime.now();
         return ActionResponse.success(
                 eventId.toString(),
                 null,
-                now
-        );
+                LocalDateTime.now());
     }
 }

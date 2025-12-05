@@ -2,8 +2,9 @@ package com.volunteerhub.community.controller.graphql.mutation;
 
 import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
 import com.volunteerhub.community.dto.graphql.input.EditPostInput;
-import com.volunteerhub.community.dto.graphql.output.ActionResponse;
+import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.service.write_service.IPostService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -19,19 +20,19 @@ public class PostMutation {
 
     @MutationMapping
     public ActionResponse<Void> createPost(@AuthenticationPrincipal UUID userId,
-                                           @Argument CreatePostInput input) {
+                                           @Valid @Argument CreatePostInput input) {
         return postService.createPost(userId, input);
     }
 
     @MutationMapping
     public ActionResponse<Void> editPost(@AuthenticationPrincipal UUID userId,
-                                         @Argument EditPostInput input) {
+                                         @Valid @Argument EditPostInput input) {
         return postService.editPost(userId, input);
     }
 
     @MutationMapping
     public ActionResponse<Void> deletePost(@AuthenticationPrincipal UUID userId,
-                                           @Argument Long postId) {
+                                           @Valid @Argument Long postId) {
         return postService.deletePost(userId, postId);
     }
 }
