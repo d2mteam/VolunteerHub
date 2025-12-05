@@ -36,6 +36,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         if (token != null && jwtService.validateToken(token)) {
             authenticate(token);
+        } else {
+            authenticateAnonymous();
         }
 
         filterChain.doFilter(request, response);
@@ -64,5 +66,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return header.substring(7);
         }
         return null;
+    }
+
+    private void authenticateAnonymous() {
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ANONYMOUS"));
+        Authentication auth = new UsernamePasswordAuthenticationToken("ANONYMOUS", null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 }
