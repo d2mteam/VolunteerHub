@@ -1,28 +1,142 @@
-# 📘 VolunteerHub GraphQL API — Read & Write Layer
+# 📘 VolunteerHub API Guide — REST & GraphQL
+
+## 🔹 REST API Endpoints
+
+### 🧾 Authentication
+
+#### 🔑 Login
+
+```
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+```
+
+**Request body:**dơn
+
+```json
+{
+  "email": "",
+  "password": ""
+}
+```
+
+**Response:**
+
+```json
+{
+  "accessToken": "xxx",
+  "refreshToken": "yyy",
+  "tokenType": "Bearer"
+}
+```
+
+> `refreshToken` thường set trong **HttpOnly cookie**; `accessToken` dùng cho Authorization header.
+
+---
+
+#### 🔄 Refresh Token
+
+```
+POST http://localhost:8080/api/auth/refresh
+```
+
+- Lấy `refreshToken` từ **cookie**
+- **Response:**
+
+```json
+{
+  "accessToken": "new_xxx",
+  "tokenType": "Bearer"
+}
+```
+
+---
+
+#### 📝 Signup
+
+```
+POST http://localhost:8080/api/auth/signup
+Content-Type: application/json
+```
+
+**Request body:**
+
+```json
+{
+  "email": "",
+  "password": ""
+}
+```
+
+**Response:**
+
+```json
+{
+  "ok": true,
+  "message": "User registered successfully",
+  "id": "uuid-generated"
+}
+```
+
+---
+
+### 🧾 User Profile
+
+> Yêu cầu đăng nhập thành công (Authorization: Bearer `<accessToken>`)
+
+```
+PUT http://localhost:8080/api/user-profile
+Content-Type: application/json
+Authorization: Bearer <accessToken>
+```
+
+**Request body:**
+
+```json
+{
+  "email": "",
+  "fullName": "",
+  "username": "",
+  "avatarId": "",
+  "bio": ""
+}
+```
+
+**Response:**
+
+```json
+{
+  "ok": true,
+  "message": "Profile updated successfully",
+  "id": "uuid-generated",
+  "updatedAt": "2025-12-05T16:00:00Z"
+}
+```
+
+---
+
+## 🔹 GraphQL API
 
 **Base URL:**
 
 ```
 GRAPHQL http://localhost:8080/graphql
-Authorization: Bearer xxx
+Authorization: Bearer <accessToken>  # Optional for queries, required for mutations
 ```
 
----
-
-## 🔹 Overview
-
-Hệ thống cung cấp schema GraphQL cho cả *đọc* (read model CQRS) và *ghi* (mutations CRUD).  
-Tất cả thao tác được gửi qua **một endpoint duy nhất** bằng phương thức `POST`.
+- `UserId` sử dụng **UUID**
+- Các `ID` khác (Post, Comment, Event) là **Snowflake ID dạng string**
+- **Anonymous user**: chỉ query, mutation cần role (`USER`, `EVENT_MANAGER`, `ADMIN`)
 
 ---
 
 ## 🔸 Query Examples (Read)
 
-### 🧱 1. Lấy chi tiết **Post** cùng danh sách Comment
+### 🧱 1. Lấy chi tiết **Post**
 
 ```graphql
 query {
-    getPost(postId: 1) {
+    getPost(postId: "1") {
         postId
         eventId
         content
@@ -30,18 +144,22 @@ query {
         updatedAt
         commentCount
         likeCount
+        creatorInfo {
+            userId
+            username
+            avatarId
+        }
     }
-}
 }
 ```
 
 ---
 
-### 🧱 2. Lấy chi tiết **Event** cùng danh sách Post + Comment lồng nhau
+### 🧱 2. Lấy chi tiết **Event** cùng danh sách Post & Comment
 
 ```graphql
 query {
-    getEvent(eventId: 1) {
+    getEvent(eventId: "1") {
         eventId
         eventName
         eventDescription
@@ -51,6 +169,11 @@ query {
         memberCount
         postCount
         likeCount
+        creatorInfo {
+            userId
+            username
+            avatarId
+        }
 
         listPosts(page: 0, size: 10) {
             pageInfo {
@@ -69,17 +192,44 @@ query {
                 updatedAt
                 commentCount
                 likeCount
+                creatorInfo {
+                    userId
+                    username
+                    avatarId
+                }
+
+                listComment(page: 0, size: 5) {
+                    pageInfo {
+                        page
+                        size
+                        totalElements
+                        totalPages
+                        hasNext
+                        hasPrevious
+                    }
+                    content {
+                        commentId
+                        postId
+                        content
+                        createdAt
+                        updatedAt
+                        likeCount
+                        creatorInfo {
+                            userId
+                            username
+                            avatarId
+                        }
+                    }
+                }
             }
         }
     }
-}
-}
 }
 ```
 
 ---
 
-### 🧱 3. Lấy chi tiết **UserProfile** cùng các Event tham gia
+### 🧱 3. Lấy chi tiết **UserProfile** + Event tham gia
 
 ```graphql
 query {
@@ -113,6 +263,11 @@ query {
                 memberCount
                 postCount
                 likeCount
+                creatorInfo {
+                    userId
+                    username
+                    avatarId
+                }
             }
         }
     }
@@ -123,225 +278,96 @@ query {
 
 ## 🔸 Mutation Examples (Write)
 
-Mỗi mutation trả về `MutationResult`:
+Tất cả mutation trả về **MutationResult**:
 
 ```graphql
 {
-    ok
-    id
-    message
-    createAt
-    updatedAt
+    ok: Boolean!
+    id: ID
+    message: String
+    createdAt: String
+    updatedAt: String
 }
+```
+
+- **Authorization required**
+- Anonymous user không thể thực hiện mutation
+
+---
+
+### 🧭 Event Mutations (`EVENT_MANAGER`)
+
+```graphql
+createEvent(input: CreateEventInput!)
+editEvent(input: EditEventInput!)
+deleteEvent(eventId: ID!)
+approveEvent(eventId: ID!)
+```
+
+### 🧭 Post Mutations (`USER`)
+
+```graphql
+createPost(input: CreatePostInput!)
+editPost(input: EditPostInput!)
+deletePost(postId: ID!)
+```
+
+### 🧭 Comment Mutations (`USER`)
+
+```graphql
+createComment(input: CreateCommentInput!)
+editComment(input: EditCommentInput!)
+deleteComment(commentId: ID!)
+```
+
+### ❤️ Like / Unlike (`USER`)
+
+```graphql
+like(input: LikeInput!)
+unlike(input: LikeInput!)
+```
+
+### 🧭 User Registration / Event Participation (`USER`)
+
+```graphql
+registerEvent(eventId: ID!)
+unregisterEvent(eventId: ID!)
+```
+
+### 🧭 Admin / Event Manager Actions
+
+```graphql
+approveRegistration(registrationId: ID!)
+rejectRegistration(registrationId: ID!)
+banUser(userId: ID!)
+unbanUser(userId: ID!)
 ```
 
 ---
 
-### 🧭 Event
+## 🔹 Pagination & Nested Types
 
-#### ➕ Tạo Event
+- `PageInfo` dùng cho query list (zero-based pagination):
 
 ```graphql
-mutation {
-    createEvent(
-        input: {
-            eventName: "Dọn rác ven hồ"
-            eventDescription: "Chiến dịch dọn rác khu vực hồ Tây"
-            eventLocation: "Hồ Tây, Hà Nội"
-        }
-    ) {
-        ok
-        id
-        message
-        updatedAt
-    }
+type PageInfo {
+    page: Int!
+    size: Int!
+    totalElements: Int!
+    totalPages: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
 }
 ```
 
-#### ✏️ Sửa Event
-
-```graphql
-mutation {
-    editEvent(
-        input: {
-            eventId: "773316679898759168"
-            eventName: "Dọn rác ven hồ (tuần 2)"
-            eventDescription: "Bổ sung thêm hoạt động trồng cây"
-            eventLocation: "Hồ Tây khu Nhật Tân"
-            eventDate: "2025-12-08"
-        }
-    ) {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
-#### ❌ Xoá Event
-
-```graphql
-mutation {
-    deleteEvent(eventId: "773316679898759168") {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
----
-
-### 🧭 Post
-
-#### ➕ Tạo Post
-
-```graphql
-mutation {
-    createPost(
-        input: {
-            eventId: "1"
-            content: "Ai đi được sáng chủ nhật thì confirm giúp nhé!"
-        }
-    ) {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
-#### ✏️ Sửa Post
-
-```graphql
-mutation {
-    editPost(
-        input: {
-            postId: "773317579212062720"
-            content: "Update: tập trung 7h tại bãi đỗ xe số 2."
-        }
-    ) {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
-#### ❌ Xoá Post
-
-```graphql
-mutation {
-    deletePost(postId: "773317579212062720") {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
----
-
-### 🧭 Comment
-
-#### ➕ Tạo Comment
-
-```graphql
-mutation {
-    createComment(
-        input: {
-            postId: "773317579212062720"
-            content: "Tôi sẽ mang bao tay và nước uống."
-        }
-    ) {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
-#### ✏️ Sửa Comment
-
-```graphql
-mutation {
-    editComment(
-        input: {
-            commentId: "773318226313478144"
-            content: "Mang thêm vài túi rác to nữa nhé."
-        }
-    ) {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
-#### ❌ Xoá Comment
-
-```graphql
-mutation {
-    deleteComment(commentId: "773318226313478144") {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
----
-
-### ❤️ Like / Unlike
-
-#### Like
-
-```graphql
-mutation {
-    like(
-        input: {
-            targetType: "POST"
-            targetId: "1"
-        }
-    ) {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
-
-#### Unlike
-
-```graphql
-mutation {
-    unlike(
-        input: {
-            targetType: "POST"
-            targetId: "1"
-        }) {
-        ok
-        id
-        message
-        updatedAt
-    }
-}
-```
+- Nested types ví dụ: `Event -> listPosts -> listComment`
+- `creatorInfo` luôn trả về **UserProfileMini** (userId, username, avatarId)
 
 ---
 
 ## 🔹 Response Format
 
-Thành công:
+**Thành công:**
 
 ```json
 {
@@ -356,7 +382,7 @@ Thành công:
 }
 ```
 
-Lỗi hoặc không tìm thấy:
+**Lỗi hoặc không tìm thấy:**
 
 ```json
 {
@@ -368,36 +394,3 @@ Lỗi hoặc không tìm thấy:
   }
 }
 ```
-
----
-
-## 🔹 Pagination Response
-
-```json
-{
-  "pageInfo": {
-    "page": 0,
-    "size": 10,
-    "totalElements": 24,
-    "totalPages": 3,
-    "hasNext": true,
-    "hasPrevious": false
-  },
-  "content": [
-    {
-      "postId": "1",
-      "content": "..."
-    }
-  ]
-}
-```
-
----
-
-## 🔹 Notes
-
-- `page` bắt đầu từ **0** (zero-based pagination).
-- `ok = false` → nên hiển thị `message` cho người dùng.
-- `id` luôn trả về dạng **string** (Snowflake hoặc UUID).
-- Sau khi mutation thành công, frontend nên `refetch` query tương ứng (`getPost`, `getEvent`, v.v.).
-- Các truy vấn con như `listPosts`, `listComments` hỗ trợ phân trang và nested fetch.
