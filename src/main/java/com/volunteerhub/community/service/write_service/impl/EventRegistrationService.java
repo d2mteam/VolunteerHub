@@ -25,24 +25,25 @@ import java.util.UUID;
 @Transactional
 @AllArgsConstructor
 public class EventRegistrationService implements IEventRegistrationService {
+
     private final EventRegistrationRepository eventRegistrationRepo;
     private final RoleInEventRepository roleInEventRepo;
     private final EventRepository eventRepo;
     private final UserProfileRepository userProfileRepo;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
-
     @Override
     public ActionResponse<Void> approveRegistration(Long registrationId) {
         EventRegistration reg = eventRegistrationRepo.findById(registrationId).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure("Registration not found, registrationId: " + registrationId);
+            return ActionResponse.failure(
+                    String.format("Registration not found (registrationId: %d)", registrationId));
         }
 
         if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ActionResponse.failure("Cannot register this registration " +
-                    "because it is already approved, rejected or cancelled, registrationId: " + registrationId);
+            return ActionResponse.failure(
+                    "Registration cannot be approved because it has already been processed");
         }
 
         Long eventId = reg.getEventId();
@@ -50,16 +51,19 @@ public class EventRegistrationService implements IEventRegistrationService {
 
         if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
                 userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
-            return ActionResponse.failure("User already registered this event, eventId: " + eventId);
+            return ActionResponse.failure(
+                    String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
         reg.setStatus(RegistrationStatus.APPROVED);
         eventRegistrationRepo.save(reg);
+
         RoleInEvent roleInEvent = RoleInEvent.builder()
                 .event(reg.getEvent())
                 .userProfile(reg.getUserProfile())
                 .build();
         roleInEventRepo.save(roleInEvent);
+
         return ActionResponse.success(
                 registrationId.toString(),
                 null,
@@ -71,12 +75,13 @@ public class EventRegistrationService implements IEventRegistrationService {
         EventRegistration reg = eventRegistrationRepo.findById(registrationId).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure("Registration not found, registrationId: " + registrationId);
+            return ActionResponse.failure(
+                    String.format("Registration not found (registrationId: %d)", registrationId));
         }
 
         if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ActionResponse.failure("Cannot unregister this registration " +
-                    "because it is already approved, rejected or cancelled, registrationId: " + registrationId);
+            return ActionResponse.failure(
+                    "Registration cannot be updated because it has already been processed");
         }
 
         Long eventId = reg.getEventId();
@@ -84,11 +89,13 @@ public class EventRegistrationService implements IEventRegistrationService {
 
         if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
                 userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
-            return ActionResponse.failure("User already registered this event, eventId: " + eventId);
+            return ActionResponse.failure(
+                    String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
         reg.setStatus(RegistrationStatus.REJECTED);
         eventRegistrationRepo.save(reg);
+
         return ActionResponse.success(
                 registrationId.toString(),
                 null,
@@ -97,28 +104,34 @@ public class EventRegistrationService implements IEventRegistrationService {
 
     @Override
     public ActionResponse<Void> registerEvent(UUID userId, Long eventId) {
+
         if (eventRegistrationRepo.existsByUserIdAndEventIdAndStatus(
                 userId, eventId, RegistrationStatus.PENDING)) {
-            return ActionResponse.failure("Event registration has already been pending.");
+            return ActionResponse.failure("Registration is already pending");
         }
 
         if (!eventRepo.existsById(eventId)) {
-            return ActionResponse.failure("Event not found, eventId: " + eventId);
+            return ActionResponse.failure(
+                    String.format("Event not found (eventId: %d)", eventId));
         }
 
         if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
                 userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
-            return ActionResponse.failure("User already registered this event, eventId: " + eventId);
+            return ActionResponse.failure(
+                    String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
         UserProfile userProfile = userProfileRepo.getReferenceById(userId);
         Event event = eventRepo.getReferenceById(eventId);
+
         EventRegistration reg = EventRegistration.builder()
                 .registrationId(snowflakeIdGenerator.nextId())
                 .userProfile(userProfile)
                 .event(event)
                 .build();
+
         eventRegistrationRepo.save(reg);
+
         return ActionResponse.success(
                 reg.getRegistrationId().toString(),
                 LocalDateTime.now(),
@@ -131,11 +144,13 @@ public class EventRegistrationService implements IEventRegistrationService {
                 userId, eventId, RegistrationStatus.PENDING).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure("Cannot unregister. " +
-                    "This registration is either not found or already processed.");
+            return ActionResponse.failure(
+                    "Unable to unregister because this registration either does not exist or has already been processed");
         }
+
         reg.setStatus(RegistrationStatus.CANCELLED_BY_USER);
         eventRegistrationRepo.save(reg);
+
         return ActionResponse.success(
                 reg.getRegistrationId().toString(),
                 null,

@@ -1,5 +1,6 @@
 package com.volunteerhub.community.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ActionResponse<T> {
     private boolean ok;
     private String message;
@@ -18,17 +20,6 @@ public class ActionResponse<T> {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private T data;
-
-    public static <T> ActionResponse<T> success(String id, LocalDateTime createdAt, LocalDateTime updatedAt, T data) {
-        return ActionResponse.<T>builder()
-                .ok(true)
-                .message("Success")
-                .id(id)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .data(data)
-                .build();
-    }
 
     public static <T> ActionResponse<T> success(String id, LocalDateTime createdAt, LocalDateTime updatedAt) {
         return ActionResponse.<T>builder()

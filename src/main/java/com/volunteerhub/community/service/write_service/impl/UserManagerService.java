@@ -6,12 +6,14 @@ import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserManagerService implements IUserManagerService {
     private final UserProfileRepository userProfileRepository;
 
@@ -25,7 +27,7 @@ public class UserManagerService implements IUserManagerService {
 
         return ActionResponse.success(
                 String.format("User %s has been banned", userId),
-                LocalDateTime.now(),
+                null,
                 LocalDateTime.now()
         );
     }
@@ -40,7 +42,7 @@ public class UserManagerService implements IUserManagerService {
 
         return ActionResponse.success(
                 String.format("User %s has been unbanned", userId),
-                LocalDateTime.now(),
+                null,
                 LocalDateTime.now()
         );
     }

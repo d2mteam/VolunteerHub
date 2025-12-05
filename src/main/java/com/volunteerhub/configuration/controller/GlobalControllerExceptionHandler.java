@@ -1,9 +1,12 @@
 package com.volunteerhub.configuration.controller;
 
+import com.volunteerhub.authentication.ultis.exception.LoginException;
+import com.volunteerhub.authentication.ultis.exception.VerificationException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,7 +29,7 @@ public class GlobalControllerExceptionHandler {
         return buildValidationError(fieldErrors);
     }
 
-    // --- 2. @Validated trên method params / @RequestParam lỗi ---
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
 
@@ -39,7 +42,7 @@ public class GlobalControllerExceptionHandler {
         return buildValidationError(fieldErrors);
     }
 
-    // --- formatter chung ---
+
     private ResponseEntity<Map<String, Object>> buildValidationError(Map<String, String> fieldErrors) {
         Map<String, Object> body = new HashMap<>();
         body.put("code", "VALIDATION_ERROR");
@@ -49,6 +52,12 @@ public class GlobalControllerExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public void ignore(AccessDeniedException accessDeniedException) {
+        throw accessDeniedException;
+    }
+
+    // loi he thong
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleOtherExceptions(Exception ex) {
         String requestId = UUID.randomUUID().toString();
@@ -62,4 +71,13 @@ public class GlobalControllerExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler({VerificationException.class, LoginException.class})
+    public ResponseEntity<?> handleVerificationException(RuntimeException ex) {
+        return ResponseEntity
+                .badRequest()
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+
 }

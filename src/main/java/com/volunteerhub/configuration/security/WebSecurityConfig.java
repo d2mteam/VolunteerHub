@@ -34,10 +34,11 @@ public class WebSecurityConfig {
                             exception.accessDeniedHandler(customAccessDeniedHandler);
                         }
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session
+                        -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/graphql", "/graphiql", "/voyager").permitAll()
+                                .requestMatchers("/graphiql", "/voyager").permitAll()
                                 .anyRequest().authenticated()
                 );
 

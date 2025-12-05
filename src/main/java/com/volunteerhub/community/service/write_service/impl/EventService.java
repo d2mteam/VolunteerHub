@@ -36,13 +36,12 @@ public class EventService implements IEventService {
         int result = eventRepository.updateEventStatus(eventId, EventState.ACCEPTED);
 
         if (result == 0) {
-            return ActionResponse.failure("Event failure ..");
+            return ActionResponse.failure("Event approval failed");
         }
 
         return ActionResponse.success(eventId.toString(),
                 null,
-                LocalDateTime.now(),
-                null);
+                LocalDateTime.now());
     }
 
     @Override
@@ -98,7 +97,7 @@ public class EventService implements IEventService {
     public ActionResponse<Void> deleteEvent(UUID userId, Long eventId) {
         boolean exists = eventRepository.existsById(eventId);
         if (!exists) {
-            return ActionResponse.failure("Event with id " + eventId + " does not exist");
+            return ActionResponse.failure(String.format("Event with id %d does not exist", eventId));
         }
 
         eventRepository.deleteById(eventId);

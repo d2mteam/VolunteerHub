@@ -18,11 +18,18 @@ public class SignupController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest request) {
         signupService.signup(request);
-        return ResponseEntity.ok(Map.of("message", "Signup successful."));
+        return ResponseEntity.ok(Map.of("message", "Signup successful. Please check your email."));
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<?> verifyGet(@RequestParam("token") String rawToken) {
-        return ResponseEntity.ok(null);
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verify(@RequestParam("token") String rawToken) {
+        signupService.verify(rawToken);
+        return ResponseEntity.ok(Map.of("message", "Verify successful."));
+    }
+
+    @GetMapping("/resend")
+    public ResponseEntity<?> resend(@RequestParam("email") String email) {
+        signupService.resend(email);
+        return ResponseEntity.ok(Map.of("message", "Resend successful."));
     }
 }

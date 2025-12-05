@@ -1,4 +1,4 @@
-package com.volunteerhub.authentication.configuration;
+package com.volunteerhub.authentication.ultis;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
