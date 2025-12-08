@@ -66,7 +66,7 @@ public class LikeSyncWorker {
         UUID userId = UUID.fromString(values.get("userId").toString());
 
         Long likeId = values.containsKey("likeId")
-                ? Long.valueOf(values.get("likeId").toString())
+                ? Long.parseLong(values.get("likeId").toString())
                 : idGenerator.nextId();
 
         if (action.equals("LIKE")) {

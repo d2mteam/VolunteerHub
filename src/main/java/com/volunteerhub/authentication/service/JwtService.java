@@ -1,6 +1,9 @@
 package com.volunteerhub.authentication.service;
 
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -12,12 +15,11 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class JwtService {
+
     @Value("${security.app.jwtSecret}")
     private String jwtSecret;
 
@@ -27,27 +29,16 @@ public class JwtService {
     @Value("${security.app.jwtRefreshExpirationMs}")
     private int jwtRefreshExpirationMs;
 
-    // PUBLIC
+    // ===================== GENERATION ===================== //
 
     public String generateAccessToken(UUID userId, List<String> roles) {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .claim("token_type", "access_token")
-                .jwtID(randomJti())
                 .claim("user_id", userId.toString())
                 .claim("roles", roles)
-                .issueTime(new Date())
-                .expirationTime(new Date(System.currentTimeMillis() + jwtAccessExpirationMs))
-                .build();
-        return signClaims(claims);
-    }
-
-    public String generateAccessToken(UUID userId) {
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .claim("token_type", "access_token")
                 .jwtID(randomJti())
-                .claim("user_id", userId.toString())
                 .issueTime(new Date())
-                .expirationTime(new Date(System.currentTimeMillis() + jwtAccessExpirationMs))
+                .expirationTime(expTime(jwtAccessExpirationMs))
                 .build();
         return signClaims(claims);
     }
@@ -55,75 +46,47 @@ public class JwtService {
     public String generateRefreshToken(UUID userId) {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .claim("token_type", "refresh_token")
-                .jwtID(randomJti())
                 .claim("user_id", userId.toString())
+                .jwtID(randomJti())
                 .issueTime(new Date())
-                .expirationTime(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
+                .expirationTime(expTime(jwtRefreshExpirationMs))
                 .build();
         return signClaims(claims);
     }
 
-    public boolean validateToken(String token) {
-        try {
-            parseAndValidate(token);
-            return true;
-        } catch (JwtException ex) {
-            return false;
-        }
+    // ===================== VALIDATION / DECODE ===================== //
+
+    public DecodedToken decodeAndValidate(String token) throws ParseException {
+        JWTClaimsSet claims = parseAndValidate(token);
+
+        return new DecodedToken(
+                claims.getStringClaim("token_type"),
+                UUID.fromString(claims.getStringClaim("user_id")),
+                claims.getJWTID(),
+                claims.getExpirationTime(),
+                extractRoles(claims)
+        );
     }
 
-    public Optional<List<String>> rolesFromToken(String token) {
+    private List<String> extractRoles(JWTClaimsSet claims) {
         try {
-            JWTClaimsSet claims = parseAndValidate(token);
-            return Optional.ofNullable(claims.getStringListClaim("roles"));
-        } catch (JwtException | ParseException e) {
-            return Optional.empty();
-        }
-    }
-
-    public Optional<String> getTokenType(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidate(token);
-            return Optional.ofNullable(claims.getStringClaim("token_type"));
-        } catch (JwtException | ParseException e) {
-            return Optional.empty();
-        }
-    }
-
-    public Optional<UUID> getUserIdFromToken(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidate(token);
-            String id = claims.getStringClaim("user_id");
-            return Optional.of(UUID.fromString(id));
+            return claims.getStringListClaim("roles");
         } catch (Exception e) {
-            return Optional.empty();
+            return null; // refresh token không có roles
         }
     }
 
-    public Optional<String> getJti(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidate(token);
-            return Optional.ofNullable(claims.getJWTID());
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
+    // ===================== PRIVATE UTILS ===================== //
 
-    public Optional<Date> getExpiration(String token) {
-        try {
-            JWTClaimsSet claims = parseAndValidate(token);
-            return Optional.ofNullable(claims.getExpirationTime());
-        } catch (Exception e) {
-            return Optional.empty();
-        }
+    private Date expTime(long ms) {
+        return new Date(System.currentTimeMillis() + ms);
     }
-
-    // PRIVATE UTILS
 
     private JWTClaimsSet parseAndValidate(String token) {
         JWTClaimsSet claims = parse(token);
 
-        if (claims.getExpirationTime().before(new Date())) {
+        Date exp = claims.getExpirationTime();
+        if (exp == null || exp.before(new Date())) {
             throw new JwtException("Token expired");
         }
 
@@ -133,14 +96,15 @@ public class JwtService {
     private JWTClaimsSet parse(String token) {
         try {
             JWSObject jws = JWSObject.parse(token);
-            boolean verified = jws.verify(new MACVerifier(jwtSecret.getBytes(StandardCharsets.UTF_8)));
 
-            if (!verified) {
+            boolean ok = jws.verify(new MACVerifier(jwtSecret.getBytes(StandardCharsets.UTF_8)));
+            if (!ok) {
                 throw new JwtException("Signature invalid");
             }
 
             return JWTClaimsSet.parse(jws.getPayload().toJSONObject());
-        } catch (ParseException | JOSEException e) {
+
+        } catch (Exception e) {
             throw new JwtException("Token parse/verify failed", e);
         }
     }
@@ -153,12 +117,20 @@ public class JwtService {
             );
             jws.sign(new MACSigner(jwtSecret.getBytes(StandardCharsets.UTF_8)));
             return jws.serialize();
-        } catch (JOSEException e) {
+        } catch (Exception e) {
             throw new JwtException("Token signing failed", e);
         }
     }
 
     private String randomJti() {
-        return new UUID(ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong()).toString();
+        return UUID.randomUUID().toString();
     }
+
+    public record DecodedToken(
+            String type,
+            UUID userId,
+            String jti,
+            Date exp,
+            List<String> roles
+    ) {}
 }

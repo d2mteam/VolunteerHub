@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,20 +24,16 @@ import java.util.Map;
 public class LoginController {
     private final LoginService loginService;
 
+    @Value("${security.app.jwtRefreshExpirationMs}")
+    private int jwtRefreshExpirationMs;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         LoginResponse loginResponse = loginService.login(request);
 
         log.debug("login response: {}", loginResponse);
 
-        Cookie cookie = new Cookie("refresh_token", loginResponse.getRefreshToken());
-
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(86400);
-        response.addCookie(cookie);
-
+        setRefreshCookie(response, loginResponse.getRefreshToken());
         return ResponseEntity.ok(Map.of("accessToken", loginResponse.getAccessToken()));
     }
 
@@ -45,13 +42,19 @@ public class LoginController {
         String refreshToken = CookieUtils.extractCookie(request, "refresh_token");
         RefreshResponse refreshResponse = loginService.refresh(refreshToken);
 
-        Cookie cookie = new Cookie("refresh_token", refreshResponse.getRefreshToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(86400);
-        response.addCookie(cookie);
+        log.debug("refresh response: {}", refreshResponse);
 
+        setRefreshCookie(response, refreshResponse.getRefreshToken());
         return ResponseEntity.ok(Map.of("accessToken", refreshResponse.getAccessToken()));
+    }
+
+    private void setRefreshCookie(HttpServletResponse res, String token) {
+        Cookie c = new Cookie("refresh_token", token);
+        c.setHttpOnly(true);
+        c.setSecure(true);
+        c.setPath("/");
+        c.setMaxAge(jwtRefreshExpirationMs / 1000);
+        c.setAttribute("SameSite", "Strict");
+        res.addCookie(c);
     }
 }

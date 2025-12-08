@@ -6,9 +6,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
-/**
- * Simple token blacklist backed by Redis. Stores token jti with TTL matching the remaining token lifetime.
- */
 @Service
 @RequiredArgsConstructor
 public class TokenBlacklistService {
@@ -16,21 +13,16 @@ public class TokenBlacklistService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void blacklist(String jti, long remainingMillis) {
-        if (jti == null || remainingMillis <= 0) {
-            return;
-        }
-        redisTemplate.opsForValue().set(key(jti), Boolean.TRUE, Duration.ofMillis(remainingMillis));
+    public void blacklist(String jti, long ttlMillis) {
+        if (jti == null || ttlMillis <= 0) return;
+
+        redisTemplate.opsForValue()
+                .set(KEY_PREFIX + jti, true, Duration.ofMillis(ttlMillis));
     }
 
     public boolean isBlacklisted(String jti) {
-        if (jti == null) {
-            return false;
-        }
-        return redisTemplate.hasKey(key(jti));
-    }
-
-    private String key(String jti) {
-        return KEY_PREFIX + jti;
+        return jti != null && Boolean.TRUE.equals(
+                redisTemplate.opsForValue().get(KEY_PREFIX + jti)
+        );
     }
 }
