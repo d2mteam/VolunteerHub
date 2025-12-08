@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/user-profile")
+@RequestMapping("/api/user-profiles")
 public class UserProfileController {
     private final IUserProfileService userProfileService;
 

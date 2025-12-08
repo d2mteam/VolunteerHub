@@ -9,4 +9,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class RefreshResponse {
     private String accessToken;
+    private String refreshToken;
 }

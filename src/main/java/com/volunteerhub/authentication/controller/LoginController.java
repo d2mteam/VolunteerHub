@@ -3,6 +3,7 @@ package com.volunteerhub.authentication.controller;
 import com.volunteerhub.authentication.ultis.CookieUtils;
 import com.volunteerhub.authentication.dto.request.LoginRequest;
 import com.volunteerhub.authentication.dto.response.LoginResponse;
+import com.volunteerhub.authentication.dto.response.RefreshResponse;
 import com.volunteerhub.authentication.service.LoginService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +25,7 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        LoginResponse loginResponse = loginService.signup(request);
+        LoginResponse loginResponse = loginService.login(request);
 
         log.debug("login response: {}", loginResponse);
 
@@ -33,15 +34,24 @@ public class LoginController {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge(86400000);
+        cookie.setMaxAge(86400);
         response.addCookie(cookie);
 
         return ResponseEntity.ok(Map.of("accessToken", loginResponse.getAccessToken()));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
-        String refreshToken = CookieUtils.extractCookie(request, "refreshToken");
-        return ResponseEntity.ok(loginService.refresh(refreshToken));
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = CookieUtils.extractCookie(request, "refresh_token");
+        RefreshResponse refreshResponse = loginService.refresh(refreshToken);
+
+        Cookie cookie = new Cookie("refresh_token", refreshResponse.getRefreshToken());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(86400);
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(Map.of("accessToken", refreshResponse.getAccessToken()));
     }
 }

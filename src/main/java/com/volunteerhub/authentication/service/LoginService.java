@@ -19,8 +19,9 @@ public class LoginService {
     private final UserAuthRepository userAuthRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public LoginResponse signup(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         UserAuth userAuth = userAuthRepository.findByEmail(request.getEmail()).orElseThrow(() ->
                 new LoginException("Email not found"));
 
@@ -52,6 +53,12 @@ public class LoginService {
             throw new LoginException("Invalid refresh token");
         }
 
+        String refreshJti = jwtService.getJti(refreshToken).orElseThrow(() ->
+                new LoginException("Invalid token payload"));
+        if (tokenBlacklistService.isBlacklisted(refreshJti)) {
+            throw new LoginException("Token has been revoked");
+        }
+
         UUID userId = jwtService.getUserIdFromToken(refreshToken).orElseThrow(() ->
                 new LoginException("Invalid token payload")
         );
@@ -63,9 +70,16 @@ public class LoginService {
         List<String> roles = List.of(userAuth.getRole().toString());
 
         String newAccessToken = jwtService.generateAccessToken(userAuth.getUserId(), roles);
+        String newRefreshToken = jwtService.generateRefreshToken(userAuth.getUserId());
+
+        jwtService.getExpiration(refreshToken).ifPresent(exp -> {
+            long remaining = exp.getTime() - System.currentTimeMillis();
+            tokenBlacklistService.blacklist(refreshJti, remaining);
+        });
 
         return RefreshResponse.builder()
                 .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
                 .build();
     }
 }

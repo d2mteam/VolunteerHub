@@ -26,15 +26,15 @@ import java.util.UUID;
 @AllArgsConstructor
 public class EventRegistrationService implements IEventRegistrationService {
 
-    private final EventRegistrationRepository eventRegistrationRepo;
-    private final RoleInEventRepository roleInEventRepo;
-    private final EventRepository eventRepo;
-    private final UserProfileRepository userProfileRepo;
+    private final EventRegistrationRepository eventRegistrationRepository;
+    private final RoleInEventRepository roleInEventRepository;
+    private final EventRepository eventRepository;
+    private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
     public ActionResponse<Void> approveRegistration(Long registrationId) {
-        EventRegistration reg = eventRegistrationRepo.findById(registrationId).orElse(null);
+        EventRegistration reg = eventRegistrationRepository.findById(registrationId).orElse(null);
 
         if (reg == null) {
             return ActionResponse.failure(
@@ -49,20 +49,20 @@ public class EventRegistrationService implements IEventRegistrationService {
         Long eventId = reg.getEventId();
         UUID userId = reg.getUserId();
 
-        if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
+        if (roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
                 userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
             return ActionResponse.failure(
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
         reg.setStatus(RegistrationStatus.APPROVED);
-        eventRegistrationRepo.save(reg);
+        eventRegistrationRepository.save(reg);
 
         RoleInEvent roleInEvent = RoleInEvent.builder()
                 .event(reg.getEvent())
                 .userProfile(reg.getUserProfile())
                 .build();
-        roleInEventRepo.save(roleInEvent);
+        roleInEventRepository.save(roleInEvent);
 
         return ActionResponse.success(
                 registrationId.toString(),
@@ -72,7 +72,7 @@ public class EventRegistrationService implements IEventRegistrationService {
 
     @Override
     public ActionResponse<Void> rejectRegistration(Long registrationId) {
-        EventRegistration reg = eventRegistrationRepo.findById(registrationId).orElse(null);
+        EventRegistration reg = eventRegistrationRepository.findById(registrationId).orElse(null);
 
         if (reg == null) {
             return ActionResponse.failure(
@@ -87,14 +87,14 @@ public class EventRegistrationService implements IEventRegistrationService {
         Long eventId = reg.getEventId();
         UUID userId = reg.getUserId();
 
-        if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
+        if (roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
                 userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
             return ActionResponse.failure(
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
         reg.setStatus(RegistrationStatus.REJECTED);
-        eventRegistrationRepo.save(reg);
+        eventRegistrationRepository.save(reg);
 
         return ActionResponse.success(
                 registrationId.toString(),
@@ -105,24 +105,24 @@ public class EventRegistrationService implements IEventRegistrationService {
     @Override
     public ActionResponse<Void> registerEvent(UUID userId, Long eventId) {
 
-        if (eventRegistrationRepo.existsByUserIdAndEventIdAndStatus(
+        if (eventRegistrationRepository.existsByUserIdAndEventIdAndStatus(
                 userId, eventId, RegistrationStatus.PENDING)) {
             return ActionResponse.failure("Registration is already pending");
         }
 
-        if (!eventRepo.existsById(eventId)) {
+        if (!eventRepository.existsById(eventId)) {
             return ActionResponse.failure(
                     String.format("Event not found (eventId: %d)", eventId));
         }
 
-        if (roleInEventRepo.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
+        if (roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
                 userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
             return ActionResponse.failure(
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
-        UserProfile userProfile = userProfileRepo.getReferenceById(userId);
-        Event event = eventRepo.getReferenceById(eventId);
+        UserProfile userProfile = userProfileRepository.getReferenceById(userId);
+        Event event = eventRepository.getReferenceById(eventId);
 
         EventRegistration reg = EventRegistration.builder()
                 .registrationId(snowflakeIdGenerator.nextId())
@@ -130,7 +130,7 @@ public class EventRegistrationService implements IEventRegistrationService {
                 .event(event)
                 .build();
 
-        eventRegistrationRepo.save(reg);
+        eventRegistrationRepository.save(reg);
 
         return ActionResponse.success(
                 reg.getRegistrationId().toString(),
@@ -140,7 +140,7 @@ public class EventRegistrationService implements IEventRegistrationService {
 
     @Override
     public ActionResponse<Void> unregisterEvent(UUID userId, Long eventId) {
-        EventRegistration reg = eventRegistrationRepo.findByUserIdAndEventIdAndStatus(
+        EventRegistration reg = eventRegistrationRepository.findByUserIdAndEventIdAndStatus(
                 userId, eventId, RegistrationStatus.PENDING).orElse(null);
 
         if (reg == null) {
@@ -149,7 +149,7 @@ public class EventRegistrationService implements IEventRegistrationService {
         }
 
         reg.setStatus(RegistrationStatus.CANCELLED_BY_USER);
-        eventRegistrationRepo.save(reg);
+        eventRegistrationRepository.save(reg);
 
         return ActionResponse.success(
                 reg.getRegistrationId().toString(),

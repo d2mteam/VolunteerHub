@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class JwtService {
@@ -31,6 +32,7 @@ public class JwtService {
     public String generateAccessToken(UUID userId, List<String> roles) {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .claim("token_type", "access_token")
+                .jwtID(randomJti())
                 .claim("user_id", userId.toString())
                 .claim("roles", roles)
                 .issueTime(new Date())
@@ -42,6 +44,7 @@ public class JwtService {
     public String generateAccessToken(UUID userId) {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .claim("token_type", "access_token")
+                .jwtID(randomJti())
                 .claim("user_id", userId.toString())
                 .issueTime(new Date())
                 .expirationTime(new Date(System.currentTimeMillis() + jwtAccessExpirationMs))
@@ -52,6 +55,7 @@ public class JwtService {
     public String generateRefreshToken(UUID userId) {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .claim("token_type", "refresh_token")
+                .jwtID(randomJti())
                 .claim("user_id", userId.toString())
                 .issueTime(new Date())
                 .expirationTime(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
@@ -96,6 +100,24 @@ public class JwtService {
         }
     }
 
+    public Optional<String> getJti(String token) {
+        try {
+            JWTClaimsSet claims = parseAndValidate(token);
+            return Optional.ofNullable(claims.getJWTID());
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Date> getExpiration(String token) {
+        try {
+            JWTClaimsSet claims = parseAndValidate(token);
+            return Optional.ofNullable(claims.getExpirationTime());
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
     // PRIVATE UTILS
 
     private JWTClaimsSet parseAndValidate(String token) {
@@ -134,5 +156,9 @@ public class JwtService {
         } catch (JOSEException e) {
             throw new JwtException("Token signing failed", e);
         }
+    }
+
+    private String randomJti() {
+        return new UUID(ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong()).toString();
     }
 }
