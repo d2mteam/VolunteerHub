@@ -13,18 +13,23 @@ import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IEventRegistrationService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 @Transactional
 @AllArgsConstructor
 public class EventRegistrationService implements IEventRegistrationService {
+
+    private static final Set<ParticipationStatus> ACTIVE_PARTICIPATION =
+            Set.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED);
 
     private final EventRegistrationRepository eventRegistrationRepository;
     private final RoleInEventRepository roleInEventRepository;
@@ -49,8 +54,9 @@ public class EventRegistrationService implements IEventRegistrationService {
         Long eventId = reg.getEventId();
         UUID userId = reg.getUserId();
 
-        if (roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
-                userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
+        Optional<RoleInEvent> existingRole = roleInEventRepository
+                .findByUserProfile_UserIdAndEvent_EventId(userId, eventId);
+        if (existingRole.map(RoleInEvent::getParticipationStatus).filter(ACTIVE_PARTICIPATION::contains).isPresent()) {
             return ActionResponse.failure(
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
@@ -58,10 +64,12 @@ public class EventRegistrationService implements IEventRegistrationService {
         reg.setStatus(RegistrationStatus.APPROVED);
         eventRegistrationRepository.save(reg);
 
-        RoleInEvent roleInEvent = RoleInEvent.builder()
+        RoleInEvent roleInEvent = existingRole.orElseGet(() -> RoleInEvent.builder()
+                .id(snowflakeIdGenerator.nextId())
                 .event(reg.getEvent())
                 .userProfile(reg.getUserProfile())
-                .build();
+                .build());
+        roleInEvent.setParticipationStatus(ParticipationStatus.APPROVED);
         roleInEventRepository.save(roleInEvent);
 
         return ActionResponse.success(
@@ -87,8 +95,10 @@ public class EventRegistrationService implements IEventRegistrationService {
         Long eventId = reg.getEventId();
         UUID userId = reg.getUserId();
 
-        if (roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
-                userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
+        if (roleInEventRepository.findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
+                .map(RoleInEvent::getParticipationStatus)
+                .filter(ACTIVE_PARTICIPATION::contains)
+                .isPresent()) {
             return ActionResponse.failure(
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
@@ -105,24 +115,28 @@ public class EventRegistrationService implements IEventRegistrationService {
     @Override
     public ActionResponse<Void> registerEvent(UUID userId, Long eventId) {
 
-        if (eventRegistrationRepository.existsByUserIdAndEventIdAndStatus(
-                userId, eventId, RegistrationStatus.PENDING)) {
-            return ActionResponse.failure("Registration is already pending");
-        }
-
-        if (!eventRepository.existsById(eventId)) {
+        Optional<Event> eventOptional = eventRepository.findById(eventId);
+        if (eventOptional.isEmpty()) {
             return ActionResponse.failure(
                     String.format("Event not found (eventId: %d)", eventId));
         }
 
-        if (roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
-                userId, eventId, List.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED))) {
+        Optional<EventRegistration> pendingRegistration = eventRegistrationRepository
+                .findByUserIdAndEventIdAndStatus(userId, eventId, RegistrationStatus.PENDING);
+        if (pendingRegistration.isPresent()) {
+            return ActionResponse.failure("Registration is already pending");
+        }
+
+        if (roleInEventRepository.findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
+                .map(RoleInEvent::getParticipationStatus)
+                .filter(ACTIVE_PARTICIPATION::contains)
+                .isPresent()) {
             return ActionResponse.failure(
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
         UserProfile userProfile = userProfileRepository.getReferenceById(userId);
-        Event event = eventRepository.getReferenceById(eventId);
+        Event event = eventOptional.get();
 
         EventRegistration reg = EventRegistration.builder()
                 .registrationId(snowflakeIdGenerator.nextId())

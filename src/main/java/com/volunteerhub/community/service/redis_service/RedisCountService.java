@@ -1,17 +1,16 @@
 package com.volunteerhub.community.service.redis_service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class RedisCountService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisLikeService redisLikeService;
 
     public int likeCount(Long targetId, String targetType) {
-        return -1;
+        return Math.toIntExact(redisLikeService.likeCount(targetId, targetType));
     }
 
     public int commentCount(Long postId) {

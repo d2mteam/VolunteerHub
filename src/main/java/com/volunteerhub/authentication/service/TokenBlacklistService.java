@@ -27,8 +27,7 @@ public class TokenBlacklistService {
         if (jti == null) {
             return false;
         }
-        Boolean exists = redisTemplate.hasKey(key(jti));
-        return Boolean.TRUE.equals(exists);
+        return redisTemplate.hasKey(key(jti));
     }
 
     private String key(String jti) {

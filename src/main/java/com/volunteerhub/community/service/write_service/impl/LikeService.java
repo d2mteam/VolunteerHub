@@ -1,11 +1,8 @@
 package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.ActionResponse;
-import com.volunteerhub.community.model.Like;
-import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.model.db_enum.TableType;
-import com.volunteerhub.community.repository.LikeRepository;
-import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.redis_service.RedisLikeService;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,26 +17,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LikeService implements ILikeService {
 
-    private final LikeRepository likeRepository;
-    private final UserProfileRepository userProfileRepository;
+    private final RedisLikeService redisLikeService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
     public ActionResponse<Void> like(UUID userId, Long targetId, String targetType) {
-        UserProfile userProfile = userProfileRepository.getReferenceById(userId);
+        TableType.valueOf(targetType); // validate enum, sẽ throw nếu sai
 
-        Like like = Like.builder()
-                .likeId(idGenerator.nextId())
-                .targetId(targetId)
-                .tableType(TableType.valueOf(targetType))
-                .createdBy(userProfile)
-                .build();
-
-        likeRepository.save(like);
-
+        Long likeId = idGenerator.nextId();
+        redisLikeService.like(targetId, targetType, userId, likeId);
         LocalDateTime now = LocalDateTime.now();
         return ActionResponse.success(
-                like.getLikeId().toString(),
+                likeId.toString(),
                 now,
                 now
         );
@@ -48,16 +36,12 @@ public class LikeService implements ILikeService {
 
     @Override
     public ActionResponse<Void> unlike(UUID userId, Long targetId, String targetType) {
-        Optional<Like> existing = likeRepository.findByTargetIdAndTableType(targetId, TableType.valueOf(targetType));
-        if (existing.isEmpty()) {
-            return ActionResponse.failure("Like not found");
-        }
+        TableType.valueOf(targetType); // validate enum
 
-        likeRepository.deleteById(existing.get().getLikeId());
-
+        Long likeId = redisLikeService.unlike(targetId, targetType, userId);
         LocalDateTime now = LocalDateTime.now();
         return ActionResponse.success(
-                existing.get().getLikeId().toString(),
+                likeId != null ? likeId.toString() : targetId.toString(),
                 now,
                 now
         );
