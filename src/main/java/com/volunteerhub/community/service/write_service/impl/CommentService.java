@@ -6,9 +6,13 @@ import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.model.Comment;
 import com.volunteerhub.community.model.Post;
 import com.volunteerhub.community.model.UserProfile;
+import com.volunteerhub.community.model.permission.Permission;
+import com.volunteerhub.community.model.permission.ResourceNode;
+import com.volunteerhub.community.model.permission.ResourceType;
 import com.volunteerhub.community.repository.CommentRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.permission.PermissionGraphService;
 import com.volunteerhub.community.service.write_service.ICommentService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +31,14 @@ public class CommentService implements ICommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
+    private final PermissionGraphService permissionGraphService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
     public ActionResponse<Void> createComment(UUID userId, CreateCommentInput input) {
         UserProfile userProfile = userProfileRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(input.getPostId());
+        permissionGraphService.assertPermission(userId, ResourceType.POST, post.getPostId(), Permission.COMMENT);
 
         Comment saved = Comment.builder()
                 .commentId(idGenerator.nextId())
@@ -42,6 +48,9 @@ public class CommentService implements ICommentService {
                 .build();
 
         commentRepository.save(saved);
+
+        ResourceNode postNode = permissionGraphService.getNode(ResourceType.POST, post.getPostId());
+        permissionGraphService.registerChildResource(ResourceType.COMMENT, saved.getCommentId(), userId, postNode, Permission.MODERATE);
 
         LocalDateTime now = LocalDateTime.now();
         return ActionResponse.success(
@@ -59,6 +68,7 @@ public class CommentService implements ICommentService {
         }
 
         Comment comment = optional.get();
+        permissionGraphService.assertPermission(userId, ResourceType.COMMENT, comment.getCommentId(), Permission.MODERATE);
         comment.setContent(input.getContent());
         commentRepository.save(comment);
 
@@ -76,6 +86,8 @@ public class CommentService implements ICommentService {
             return ActionResponse.failure("Comment not found");
         }
 
+        permissionGraphService.assertPermission(userId, ResourceType.COMMENT, commentId, Permission.MODERATE);
+        permissionGraphService.softDelete(ResourceType.COMMENT, commentId);
         commentRepository.deleteById(commentId);
         LocalDateTime now = LocalDateTime.now();
 
