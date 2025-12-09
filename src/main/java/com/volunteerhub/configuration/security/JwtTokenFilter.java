@@ -1,6 +1,8 @@
 package com.volunteerhub.configuration.security;
 
 import com.volunteerhub.authentication.service.JwtService;
+import com.volunteerhub.authentication.service.JwtService.DecodedToken;
+import com.volunteerhub.ultis.exception.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +19,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,29 +30,37 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
         String token = extractJwt(request);
 
-        if (token != null && jwtService.validateToken(token)) {
-            authenticate(token);
-        } else {
-            authenticateAnonymous();
+        if (token != null) {
+            try {
+                DecodedToken decoded = jwtService.decodeAndValidate(token);
+
+                // Chỉ access token mới được authenticate
+                if ("access_token".equals(decoded.type())) {
+                    authenticate(decoded);
+                }
+
+            } catch (JwtException | ParseException e) {
+                // Token lỗi → bỏ qua, để anonymous
+                // Không ném error tại filter này
+            }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void authenticate(String token) {
-        UUID userId = jwtService.getUserIdFromToken(token).orElse(null);
-        List<String> roles = jwtService.rolesFromToken(token).orElse(null);
+    private void authenticate(DecodedToken decoded) {
+        UUID userId = decoded.userId();
+        List<String> roles = decoded.roles();
 
-        if (userId == null || roles == null) {
-            return;
-        }
+        if (userId == null || roles == null) return;
 
         List<SimpleGrantedAuthority> authorities =
                 roles.stream().map(SimpleGrantedAuthority::new).toList();
@@ -66,11 +77,5 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return header.substring(7);
         }
         return null;
-    }
-
-    private void authenticateAnonymous() {
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ANONYMOUS"));
-        Authentication auth = new UsernamePasswordAuthenticationToken("ANONYMOUS", null, authorities);
-        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 }
