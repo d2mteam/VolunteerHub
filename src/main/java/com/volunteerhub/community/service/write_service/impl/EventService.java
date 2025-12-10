@@ -8,9 +8,12 @@ import com.volunteerhub.community.model.RoleInEvent;
 import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.model.db_enum.EventRole;
 import com.volunteerhub.community.model.db_enum.EventState;
+import com.volunteerhub.community.model.permission.Permission;
+import com.volunteerhub.community.model.permission.ResourceType;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.permission.PermissionGraphService;
 import com.volunteerhub.community.service.write_service.IEventService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ public class EventService implements IEventService {
     private final EventRepository eventRepository;
     private final RoleInEventRepository roleInEventRepository;
     private final UserProfileRepository userProfileRepository;
+    private final PermissionGraphService permissionGraphService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
@@ -68,6 +72,8 @@ public class EventService implements IEventService {
 
         roleInEventRepository.save(roleInEvent);
 
+        permissionGraphService.registerRootResource(ResourceType.EVENT, event.getEventId(), userId);
+
         return ActionResponse.success(
                 event.getEventId().toString(),
                 LocalDateTime.now(),
@@ -82,6 +88,7 @@ public class EventService implements IEventService {
         }
 
         Event event = optional.get();
+        permissionGraphService.assertPermission(userId, ResourceType.EVENT, event.getEventId(), Permission.MODERATE);
         event.setEventName(input.getEventName());
         event.setEventDescription(input.getEventDescription());
         event.setEventLocation(input.getEventLocation());
@@ -100,6 +107,8 @@ public class EventService implements IEventService {
             return ActionResponse.failure(String.format("Event with id %d does not exist", eventId));
         }
 
+        permissionGraphService.assertPermission(userId, ResourceType.EVENT, eventId, Permission.ADMIN);
+        permissionGraphService.softDelete(ResourceType.EVENT, eventId);
         eventRepository.deleteById(eventId);
 
         return ActionResponse.success(

@@ -6,9 +6,13 @@ import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.Post;
 import com.volunteerhub.community.model.UserProfile;
+import com.volunteerhub.community.model.permission.Permission;
+import com.volunteerhub.community.model.permission.ResourceNode;
+import com.volunteerhub.community.model.permission.ResourceType;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.permission.PermissionGraphService;
 import com.volunteerhub.community.service.write_service.IPostService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +31,14 @@ public class PostService implements IPostService {
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
     private final EventRepository eventRepository;
+    private final PermissionGraphService permissionGraphService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
     public ActionResponse<Void> createPost(UUID userId, CreatePostInput input) {
         UserProfile userProfile = userProfileRepository.getReferenceById(userId);
         Event event = eventRepository.getReferenceById(input.getEventId());
+        permissionGraphService.assertPermission(userId, ResourceType.EVENT, event.getEventId(), Permission.POST);
 
         Post post = Post.builder()
                 .postId(idGenerator.nextId())
@@ -42,6 +48,9 @@ public class PostService implements IPostService {
                 .build();
 
         postRepository.save(post);
+
+        ResourceNode eventNode = permissionGraphService.getNode(ResourceType.EVENT, event.getEventId());
+        permissionGraphService.registerChildResource(ResourceType.POST, post.getPostId(), userId, eventNode, Permission.MODERATE);
 
         LocalDateTime now = LocalDateTime.now();
         return ActionResponse.success(
@@ -59,6 +68,7 @@ public class PostService implements IPostService {
         }
 
         Post post = optional.get();
+        permissionGraphService.assertPermission(userId, ResourceType.POST, post.getPostId(), Permission.MODERATE);
         post.setContent(input.getContent());
         postRepository.save(post);
 
@@ -76,6 +86,8 @@ public class PostService implements IPostService {
             return ActionResponse.failure("Post not found");
         }
 
+        permissionGraphService.assertPermission(userId, ResourceType.POST, postId, Permission.MODERATE);
+        permissionGraphService.softDelete(ResourceType.POST, postId);
         postRepository.deleteById(postId);
 
         LocalDateTime now = LocalDateTime.now();
