@@ -1,0 +1,50 @@
+package com.volunteerhub.community.controller.rest;
+
+import com.volunteerhub.authentication.model.RolePermission;
+import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
+import com.volunteerhub.community.dto.graphql.input.EditPostInput;
+import com.volunteerhub.community.dto.rest.request.UpdatePostRequest;
+import com.volunteerhub.community.service.write_service.IPostService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/posts")
+@RequiredArgsConstructor
+public class PostController {
+
+    private final IPostService postService;
+
+    @PostMapping
+    @PreAuthorize(RolePermission.USER)
+    public ResponseEntity<ActionResponse<Void>> createPost(@AuthenticationPrincipal UUID userId,
+                                                           @Valid @RequestBody CreatePostInput input) {
+        return ResponseEntity.ok(postService.createPost(userId, input));
+    }
+
+    @PutMapping("/{postId}")
+    @PreAuthorize(RolePermission.USER)
+    public ResponseEntity<ActionResponse<Void>> editPost(@AuthenticationPrincipal UUID userId,
+                                                         @PathVariable Long postId,
+                                                         @Valid @RequestBody UpdatePostRequest request) {
+        EditPostInput input = EditPostInput.builder()
+                .postId(postId)
+                .content(request.getContent())
+                .build();
+        return ResponseEntity.ok(postService.editPost(userId, input));
+    }
+
+    @DeleteMapping("/{postId}")
+    @PreAuthorize(RolePermission.USER)
+    public ResponseEntity<ActionResponse<Void>> deletePost(@AuthenticationPrincipal UUID userId,
+                                                           @PathVariable Long postId) {
+        return ResponseEntity.ok(postService.deletePost(userId, postId));
+    }
+}

@@ -4,6 +4,7 @@ import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
 import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.IEventService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -22,8 +23,8 @@ public class EventMutation {
 
     @MutationMapping
     @PreAuthorize(RolePermission.ADMIN)
-    public ActionResponse<Void> approveEvent(@AuthenticationPrincipal UUID userId,
-                                             @Argument Long eventId) {
+    public ModerationResponse approveEvent(@AuthenticationPrincipal UUID userId,
+                                           @Argument Long eventId) {
         return eventService.approveEvent(eventId);
     }
 

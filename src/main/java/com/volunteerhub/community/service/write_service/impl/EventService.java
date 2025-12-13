@@ -3,6 +3,9 @@ package com.volunteerhub.community.service.write_service.impl;
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
 import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationAction;
+import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationStatus;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.RoleInEvent;
 import com.volunteerhub.community.model.UserProfile;
@@ -32,15 +35,23 @@ public class EventService implements IEventService {
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    public ActionResponse<Void> approveEvent(Long eventId) {
+    public ModerationResponse approveEvent(Long eventId) {
         int result = eventRepository.updateEventStatus(eventId, EventState.ACCEPTED);
 
         if (result == 0) {
-            return ActionResponse.failure("Event approval failed");
+            return ModerationResponse.failure(
+                    ModerationAction.APPROVE_EVENT,
+                    "EVENT",
+                    eventId.toString(),
+                    "Event approval failed");
         }
 
-        return ActionResponse.success(eventId.toString(),
-                null,
+        return ModerationResponse.success(
+                ModerationAction.APPROVE_EVENT,
+                "EVENT",
+                eventId.toString(),
+                ModerationStatus.APPROVED,
+                "Event approved",
                 LocalDateTime.now());
     }
 

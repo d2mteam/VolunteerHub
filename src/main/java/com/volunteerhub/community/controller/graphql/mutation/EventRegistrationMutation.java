@@ -2,8 +2,7 @@ package com.volunteerhub.community.controller.graphql.mutation;
 
 import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.ActionResponse;
-
-
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.IEventRegistrationService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -22,13 +21,13 @@ public class EventRegistrationMutation {
 
     @MutationMapping
     @PreAuthorize(RolePermission.EVENT_MANAGER)
-    public ActionResponse<Void> approveRegistration(@Argument Long registrationId) {
+    public ModerationResponse approveRegistration(@Argument Long registrationId) {
         return eventRegistrationService.approveRegistration(registrationId);
     }
 
     @MutationMapping
     @PreAuthorize(RolePermission.EVENT_MANAGER)
-    public ActionResponse<Void> rejectRegistration(@Argument Long registrationId) {
+    public ModerationResponse rejectRegistration(@Argument Long registrationId) {
         return eventRegistrationService.rejectRegistration(registrationId);
     }
 
