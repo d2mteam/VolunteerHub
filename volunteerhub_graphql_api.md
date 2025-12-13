@@ -115,6 +115,100 @@ Authorization: Bearer <accessToken>
 
 ---
 
+## 🔹 REST API for **Write** Operations
+
+> Tách các thao tác **create / update / delete** khỏi GraphQL; các route sau trả về schema giống `MutationResult` (`ok`, `id`, `message`, `createdAt`, `updatedAt`).
+
+### 📝 Posts (`USER`)
+
+```
+POST   /api/posts                      # create post
+PUT    /api/posts/{postId}             # edit post
+DELETE /api/posts/{postId}             # delete post
+```
+
+**Request body (create/edit):**
+
+```json
+{
+  "eventId": "<eventId>",
+  "content": "<text>"
+}
+```
+
+### 💬 Comments (`USER`)
+
+```
+POST   /api/comments                   # create comment
+PUT    /api/comments/{commentId}       # edit comment
+DELETE /api/comments/{commentId}       # delete comment
+```
+
+**Request body (create/edit):**
+
+```json
+{
+  "postId": "<postId>",
+  "content": "<text>"
+}
+```
+
+### ❤️ Likes (`USER`)
+
+```
+POST   /api/likes                      # like (body: targetId, targetType)
+DELETE /api/likes                      # unlike (body: targetId, targetType)
+```
+
+### 🎟️ Event Participation (`USER`)
+
+```
+POST   /api/events/{eventId}/registrations     # register
+DELETE /api/events/{eventId}/registrations     # unregister
+POST   /api/event-registrations/{id}/approve   # approve registration
+POST   /api/event-registrations/{id}/reject    # reject registration
+```
+
+### 🧭 Event Management (`EVENT_MANAGER`)
+
+```
+POST   /api/events                     # create event
+PUT    /api/events/{eventId}           # edit event
+DELETE /api/events/{eventId}           # delete event
+POST   /api/events/{eventId}/approve   # approve event (ADMIN)
+```
+
+**Request body (create/edit):**
+
+```json
+{
+  "eventName": "<text>",
+  "eventDescription": "<text>",
+  "eventLocation": "<text>"
+}
+```
+
+### 🛡️ Admin / Event Manager Moderation
+
+```
+POST   /api/users/{userId}/ban           # ban user
+DELETE /api/users/{userId}/ban           # unban user
+```
+
+**Response (tất cả route ghi):**
+
+```json
+{
+  "ok": true,
+  "id": "773316679898759168",
+  "message": "Success",
+  "createdAt": "2025-11-04T07:52:12.124Z",
+  "updatedAt": "2025-11-04T07:52:12.124Z"
+}
+```
+
+---
+
 ## 🔹 GraphQL API
 
 **Base URL:**
