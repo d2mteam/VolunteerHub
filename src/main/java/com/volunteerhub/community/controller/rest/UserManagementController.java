@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.IUserManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +19,13 @@ public class UserManagementController {
 
     @PostMapping("/{userId}/ban")
     @PreAuthorize(RolePermission.ADMIN)
-    public ResponseEntity<ActionResponse<Void>> banUser(@PathVariable UUID userId) {
+    public ResponseEntity<ModerationResponse> banUser(@PathVariable UUID userId) {
         return ResponseEntity.ok(userManagerService.banUser(userId));
     }
 
     @DeleteMapping("/{userId}/ban")
     @PreAuthorize(RolePermission.ADMIN)
-    public ResponseEntity<ActionResponse<Void>> unbanUser(@PathVariable UUID userId) {
+    public ResponseEntity<ModerationResponse> unbanUser(@PathVariable UUID userId) {
         return ResponseEntity.ok(userManagerService.unbanUser(userId));
     }
 }

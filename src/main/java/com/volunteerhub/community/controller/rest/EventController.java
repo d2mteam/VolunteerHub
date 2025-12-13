@@ -2,6 +2,7 @@ package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
 import com.volunteerhub.community.dto.rest.request.UpdateEventRequest;
@@ -53,8 +54,8 @@ public class EventController {
 
     @PostMapping("/{eventId}/approve")
     @PreAuthorize(RolePermission.ADMIN)
-    public ResponseEntity<ActionResponse<Void>> approveEvent(@AuthenticationPrincipal UUID userId,
-                                                             @PathVariable Long eventId) {
+    public ResponseEntity<ModerationResponse> approveEvent(@AuthenticationPrincipal UUID userId,
+                                                           @PathVariable Long eventId) {
         return ResponseEntity.ok(eventService.approveEvent(eventId));
     }
 }

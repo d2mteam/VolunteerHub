@@ -1,6 +1,9 @@
 package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationAction;
+import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationStatus;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.EventRegistration;
 import com.volunteerhub.community.model.RoleInEvent;
@@ -38,16 +41,22 @@ public class EventRegistrationService implements IEventRegistrationService {
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
-    public ActionResponse<Void> approveRegistration(Long registrationId) {
+    public ModerationResponse approveRegistration(Long registrationId) {
         EventRegistration reg = eventRegistrationRepository.findById(registrationId).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.APPROVE_REGISTRATION,
+                    "EVENT_REGISTRATION",
+                    registrationId.toString(),
                     String.format("Registration not found (registrationId: %d)", registrationId));
         }
 
         if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.APPROVE_REGISTRATION,
+                    "EVENT_REGISTRATION",
+                    registrationId.toString(),
                     "Registration cannot be approved because it has already been processed");
         }
 
@@ -57,7 +66,10 @@ public class EventRegistrationService implements IEventRegistrationService {
         Optional<RoleInEvent> existingRole = roleInEventRepository
                 .findByUserProfile_UserIdAndEvent_EventId(userId, eventId);
         if (existingRole.map(RoleInEvent::getParticipationStatus).filter(ACTIVE_PARTICIPATION::contains).isPresent()) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.APPROVE_REGISTRATION,
+                    "EVENT_REGISTRATION",
+                    registrationId.toString(),
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
@@ -72,23 +84,32 @@ public class EventRegistrationService implements IEventRegistrationService {
         roleInEvent.setParticipationStatus(ParticipationStatus.APPROVED);
         roleInEventRepository.save(roleInEvent);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.APPROVE_REGISTRATION,
+                "EVENT_REGISTRATION",
                 registrationId.toString(),
-                null,
+                ModerationStatus.APPROVED,
+                "Registration approved",
                 LocalDateTime.now());
     }
 
     @Override
-    public ActionResponse<Void> rejectRegistration(Long registrationId) {
+    public ModerationResponse rejectRegistration(Long registrationId) {
         EventRegistration reg = eventRegistrationRepository.findById(registrationId).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.REJECT_REGISTRATION,
+                    "EVENT_REGISTRATION",
+                    registrationId.toString(),
                     String.format("Registration not found (registrationId: %d)", registrationId));
         }
 
         if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.REJECT_REGISTRATION,
+                    "EVENT_REGISTRATION",
+                    registrationId.toString(),
                     "Registration cannot be updated because it has already been processed");
         }
 
@@ -99,16 +120,22 @@ public class EventRegistrationService implements IEventRegistrationService {
                 .map(RoleInEvent::getParticipationStatus)
                 .filter(ACTIVE_PARTICIPATION::contains)
                 .isPresent()) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.REJECT_REGISTRATION,
+                    "EVENT_REGISTRATION",
+                    registrationId.toString(),
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
         reg.setStatus(RegistrationStatus.REJECTED);
         eventRegistrationRepository.save(reg);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.REJECT_REGISTRATION,
+                "EVENT_REGISTRATION",
                 registrationId.toString(),
-                null,
+                ModerationStatus.REJECTED,
+                "Registration rejected",
                 LocalDateTime.now());
     }
 

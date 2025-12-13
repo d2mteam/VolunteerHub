@@ -195,15 +195,17 @@ POST   /api/users/{userId}/ban           # ban user
 DELETE /api/users/{userId}/ban           # unban user
 ```
 
-**Response (tất cả route ghi):**
+**Response (moderation route):**
 
 ```json
 {
   "ok": true,
-  "id": "773316679898759168",
-  "message": "Success",
-  "createdAt": "2025-11-04T07:52:12.124Z",
-  "updatedAt": "2025-11-04T07:52:12.124Z"
+  "action": "BAN_USER",
+  "targetType": "USER",
+  "targetId": "c5b05670-5f6d-4e5b-9d82-5c34a8b9bf9b",
+  "status": "BANNED",
+  "message": "User c5b05670-5f6d-4e5b-9d82-5c34a8b9bf9b has been banned",
+  "moderatedAt": "2025-11-04T07:52:12.124Z"
 }
 ```
 
@@ -372,7 +374,7 @@ query {
 
 ## 🔸 Mutation Examples (Write)
 
-Tất cả mutation trả về **MutationResult**:
+- Các mutation tạo/sửa/xóa (post/comment/event/like/register/unregister) trả về **MutationResult**:
 
 ```graphql
 {
@@ -381,6 +383,20 @@ Tất cả mutation trả về **MutationResult**:
     message: String
     createdAt: String
     updatedAt: String
+}
+```
+
+- Các mutation moderation (phê duyệt sự kiện, duyệt/ từ chối đăng ký, ban/unban user) trả về **ModerationResponse**:
+
+```graphql
+{
+    ok: Boolean!
+    action: ModerationAction!
+    targetType: String!
+    targetId: ID!
+    status: ModerationStatus
+    message: String
+    moderatedAt: String
 }
 ```
 

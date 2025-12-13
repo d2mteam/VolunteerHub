@@ -2,6 +2,7 @@ package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.IEventRegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,13 +35,13 @@ public class EventRegistrationController {
 
     @PostMapping("/event-registrations/{registrationId}/approve")
     @PreAuthorize(RolePermission.EVENT_MANAGER)
-    public ResponseEntity<ActionResponse<Void>> approveRegistration(@PathVariable Long registrationId) {
+    public ResponseEntity<ModerationResponse> approveRegistration(@PathVariable Long registrationId) {
         return ResponseEntity.ok(eventRegistrationService.approveRegistration(registrationId));
     }
 
     @PostMapping("/event-registrations/{registrationId}/reject")
     @PreAuthorize(RolePermission.EVENT_MANAGER)
-    public ResponseEntity<ActionResponse<Void>> rejectRegistration(@PathVariable Long registrationId) {
+    public ResponseEntity<ModerationResponse> rejectRegistration(@PathVariable Long registrationId) {
         return ResponseEntity.ok(eventRegistrationService.rejectRegistration(registrationId));
     }
 }
