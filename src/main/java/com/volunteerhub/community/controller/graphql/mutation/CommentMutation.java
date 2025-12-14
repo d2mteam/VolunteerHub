@@ -2,7 +2,7 @@ package com.volunteerhub.community.controller.graphql.mutation;
 
 import com.volunteerhub.community.dto.graphql.input.CreateCommentInput;
 import com.volunteerhub.community.dto.graphql.input.EditCommentInput;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.ICommentService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -18,20 +18,20 @@ public class CommentMutation {
     private final ICommentService commentService;
 
     @MutationMapping
-    public ActionResponse<Void> createComment(@AuthenticationPrincipal UUID userId,
-                                              @Argument CreateCommentInput input) {
+    public ModerationResponse createComment(@AuthenticationPrincipal UUID userId,
+                                            @Argument CreateCommentInput input) {
         return commentService.createComment(userId, input);
     }
 
     @MutationMapping
-    public ActionResponse<Void> editComment(@AuthenticationPrincipal UUID userId,
-                                            @Argument EditCommentInput input) {
+    public ModerationResponse editComment(@AuthenticationPrincipal UUID userId,
+                                          @Argument EditCommentInput input) {
         return commentService.editComment(userId, input);
     }
 
     @MutationMapping
-    public ActionResponse<Void> deleteComment(@AuthenticationPrincipal UUID userId,
-                                              @Argument Long commentId) {
+    public ModerationResponse deleteComment(@AuthenticationPrincipal UUID userId,
+                                            @Argument Long commentId) {
         return commentService.deleteComment(userId, commentId);
     }
 

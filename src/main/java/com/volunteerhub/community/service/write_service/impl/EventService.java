@@ -2,7 +2,6 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
-import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.dto.ModerationAction;
 import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.dto.ModerationStatus;
@@ -56,7 +55,7 @@ public class EventService implements IEventService {
     }
 
     @Override
-    public ActionResponse<Void> createEvent(UUID userId, CreateEventInput input) {
+    public ModerationResponse createEvent(UUID userId, CreateEventInput input) {
         UserProfile creator = userProfileRepository.getReferenceById(userId);
 
         Event event = Event.builder()
@@ -79,17 +78,24 @@ public class EventService implements IEventService {
 
         roleInEventRepository.save(roleInEvent);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.CREATE_EVENT,
+                "EVENT",
                 event.getEventId().toString(),
-                LocalDateTime.now(),
-                null);
+                ModerationStatus.CREATED,
+                "Event created",
+                LocalDateTime.now());
     }
 
     @Override
-    public ActionResponse<Void> editEvent(UUID userId, EditEventInput input) {
+    public ModerationResponse editEvent(UUID userId, EditEventInput input) {
         Optional<Event> optional = eventRepository.findById(input.getEventId());
         if (optional.isEmpty()) {
-            return ActionResponse.failure("Event not found");
+            return ModerationResponse.failure(
+                    ModerationAction.EDIT_EVENT,
+                    "EVENT",
+                    input.getEventId().toString(),
+                    "Event not found");
         }
 
         Event event = optional.get();
@@ -98,24 +104,34 @@ public class EventService implements IEventService {
         event.setEventLocation(input.getEventLocation());
         eventRepository.save(event);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.EDIT_EVENT,
+                "EVENT",
                 event.getEventId().toString(),
-                null,
+                ModerationStatus.UPDATED,
+                "Event updated",
                 LocalDateTime.now());
     }
 
     @Override
-    public ActionResponse<Void> deleteEvent(UUID userId, Long eventId) {
+    public ModerationResponse deleteEvent(UUID userId, Long eventId) {
         boolean exists = eventRepository.existsById(eventId);
         if (!exists) {
-            return ActionResponse.failure(String.format("Event with id %d does not exist", eventId));
+            return ModerationResponse.failure(
+                    ModerationAction.DELETE_EVENT,
+                    "EVENT",
+                    eventId.toString(),
+                    String.format("Event with id %d does not exist", eventId));
         }
 
         eventRepository.deleteById(eventId);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.DELETE_EVENT,
+                "EVENT",
                 eventId.toString(),
-                null,
+                ModerationStatus.DELETED,
+                "Event deleted",
                 LocalDateTime.now());
     }
 }

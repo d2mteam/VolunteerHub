@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.dto.graphql.input.CreateCommentInput;
 import com.volunteerhub.community.dto.graphql.input.EditCommentInput;
 import com.volunteerhub.community.dto.rest.request.UpdateCommentRequest;
@@ -24,16 +24,16 @@ public class CommentController {
 
     @PostMapping
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> createComment(@AuthenticationPrincipal UUID userId,
-                                                              @Valid @RequestBody CreateCommentInput input) {
+    public ResponseEntity<ModerationResponse> createComment(@AuthenticationPrincipal UUID userId,
+                                                            @Valid @RequestBody CreateCommentInput input) {
         return ResponseEntity.ok(commentService.createComment(userId, input));
     }
 
     @PutMapping("/{commentId}")
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> editComment(@AuthenticationPrincipal UUID userId,
-                                                            @PathVariable Long commentId,
-                                                            @Valid @RequestBody UpdateCommentRequest request) {
+    public ResponseEntity<ModerationResponse> editComment(@AuthenticationPrincipal UUID userId,
+                                                          @PathVariable Long commentId,
+                                                          @Valid @RequestBody UpdateCommentRequest request) {
         EditCommentInput input = new EditCommentInput();
         input.setCommentId(commentId);
         input.setContent(request.getContent());
@@ -42,8 +42,8 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> deleteComment(@AuthenticationPrincipal UUID userId,
-                                                              @PathVariable Long commentId) {
+    public ResponseEntity<ModerationResponse> deleteComment(@AuthenticationPrincipal UUID userId,
+                                                            @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.deleteComment(userId, commentId));
     }
 }

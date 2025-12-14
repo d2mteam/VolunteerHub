@@ -3,7 +3,6 @@ package com.volunteerhub.community.controller.graphql.mutation;
 import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
 import com.volunteerhub.community.dto.graphql.input.EditEventInput;
-import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.IEventService;
 import jakarta.validation.Valid;
@@ -30,22 +29,22 @@ public class EventMutation {
 
     @MutationMapping
     @PreAuthorize(RolePermission.EVENT_MANAGER)
-    public ActionResponse<Void> createEvent(@AuthenticationPrincipal UUID userId,
-                                            @Valid @Argument CreateEventInput input) {
+    public ModerationResponse createEvent(@AuthenticationPrincipal UUID userId,
+                                          @Valid @Argument CreateEventInput input) {
         return eventService.createEvent(userId, input);
     }
 
     @MutationMapping
     @PreAuthorize(RolePermission.EVENT_MANAGER)
-    public ActionResponse<Void> editEvent(@AuthenticationPrincipal UUID userId,
-                                          @Valid @Argument EditEventInput input) {
+    public ModerationResponse editEvent(@AuthenticationPrincipal UUID userId,
+                                        @Valid @Argument EditEventInput input) {
         return eventService.editEvent(userId, input);
     }
 
     @MutationMapping
     @PreAuthorize(RolePermission.EVENT_MANAGER)
-    public ActionResponse<Void> deleteEvent(@AuthenticationPrincipal UUID userId,
-                                            @Valid @Argument Long eventId) {
+    public ModerationResponse deleteEvent(@AuthenticationPrincipal UUID userId,
+                                          @Valid @Argument Long eventId) {
         return eventService.deleteEvent(userId, eventId);
     }
 }

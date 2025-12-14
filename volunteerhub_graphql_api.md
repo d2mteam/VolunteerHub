@@ -374,19 +374,7 @@ query {
 
 ## 🔸 Mutation Examples (Write)
 
-- Các mutation tạo/sửa/xóa (post/comment/event/like/register/unregister) trả về **MutationResult**:
-
-```graphql
-{
-    ok: Boolean!
-    id: ID
-    message: String
-    createdAt: String
-    updatedAt: String
-}
-```
-
-- Các mutation moderation (phê duyệt sự kiện, duyệt/ từ chối đăng ký, ban/unban user) trả về **ModerationResponse**:
+- Tất cả mutation ghi (tạo/sửa/xóa post/comment/event, like/unlike, đăng ký/hủy đăng ký sự kiện, phê duyệt/từ chối, ban/unban, cập nhật hồ sơ) trả về **ModerationResponse** để phản ánh rõ hành động và trạng thái:
 
 ```graphql
 {

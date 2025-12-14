@@ -2,7 +2,9 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.CreateCommentInput;
 import com.volunteerhub.community.dto.graphql.input.EditCommentInput;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationAction;
+import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationStatus;
 import com.volunteerhub.community.model.Comment;
 import com.volunteerhub.community.model.Post;
 import com.volunteerhub.community.model.UserProfile;
@@ -30,7 +32,7 @@ public class CommentService implements ICommentService {
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    public ActionResponse<Void> createComment(UUID userId, CreateCommentInput input) {
+    public ModerationResponse createComment(UUID userId, CreateCommentInput input) {
         UserProfile userProfile = userProfileRepository.getReferenceById(userId);
         Post post = postRepository.getReferenceById(input.getPostId());
 
@@ -44,44 +46,63 @@ public class CommentService implements ICommentService {
         commentRepository.save(saved);
 
         LocalDateTime now = LocalDateTime.now();
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.CREATE_COMMENT,
+                "COMMENT",
                 saved.getCommentId().toString(),
-                now,
+                ModerationStatus.CREATED,
+                "Comment created",
                 now
         );
     }
 
     @Override
-    public ActionResponse<Void> editComment(UUID userId, EditCommentInput input) {
+    public ModerationResponse editComment(UUID userId, EditCommentInput input) {
         Optional<Comment> optional = commentRepository.findById(input.getCommentId());
         if (optional.isEmpty()) {
-            return ActionResponse.failure("Comment not found");
+            return ModerationResponse.failure(
+                    ModerationAction.EDIT_COMMENT,
+                    "COMMENT",
+                    input.getCommentId().toString(),
+                    "Comment not found"
+            );
         }
 
         Comment comment = optional.get();
         comment.setContent(input.getContent());
         commentRepository.save(comment);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.EDIT_COMMENT,
+                "COMMENT",
                 comment.getCommentId().toString(),
-                comment.getCreatedAt(),
+                ModerationStatus.UPDATED,
+                "Comment updated",
                 LocalDateTime.now()
         );
     }
 
     @Override
-    public ActionResponse<Void> deleteComment(UUID userId, Long commentId) {
+    public ModerationResponse deleteComment(UUID userId, Long commentId) {
         boolean exists = commentRepository.existsById(commentId);
         if (!exists) {
-            return ActionResponse.failure("Comment not found");
+            return ModerationResponse.failure(
+                    ModerationAction.DELETE_COMMENT,
+                    "COMMENT",
+                    commentId.toString(),
+                    "Comment not found"
+            );
         }
 
         commentRepository.deleteById(commentId);
         LocalDateTime now = LocalDateTime.now();
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.DELETE_COMMENT,
+                "COMMENT",
                 commentId.toString(),
-                now,
+                ModerationStatus.DELETED,
+                "Comment deleted",
                 now
         );
     }

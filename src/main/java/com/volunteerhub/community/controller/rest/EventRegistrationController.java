@@ -1,7 +1,6 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.IEventRegistrationService;
 import lombok.RequiredArgsConstructor;
@@ -21,15 +20,15 @@ public class EventRegistrationController {
 
     @PostMapping("/events/{eventId}/registrations")
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> registerEvent(@AuthenticationPrincipal UUID userId,
-                                                              @PathVariable Long eventId) {
+    public ResponseEntity<ModerationResponse> registerEvent(@AuthenticationPrincipal UUID userId,
+                                                            @PathVariable Long eventId) {
         return ResponseEntity.ok(eventRegistrationService.registerEvent(userId, eventId));
     }
 
     @DeleteMapping("/events/{eventId}/registrations")
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> unregisterEvent(@AuthenticationPrincipal UUID userId,
-                                                                @PathVariable Long eventId) {
+    public ResponseEntity<ModerationResponse> unregisterEvent(@AuthenticationPrincipal UUID userId,
+                                                              @PathVariable Long eventId) {
         return ResponseEntity.ok(eventRegistrationService.unregisterEvent(userId, eventId));
     }
 

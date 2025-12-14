@@ -1,7 +1,9 @@
 package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.rest.request.EditUserProfile;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationAction;
+import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationStatus;
 import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserProfileService;
@@ -21,10 +23,15 @@ public class UserProfileService implements IUserProfileService {
     private final UserProfileRepository userProfileRepository;
 
     @Override
-    public ActionResponse<Void> editUserProfile(UUID userId, EditUserProfile input) {
+    public ModerationResponse editUserProfile(UUID userId, EditUserProfile input) {
         Optional<UserProfile> optional = userProfileRepository.findById(userId);
         if (optional.isEmpty()) {
-            return ActionResponse.failure("User profile not found");
+            return ModerationResponse.failure(
+                    ModerationAction.EDIT_USER_PROFILE,
+                    "USER_PROFILE",
+                    userId.toString(),
+                    "User profile not found"
+            );
         }
 
         UserProfile userProfile = optional.get();
@@ -32,17 +39,25 @@ public class UserProfileService implements IUserProfileService {
         userProfile.setFullName(input.getFullName());
         userProfileRepository.save(userProfile);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.EDIT_USER_PROFILE,
+                "USER_PROFILE",
                 userProfile.getUserId().toString(),
-                null,
+                ModerationStatus.PROFILE_UPDATED,
+                "User profile updated",
                 LocalDateTime.now()
         );
     }
 
     @Override
-    public ActionResponse<Void> createUserProfile(UUID userId, EditUserProfile input) {
+    public ModerationResponse createUserProfile(UUID userId, EditUserProfile input) {
         if (userProfileRepository.existsById(userId)) {
-            return ActionResponse.failure("User profile already exists");
+            return ModerationResponse.failure(
+                    ModerationAction.CREATE_USER_PROFILE,
+                    "USER_PROFILE",
+                    userId.toString(),
+                    "User profile already exists"
+            );
         }
 
         UserProfile userProfile = UserProfile.builder()
@@ -53,9 +68,12 @@ public class UserProfileService implements IUserProfileService {
 
         userProfileRepository.save(userProfile);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.CREATE_USER_PROFILE,
+                "USER_PROFILE",
                 userProfile.getUserId().toString(),
-                userProfile.getCreatedAt(),
+                ModerationStatus.PROFILE_CREATED,
+                "User profile created",
                 LocalDateTime.now()
         );
     }

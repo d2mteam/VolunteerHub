@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
 import com.volunteerhub.community.dto.graphql.input.EditPostInput;
 import com.volunteerhub.community.dto.rest.request.UpdatePostRequest;
@@ -24,16 +24,16 @@ public class PostController {
 
     @PostMapping
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> createPost(@AuthenticationPrincipal UUID userId,
-                                                           @Valid @RequestBody CreatePostInput input) {
+    public ResponseEntity<ModerationResponse> createPost(@AuthenticationPrincipal UUID userId,
+                                                         @Valid @RequestBody CreatePostInput input) {
         return ResponseEntity.ok(postService.createPost(userId, input));
     }
 
     @PutMapping("/{postId}")
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> editPost(@AuthenticationPrincipal UUID userId,
-                                                         @PathVariable Long postId,
-                                                         @Valid @RequestBody UpdatePostRequest request) {
+    public ResponseEntity<ModerationResponse> editPost(@AuthenticationPrincipal UUID userId,
+                                                       @PathVariable Long postId,
+                                                       @Valid @RequestBody UpdatePostRequest request) {
         EditPostInput input = EditPostInput.builder()
                 .postId(postId)
                 .content(request.getContent())
@@ -43,8 +43,8 @@ public class PostController {
 
     @DeleteMapping("/{postId}")
     @PreAuthorize(RolePermission.USER)
-    public ResponseEntity<ActionResponse<Void>> deletePost(@AuthenticationPrincipal UUID userId,
-                                                           @PathVariable Long postId) {
+    public ResponseEntity<ModerationResponse> deletePost(@AuthenticationPrincipal UUID userId,
+                                                         @PathVariable Long postId) {
         return ResponseEntity.ok(postService.deletePost(userId, postId));
     }
 }

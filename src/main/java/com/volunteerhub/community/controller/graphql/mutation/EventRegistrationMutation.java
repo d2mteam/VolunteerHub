@@ -1,7 +1,6 @@
 package com.volunteerhub.community.controller.graphql.mutation;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.IEventRegistrationService;
 import lombok.AllArgsConstructor;
@@ -33,15 +32,15 @@ public class EventRegistrationMutation {
 
     @MutationMapping
     @PreAuthorize(RolePermission.USER)
-    public ActionResponse<Void> registerEvent(@AuthenticationPrincipal UUID userId,
-                                              @Argument Long eventId) {
+    public ModerationResponse registerEvent(@AuthenticationPrincipal UUID userId,
+                                            @Argument Long eventId) {
         return eventRegistrationService.registerEvent(userId, eventId);
     }
 
     @MutationMapping
     @PreAuthorize(RolePermission.USER)
-    public ActionResponse<Void> unregisterEvent(@AuthenticationPrincipal UUID userId,
-                                                @Argument Long eventId) {
+    public ModerationResponse unregisterEvent(@AuthenticationPrincipal UUID userId,
+                                              @Argument Long eventId) {
         return eventRegistrationService.unregisterEvent(userId, eventId);
     }
 }

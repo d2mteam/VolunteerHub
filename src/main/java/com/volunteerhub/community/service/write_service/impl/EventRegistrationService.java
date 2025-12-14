@@ -1,6 +1,5 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.ActionResponse;
 import com.volunteerhub.community.dto.ModerationAction;
 import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.dto.ModerationStatus;
@@ -140,25 +139,35 @@ public class EventRegistrationService implements IEventRegistrationService {
     }
 
     @Override
-    public ActionResponse<Void> registerEvent(UUID userId, Long eventId) {
+    public ModerationResponse registerEvent(UUID userId, Long eventId) {
 
         Optional<Event> eventOptional = eventRepository.findById(eventId);
         if (eventOptional.isEmpty()) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.REGISTER_EVENT,
+                    "EVENT_REGISTRATION",
+                    eventId.toString(),
                     String.format("Event not found (eventId: %d)", eventId));
         }
 
         Optional<EventRegistration> pendingRegistration = eventRegistrationRepository
                 .findByUserIdAndEventIdAndStatus(userId, eventId, RegistrationStatus.PENDING);
         if (pendingRegistration.isPresent()) {
-            return ActionResponse.failure("Registration is already pending");
+            return ModerationResponse.failure(
+                    ModerationAction.REGISTER_EVENT,
+                    "EVENT_REGISTRATION",
+                    pendingRegistration.get().getRegistrationId().toString(),
+                    "Registration is already pending");
         }
 
         if (roleInEventRepository.findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
                 .map(RoleInEvent::getParticipationStatus)
                 .filter(ACTIVE_PARTICIPATION::contains)
                 .isPresent()) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.REGISTER_EVENT,
+                    "EVENT_REGISTRATION",
+                    eventId.toString(),
                     String.format("User already registered for this event (eventId: %d)", eventId));
         }
 
@@ -173,28 +182,37 @@ public class EventRegistrationService implements IEventRegistrationService {
 
         eventRegistrationRepository.save(reg);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.REGISTER_EVENT,
+                "EVENT_REGISTRATION",
                 reg.getRegistrationId().toString(),
-                LocalDateTime.now(),
+                ModerationStatus.REGISTERED,
+                "Registration created",
                 LocalDateTime.now());
     }
 
     @Override
-    public ActionResponse<Void> unregisterEvent(UUID userId, Long eventId) {
+    public ModerationResponse unregisterEvent(UUID userId, Long eventId) {
         EventRegistration reg = eventRegistrationRepository.findByUserIdAndEventIdAndStatus(
                 userId, eventId, RegistrationStatus.PENDING).orElse(null);
 
         if (reg == null) {
-            return ActionResponse.failure(
+            return ModerationResponse.failure(
+                    ModerationAction.UNREGISTER_EVENT,
+                    "EVENT_REGISTRATION",
+                    eventId.toString(),
                     "Unable to unregister because this registration either does not exist or has already been processed");
         }
 
         reg.setStatus(RegistrationStatus.CANCELLED_BY_USER);
         eventRegistrationRepository.save(reg);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.UNREGISTER_EVENT,
+                "EVENT_REGISTRATION",
                 reg.getRegistrationId().toString(),
-                null,
+                ModerationStatus.UNREGISTERED,
+                "Registration cancelled",
                 LocalDateTime.now());
     }
 }

@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.graphql.mutation;
 
 import com.volunteerhub.community.dto.graphql.input.LikeInput;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationResponse;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -17,16 +17,16 @@ public class LikeMutation {
     private final ILikeService likeService;
 
     @MutationMapping
-    public ActionResponse<Void> like(@AuthenticationPrincipal UUID userId,
-                                     @Argument LikeInput input) {
+    public ModerationResponse like(@AuthenticationPrincipal UUID userId,
+                                   @Argument LikeInput input) {
         return likeService.like(userId,
                 input.getTargetId(),
                 input.getTargetType());
     }
 
     @MutationMapping
-    public ActionResponse<Void> unlike(@AuthenticationPrincipal UUID userId,
-                                       @Argument LikeInput input) {
+    public ModerationResponse unlike(@AuthenticationPrincipal UUID userId,
+                                     @Argument LikeInput input) {
         return likeService.unlike(userId,
                 input.getTargetId(),
                 input.getTargetType());

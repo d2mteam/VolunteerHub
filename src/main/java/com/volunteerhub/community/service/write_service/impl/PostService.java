@@ -2,7 +2,9 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
 import com.volunteerhub.community.dto.graphql.input.EditPostInput;
-import com.volunteerhub.community.dto.ActionResponse;
+import com.volunteerhub.community.dto.ModerationAction;
+import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationStatus;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.Post;
 import com.volunteerhub.community.model.UserProfile;
@@ -30,7 +32,7 @@ public class PostService implements IPostService {
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
-    public ActionResponse<Void> createPost(UUID userId, CreatePostInput input) {
+    public ModerationResponse createPost(UUID userId, CreatePostInput input) {
         UserProfile userProfile = userProfileRepository.getReferenceById(userId);
         Event event = eventRepository.getReferenceById(input.getEventId());
 
@@ -44,44 +46,63 @@ public class PostService implements IPostService {
         postRepository.save(post);
 
         LocalDateTime now = LocalDateTime.now();
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.CREATE_POST,
+                "POST",
                 post.getPostId().toString(),
-                now,
+                ModerationStatus.CREATED,
+                "Post created",
                 now
         );
     }
 
     @Override
-    public ActionResponse<Void> editPost(UUID userId, EditPostInput input) {
+    public ModerationResponse editPost(UUID userId, EditPostInput input) {
         Optional<Post> optional = postRepository.findById(input.getPostId());
         if (optional.isEmpty()) {
-            return ActionResponse.failure("Post not found");
+            return ModerationResponse.failure(
+                    ModerationAction.EDIT_POST,
+                    "POST",
+                    input.getPostId().toString(),
+                    "Post not found"
+            );
         }
 
         Post post = optional.get();
         post.setContent(input.getContent());
         postRepository.save(post);
 
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.EDIT_POST,
+                "POST",
                 post.getPostId().toString(),
-                post.getCreatedAt(),
+                ModerationStatus.UPDATED,
+                "Post updated",
                 LocalDateTime.now()
         );
     }
 
     @Override
-    public ActionResponse<Void> deletePost(UUID userId, Long postId) {
+    public ModerationResponse deletePost(UUID userId, Long postId) {
         boolean exists = postRepository.existsById(postId);
         if (!exists) {
-            return ActionResponse.failure("Post not found");
+            return ModerationResponse.failure(
+                    ModerationAction.DELETE_POST,
+                    "POST",
+                    postId.toString(),
+                    "Post not found"
+            );
         }
 
         postRepository.deleteById(postId);
 
         LocalDateTime now = LocalDateTime.now();
-        return ActionResponse.success(
+        return ModerationResponse.success(
+                ModerationAction.DELETE_POST,
+                "POST",
                 postId.toString(),
-                now,
+                ModerationStatus.DELETED,
+                "Post deleted",
                 now
         );
     }
