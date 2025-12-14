@@ -1,10 +1,12 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
-import com.volunteerhub.community.dto.graphql.input.EditEventInput;
 import com.volunteerhub.community.dto.ModerationAction;
 import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationResult;
 import com.volunteerhub.community.dto.ModerationStatus;
+import com.volunteerhub.community.dto.ModerationTargetType;
+import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
+import com.volunteerhub.community.dto.graphql.input.EditEventInput;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.RoleInEvent;
 import com.volunteerhub.community.model.UserProfile;
@@ -19,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,18 +41,22 @@ public class EventService implements IEventService {
         if (result == 0) {
             return ModerationResponse.failure(
                     ModerationAction.APPROVE_EVENT,
-                    "EVENT",
+                    ModerationTargetType.EVENT,
                     eventId.toString(),
-                    "Event approval failed");
+                    ModerationResult.ERROR,
+                    ModerationStatus.FAILED,
+                    "Event approval failed",
+                    "EVENT_NOT_UPDATED"
+            );
         }
 
         return ModerationResponse.success(
                 ModerationAction.APPROVE_EVENT,
-                "EVENT",
+                ModerationTargetType.EVENT,
                 eventId.toString(),
                 ModerationStatus.APPROVED,
-                "Event approved",
-                LocalDateTime.now());
+                "Event approved"
+        );
     }
 
     @Override
@@ -80,11 +85,11 @@ public class EventService implements IEventService {
 
         return ModerationResponse.success(
                 ModerationAction.CREATE_EVENT,
-                "EVENT",
+                ModerationTargetType.EVENT,
                 event.getEventId().toString(),
                 ModerationStatus.CREATED,
-                "Event created",
-                LocalDateTime.now());
+                "Event created"
+        );
     }
 
     @Override
@@ -93,9 +98,13 @@ public class EventService implements IEventService {
         if (optional.isEmpty()) {
             return ModerationResponse.failure(
                     ModerationAction.EDIT_EVENT,
-                    "EVENT",
+                    ModerationTargetType.EVENT,
                     input.getEventId().toString(),
-                    "Event not found");
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    "Event not found",
+                    "EVENT_NOT_FOUND"
+            );
         }
 
         Event event = optional.get();
@@ -106,11 +115,11 @@ public class EventService implements IEventService {
 
         return ModerationResponse.success(
                 ModerationAction.EDIT_EVENT,
-                "EVENT",
+                ModerationTargetType.EVENT,
                 event.getEventId().toString(),
                 ModerationStatus.UPDATED,
-                "Event updated",
-                LocalDateTime.now());
+                "Event updated"
+        );
     }
 
     @Override
@@ -119,19 +128,23 @@ public class EventService implements IEventService {
         if (!exists) {
             return ModerationResponse.failure(
                     ModerationAction.DELETE_EVENT,
-                    "EVENT",
+                    ModerationTargetType.EVENT,
                     eventId.toString(),
-                    String.format("Event with id %d does not exist", eventId));
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    String.format("Event with id %d does not exist", eventId),
+                    "EVENT_NOT_FOUND"
+            );
         }
 
         eventRepository.deleteById(eventId);
 
         return ModerationResponse.success(
                 ModerationAction.DELETE_EVENT,
-                "EVENT",
+                ModerationTargetType.EVENT,
                 eventId.toString(),
                 ModerationStatus.DELETED,
-                "Event deleted",
-                LocalDateTime.now());
+                "Event deleted"
+        );
     }
 }

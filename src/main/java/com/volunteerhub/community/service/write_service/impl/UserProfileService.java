@@ -1,9 +1,11 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.rest.request.EditUserProfile;
 import com.volunteerhub.community.dto.ModerationAction;
 import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationResult;
 import com.volunteerhub.community.dto.ModerationStatus;
+import com.volunteerhub.community.dto.ModerationTargetType;
+import com.volunteerhub.community.dto.rest.request.EditUserProfile;
 import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserProfileService;
@@ -11,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,9 +29,12 @@ public class UserProfileService implements IUserProfileService {
         if (optional.isEmpty()) {
             return ModerationResponse.failure(
                     ModerationAction.EDIT_USER_PROFILE,
-                    "USER_PROFILE",
+                    ModerationTargetType.USER_PROFILE,
                     userId.toString(),
-                    "User profile not found"
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    "User profile not found",
+                    "USER_PROFILE_NOT_FOUND"
             );
         }
 
@@ -41,11 +45,10 @@ public class UserProfileService implements IUserProfileService {
 
         return ModerationResponse.success(
                 ModerationAction.EDIT_USER_PROFILE,
-                "USER_PROFILE",
+                ModerationTargetType.USER_PROFILE,
                 userProfile.getUserId().toString(),
                 ModerationStatus.PROFILE_UPDATED,
-                "User profile updated",
-                LocalDateTime.now()
+                "User profile updated"
         );
     }
 
@@ -54,9 +57,12 @@ public class UserProfileService implements IUserProfileService {
         if (userProfileRepository.existsById(userId)) {
             return ModerationResponse.failure(
                     ModerationAction.CREATE_USER_PROFILE,
-                    "USER_PROFILE",
+                    ModerationTargetType.USER_PROFILE,
                     userId.toString(),
-                    "User profile already exists"
+                    ModerationResult.INVALID,
+                    ModerationStatus.DENIED,
+                    "User profile already exists",
+                    "USER_PROFILE_EXISTS"
             );
         }
 
@@ -70,11 +76,10 @@ public class UserProfileService implements IUserProfileService {
 
         return ModerationResponse.success(
                 ModerationAction.CREATE_USER_PROFILE,
-                "USER_PROFILE",
+                ModerationTargetType.USER_PROFILE,
                 userProfile.getUserId().toString(),
                 ModerationStatus.PROFILE_CREATED,
-                "User profile created",
-                LocalDateTime.now()
+                "User profile created"
         );
     }
 }

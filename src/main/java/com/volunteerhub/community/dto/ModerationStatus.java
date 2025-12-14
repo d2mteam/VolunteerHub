@@ -13,5 +13,7 @@ public enum ModerationStatus {
     APPROVED,
     REJECTED,
     BANNED,
-    UNBANNED
+    UNBANNED,
+    DENIED,
+    FAILED
 }

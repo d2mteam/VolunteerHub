@@ -199,12 +199,13 @@ DELETE /api/users/{userId}/ban           # unban user
 
 ```json
 {
-  "ok": true,
+  "result": "SUCCESS",
   "action": "BAN_USER",
   "targetType": "USER",
   "targetId": "c5b05670-5f6d-4e5b-9d82-5c34a8b9bf9b",
   "status": "BANNED",
   "message": "User c5b05670-5f6d-4e5b-9d82-5c34a8b9bf9b has been banned",
+  "reasonCode": null,
   "moderatedAt": "2025-11-04T07:52:12.124Z"
 }
 ```
@@ -378,13 +379,14 @@ query {
 
 ```graphql
 {
-    ok: Boolean!
+    result: ModerationResult!           # SUCCESS | DENIED | INVALID | NOT_FOUND | ERROR
     action: ModerationAction!
-    targetType: String!
+    targetType: ModerationTargetType!   # POST | COMMENT | EVENT | EVENT_REGISTRATION | USER_PROFILE | USER | LIKE
     targetId: ID!
-    status: ModerationStatus
-    message: String
-    moderatedAt: String
+    status: ModerationStatus            # includes success + failure states (e.g., BANNED, DENIED, FAILED)
+    message: String                     # human-readable
+    reasonCode: String                  # machine-readable error/success code
+    moderatedAt: String!                # always present, even on failures
 }
 ```
 

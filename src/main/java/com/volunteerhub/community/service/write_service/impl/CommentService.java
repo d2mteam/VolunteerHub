@@ -1,10 +1,12 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.graphql.input.CreateCommentInput;
-import com.volunteerhub.community.dto.graphql.input.EditCommentInput;
 import com.volunteerhub.community.dto.ModerationAction;
 import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationResult;
 import com.volunteerhub.community.dto.ModerationStatus;
+import com.volunteerhub.community.dto.ModerationTargetType;
+import com.volunteerhub.community.dto.graphql.input.CreateCommentInput;
+import com.volunteerhub.community.dto.graphql.input.EditCommentInput;
 import com.volunteerhub.community.model.Comment;
 import com.volunteerhub.community.model.Post;
 import com.volunteerhub.community.model.UserProfile;
@@ -17,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,14 +46,12 @@ public class CommentService implements ICommentService {
 
         commentRepository.save(saved);
 
-        LocalDateTime now = LocalDateTime.now();
         return ModerationResponse.success(
                 ModerationAction.CREATE_COMMENT,
-                "COMMENT",
+                ModerationTargetType.COMMENT,
                 saved.getCommentId().toString(),
                 ModerationStatus.CREATED,
-                "Comment created",
-                now
+                "Comment created"
         );
     }
 
@@ -62,9 +61,12 @@ public class CommentService implements ICommentService {
         if (optional.isEmpty()) {
             return ModerationResponse.failure(
                     ModerationAction.EDIT_COMMENT,
-                    "COMMENT",
+                    ModerationTargetType.COMMENT,
                     input.getCommentId().toString(),
-                    "Comment not found"
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    "Comment not found",
+                    "COMMENT_NOT_FOUND"
             );
         }
 
@@ -74,11 +76,10 @@ public class CommentService implements ICommentService {
 
         return ModerationResponse.success(
                 ModerationAction.EDIT_COMMENT,
-                "COMMENT",
+                ModerationTargetType.COMMENT,
                 comment.getCommentId().toString(),
                 ModerationStatus.UPDATED,
-                "Comment updated",
-                LocalDateTime.now()
+                "Comment updated"
         );
     }
 
@@ -88,22 +89,23 @@ public class CommentService implements ICommentService {
         if (!exists) {
             return ModerationResponse.failure(
                     ModerationAction.DELETE_COMMENT,
-                    "COMMENT",
+                    ModerationTargetType.COMMENT,
                     commentId.toString(),
-                    "Comment not found"
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    "Comment not found",
+                    "COMMENT_NOT_FOUND"
             );
         }
 
         commentRepository.deleteById(commentId);
-        LocalDateTime now = LocalDateTime.now();
 
         return ModerationResponse.success(
                 ModerationAction.DELETE_COMMENT,
-                "COMMENT",
+                ModerationTargetType.COMMENT,
                 commentId.toString(),
                 ModerationStatus.DELETED,
-                "Comment deleted",
-                now
+                "Comment deleted"
         );
     }
 }

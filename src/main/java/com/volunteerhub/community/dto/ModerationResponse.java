@@ -14,45 +14,63 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ModerationResponse {
-    private boolean ok;
+    private ModerationResult result;
     private ModerationAction action;
-    private String targetType;
+    private ModerationTargetType targetType;
     private String targetId;
     private ModerationStatus status;
     private String message;
+    private String reasonCode;
     private LocalDateTime moderatedAt;
 
     public static ModerationResponse success(
             ModerationAction action,
-            String targetType,
+            ModerationTargetType targetType,
+            String targetId,
+            ModerationStatus status,
+            String message
+    ) {
+        return success(action, targetType, targetId, status, message, null);
+    }
+
+    public static ModerationResponse success(
+            ModerationAction action,
+            ModerationTargetType targetType,
             String targetId,
             ModerationStatus status,
             String message,
-            LocalDateTime moderatedAt
+            String reasonCode
     ) {
         return ModerationResponse.builder()
-                .ok(true)
+                .result(ModerationResult.SUCCESS)
                 .action(action)
                 .targetType(targetType)
                 .targetId(targetId)
                 .status(status)
                 .message(message)
-                .moderatedAt(moderatedAt)
+                .reasonCode(reasonCode)
+                .moderatedAt(LocalDateTime.now())
                 .build();
     }
 
     public static ModerationResponse failure(
             ModerationAction action,
-            String targetType,
+            ModerationTargetType targetType,
             String targetId,
-            String message
+            ModerationResult result,
+            ModerationStatus status,
+            String message,
+            String reasonCode
     ) {
         return ModerationResponse.builder()
-                .ok(false)
+                .result(result)
                 .action(action)
                 .targetType(targetType)
                 .targetId(targetId)
+                .status(status)
                 .message(message)
+                .reasonCode(reasonCode)
+                .moderatedAt(LocalDateTime.now())
                 .build();
     }
 }

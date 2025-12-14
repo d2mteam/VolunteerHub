@@ -4,7 +4,9 @@ import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
 import com.volunteerhub.community.dto.graphql.input.EditPostInput;
 import com.volunteerhub.community.dto.ModerationAction;
 import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationResult;
 import com.volunteerhub.community.dto.ModerationStatus;
+import com.volunteerhub.community.dto.ModerationTargetType;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.Post;
 import com.volunteerhub.community.model.UserProfile;
@@ -17,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,14 +46,12 @@ public class PostService implements IPostService {
 
         postRepository.save(post);
 
-        LocalDateTime now = LocalDateTime.now();
         return ModerationResponse.success(
                 ModerationAction.CREATE_POST,
-                "POST",
+                ModerationTargetType.POST,
                 post.getPostId().toString(),
                 ModerationStatus.CREATED,
-                "Post created",
-                now
+                "Post created"
         );
     }
 
@@ -62,9 +61,12 @@ public class PostService implements IPostService {
         if (optional.isEmpty()) {
             return ModerationResponse.failure(
                     ModerationAction.EDIT_POST,
-                    "POST",
+                    ModerationTargetType.POST,
                     input.getPostId().toString(),
-                    "Post not found"
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    "Post not found",
+                    "POST_NOT_FOUND"
             );
         }
 
@@ -74,11 +76,10 @@ public class PostService implements IPostService {
 
         return ModerationResponse.success(
                 ModerationAction.EDIT_POST,
-                "POST",
+                ModerationTargetType.POST,
                 post.getPostId().toString(),
                 ModerationStatus.UPDATED,
-                "Post updated",
-                LocalDateTime.now()
+                "Post updated"
         );
     }
 
@@ -88,22 +89,23 @@ public class PostService implements IPostService {
         if (!exists) {
             return ModerationResponse.failure(
                     ModerationAction.DELETE_POST,
-                    "POST",
+                    ModerationTargetType.POST,
                     postId.toString(),
-                    "Post not found"
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    "Post not found",
+                    "POST_NOT_FOUND"
             );
         }
 
         postRepository.deleteById(postId);
 
-        LocalDateTime now = LocalDateTime.now();
         return ModerationResponse.success(
                 ModerationAction.DELETE_POST,
-                "POST",
+                ModerationTargetType.POST,
                 postId.toString(),
                 ModerationStatus.DELETED,
-                "Post deleted",
-                now
+                "Post deleted"
         );
     }
 }

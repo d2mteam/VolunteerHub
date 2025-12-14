@@ -2,7 +2,9 @@ package com.volunteerhub.community.service.write_service.impl;
 
 import com.volunteerhub.community.dto.ModerationAction;
 import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.ModerationResult;
 import com.volunteerhub.community.dto.ModerationStatus;
+import com.volunteerhub.community.dto.ModerationTargetType;
 import com.volunteerhub.community.model.db_enum.UserStatus;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserManagerService;
@@ -10,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -26,18 +27,21 @@ public class UserManagerService implements IUserManagerService {
         if (updated == 0) {
             return ModerationResponse.failure(
                     ModerationAction.BAN_USER,
-                    "USER",
+                    ModerationTargetType.USER,
                     userId.toString(),
-                    String.format("User with ID %s does not exist", userId));
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    String.format("User with ID %s does not exist", userId),
+                    "USER_NOT_FOUND"
+            );
         }
 
         return ModerationResponse.success(
                 ModerationAction.BAN_USER,
-                "USER",
+                ModerationTargetType.USER,
                 userId.toString(),
                 ModerationStatus.BANNED,
-                String.format("User %s has been banned", userId),
-                LocalDateTime.now()
+                String.format("User %s has been banned", userId)
         );
     }
 
@@ -48,18 +52,21 @@ public class UserManagerService implements IUserManagerService {
         if (updated == 0) {
             return ModerationResponse.failure(
                     ModerationAction.UNBAN_USER,
-                    "USER",
+                    ModerationTargetType.USER,
                     userId.toString(),
-                    String.format("User with ID %s does not exist", userId));
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    String.format("User with ID %s does not exist", userId),
+                    "USER_NOT_FOUND"
+            );
         }
 
         return ModerationResponse.success(
                 ModerationAction.UNBAN_USER,
-                "USER",
+                ModerationTargetType.USER,
                 userId.toString(),
                 ModerationStatus.UNBANNED,
-                String.format("User %s has been unbanned", userId),
-                LocalDateTime.now()
+                String.format("User %s has been unbanned", userId)
         );
     }
 
