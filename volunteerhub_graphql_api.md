@@ -1,4 +1,4 @@
-# 📘 VolunteerHub API Guide — REST & GraphQL
+# 📘 VolunteerHub API Guide — REST & GraphQL (Read-only)
 
 ## 🔹 REST API Endpoints
 
@@ -117,7 +117,7 @@ Authorization: Bearer <accessToken>
 
 ## 🔹 REST API for **Write** Operations
 
-> Tách các thao tác **create / update / delete** khỏi GraphQL; các route sau trả về schema giống `MutationResult` (`ok`, `id`, `message`, `createdAt`, `updatedAt`).
+> Tách toàn bộ thao tác **create / update / delete** khỏi GraphQL; mọi ghi chép dùng REST.
 
 ### 📝 Posts (`USER`)
 
@@ -218,12 +218,12 @@ DELETE /api/users/{userId}/ban           # unban user
 
 ```
 GRAPHQL http://localhost:8080/graphql
-Authorization: Bearer <accessToken>  # Optional for queries, required for mutations
+Authorization: Bearer <accessToken>  # Optional for queries
 ```
 
 - `UserId` sử dụng **UUID**
 - Các `ID` khác (Post, Comment, Event) là **Snowflake ID dạng string**
-- **Anonymous user**: chỉ query, mutation cần role (`USER`, `EVENT_MANAGER`, `ADMIN`)
+- **Anonymous user**: chỉ query được; mọi thao tác ghi đã chuyển sang REST
 
 ---
 
@@ -373,77 +373,7 @@ query {
 
 ---
 
-## 🔸 Mutation Examples (Write)
-
-- Tất cả mutation ghi (tạo/sửa/xóa post/comment/event, like/unlike, đăng ký/hủy đăng ký sự kiện, phê duyệt/từ chối, ban/unban, cập nhật hồ sơ) trả về **ModerationResponse** để phản ánh rõ hành động và trạng thái:
-
-```graphql
-{
-    result: ModerationResult!           # SUCCESS | DENIED | INVALID | NOT_FOUND | ERROR
-    action: ModerationAction!
-    targetType: ModerationTargetType!   # POST | COMMENT | EVENT | EVENT_REGISTRATION | USER_PROFILE | USER | LIKE
-    targetId: ID!
-    status: ModerationStatus            # includes success + failure states (e.g., BANNED, DENIED, FAILED)
-    message: String                     # human-readable
-    reasonCode: String                  # machine-readable error/success code
-    moderatedAt: String!                # always present, even on failures
-}
-```
-
-- **Authorization required**
-- Anonymous user không thể thực hiện mutation
-
----
-
-### 🧭 Event Mutations (`EVENT_MANAGER`)
-
-```graphql
-createEvent(input: CreateEventInput!)
-editEvent(input: EditEventInput!)
-deleteEvent(eventId: ID!)
-approveEvent(eventId: ID!)
-```
-
-### 🧭 Post Mutations (`USER`)
-
-```graphql
-createPost(input: CreatePostInput!)
-editPost(input: EditPostInput!)
-deletePost(postId: ID!)
-```
-
-### 🧭 Comment Mutations (`USER`)
-
-```graphql
-createComment(input: CreateCommentInput!)
-editComment(input: EditCommentInput!)
-deleteComment(commentId: ID!)
-```
-
-### ❤️ Like / Unlike (`USER`)
-
-```graphql
-like(input: LikeInput!)
-unlike(input: LikeInput!)
-```
-
-### 🧭 User Registration / Event Participation (`USER`)
-
-```graphql
-registerEvent(eventId: ID!)
-unregisterEvent(eventId: ID!)
-```
-
-### 🧭 Admin / Event Manager Actions
-
-```graphql
-approveRegistration(registrationId: ID!)
-rejectRegistration(registrationId: ID!)
-banUser(userId: ID!)
-unbanUser(userId: ID!)
-```
-
----
+> Lưu ý: GraphQL **chỉ hỗ trợ đọc**; mọi mutation trước đây đã bị gỡ bỏ. Ghi sử dụng REST ở phần trên.
 
 ## 🔹 Pagination & Nested Types
 
@@ -467,29 +397,15 @@ type PageInfo {
 
 ## 🔹 Response Format
 
-**Thành công:**
+Ví dụ GraphQL query thành công:
 
 ```json
 {
   "data": {
-    "createEvent": {
-      "ok": true,
-      "id": "773316679898759168",
-      "message": "Success",
-      "updatedAt": "2025-11-04T07:52:12.124Z"
-    }
-  }
-}
-```
-
-**Lỗi hoặc không tìm thấy:**
-
-```json
-{
-  "data": {
-    "editEvent": {
-      "ok": false,
-      "message": "Event not found"
+    "getPost": {
+      "postId": "1",
+      "content": "...",
+      "commentCount": 3
     }
   }
 }
