@@ -51,3 +51,15 @@ app:
   verify-path: "/api/auth/verify-email"
   reset-path: "/api/auth/reset-password"
   require-verify: "disable"
+
+counter-cache:
+  enable-like-cache: true
+  enable-member-cache: true
+  enable-post-cache: true
+  like-ttl: 180s
+  member-ttl: 180s
+  post-ttl: 180s
+  redis-timeout: 40ms
+  breaker-failure-threshold: 3
+  breaker-open-duration: 30s
+  single-flight-window: 120ms

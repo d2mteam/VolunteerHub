@@ -1,7 +1,9 @@
 package com.volunteerhub.community.controller.graphql.query;
 
+import com.volunteerhub.community.configuration.graphql.BatchLoaderConfig;
 import com.volunteerhub.community.model.Comment;
 import com.volunteerhub.community.model.Post;
+import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -9,6 +11,7 @@ import com.volunteerhub.ultis.page.PageUtils;
 import com.volunteerhub.community.repository.CommentRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import lombok.AllArgsConstructor;
+import org.dataloader.DataLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +19,10 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
+import graphql.schema.DataFetchingEnvironment;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 @AllArgsConstructor
@@ -62,11 +67,12 @@ public class PostResolver {
 
     @SchemaMapping(typeName = "Post", field = "commentCount")
     public Integer commentCount() {
-        return -1;
+        return 0;
     }
 
     @SchemaMapping(typeName = "Post", field = "likeCount")
-    public Integer likeCount() {
-        return -1;
+    public CompletableFuture<Integer> likeCount(Post post, DataFetchingEnvironment env) {
+        DataLoader<com.volunteerhub.community.service.cache.CounterKey, Integer> dataloader = env.getDataLoader("likeCountLoader");
+        return dataloader.load(BatchLoaderConfig.likeKey(TableType.POST, post.getPostId()));
     }
 }

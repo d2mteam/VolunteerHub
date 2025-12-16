@@ -1,8 +1,10 @@
 package com.volunteerhub.community.controller.graphql.query;
 
 
+import com.volunteerhub.community.configuration.graphql.BatchLoaderConfig;
 import com.volunteerhub.community.model.Event;
 import com.volunteerhub.community.model.Post;
+import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
@@ -70,18 +72,20 @@ public class EventResolver {
 
 
     @SchemaMapping(typeName = "Event", field = "memberCount")
-    public Integer memberCount(Event event, DataFetchingEnvironment env) {
-        return -1;
+    public CompletableFuture<Integer> memberCount(Event event, DataFetchingEnvironment env) {
+        DataLoader<Long, Integer> dataloader = env.getDataLoader("memberCountLoader");
+        return dataloader.load(event.getEventId());
     }
 
     @SchemaMapping(typeName = "Event", field = "postCount")
-    public Integer postCount(Event event, DataFetchingEnvironment env) {
-        return -1;
+    public CompletableFuture<Integer> postCount(Event event, DataFetchingEnvironment env) {
+        DataLoader<Long, Integer> dataloader = env.getDataLoader("postCountLoader");
+        return dataloader.load(event.getEventId());
     }
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
     public CompletableFuture<Integer> likeCount(Event event, DataFetchingEnvironment env) {
-        DataLoader<Long, Integer> dataloader = env.getDataLoader("likeCountLoader");
-        return dataloader.load(event.getEventId());
+        DataLoader<com.volunteerhub.community.service.cache.CounterKey, Integer> dataloader = env.getDataLoader("likeCountLoader");
+        return dataloader.load(BatchLoaderConfig.likeKey(TableType.EVENT, event.getEventId()));
     }
 }

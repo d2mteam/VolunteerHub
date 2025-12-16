@@ -15,6 +15,7 @@ import com.volunteerhub.community.repository.EventRegistrationRepository;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.cache.CounterInvalidationService;
 import com.volunteerhub.community.service.write_service.IEventRegistrationService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,7 @@ public class EventRegistrationService implements IEventRegistrationService {
     private final RoleInEventRepository roleInEventRepository;
     private final EventRepository eventRepository;
     private final UserProfileRepository userProfileRepository;
+    private final CounterInvalidationService counterInvalidationService;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     @Override
@@ -86,6 +88,7 @@ public class EventRegistrationService implements IEventRegistrationService {
 
         reg.setStatus(RegistrationStatus.APPROVED);
         eventRegistrationRepository.save(reg);
+        counterInvalidationService.evictMember(eventId);
 
         RoleInEvent roleInEvent = existingRole.orElseGet(() -> RoleInEvent.builder()
                 .id(snowflakeIdGenerator.nextId())
@@ -152,6 +155,7 @@ public class EventRegistrationService implements IEventRegistrationService {
 
         reg.setStatus(RegistrationStatus.REJECTED);
         eventRegistrationRepository.save(reg);
+        counterInvalidationService.evictMember(reg.getEventId());
 
         return ModerationResponse.success(
                 ModerationAction.REJECT_REGISTRATION,
@@ -217,6 +221,7 @@ public class EventRegistrationService implements IEventRegistrationService {
                 .build();
 
         eventRegistrationRepository.save(reg);
+        counterInvalidationService.evictMember(eventId);
 
         return ModerationResponse.success(
                 ModerationAction.REGISTER_EVENT,
@@ -246,6 +251,7 @@ public class EventRegistrationService implements IEventRegistrationService {
 
         reg.setStatus(RegistrationStatus.CANCELLED_BY_USER);
         eventRegistrationRepository.save(reg);
+        counterInvalidationService.evictMember(eventId);
 
         return ModerationResponse.success(
                 ModerationAction.UNREGISTER_EVENT,

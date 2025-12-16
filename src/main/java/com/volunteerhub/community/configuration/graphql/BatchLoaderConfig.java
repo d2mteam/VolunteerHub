@@ -1,39 +1,27 @@
 package com.volunteerhub.community.configuration.graphql;
 
-
-import org.dataloader.*;
+import com.volunteerhub.community.model.db_enum.TableType;
+import com.volunteerhub.community.service.cache.CounterCacheService;
+import com.volunteerhub.community.service.cache.CounterKey;
+import org.dataloader.DataLoader;
+import org.dataloader.MappedBatchLoaderWithContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.graphql.execution.BatchLoaderRegistry;
-import reactor.core.publisher.Mono;
-
-import java.util.*;
 
 @Configuration
 public class BatchLoaderConfig {
 
-    public BatchLoaderConfig(BatchLoaderRegistry registry) {
-        registry
-                .forTypePair(Long.class, Integer.class)
-                .withName("commentCountLoader")
-                .registerMappedBatchLoader((postIds, env) -> {
-                    // postIds: Set<Long>
-                    Map<Long, Integer> map = new HashMap<>();
-                    for (Long id : postIds) {
-                        map.put(id, -1);  // default –1 cho mỗi postId
-                    }
-                    return Mono.just(map);
-                });
+    public BatchLoaderConfig(BatchLoaderRegistry registry, CounterCacheService counterCacheService) {
+        MappedBatchLoaderWithContext<CounterKey, Integer> likeLoader = (keys, env) -> counterCacheService.loadLikeCounts(keys.stream().toList());
+        MappedBatchLoaderWithContext<Long, Integer> memberLoader = (keys, env) -> counterCacheService.loadMemberCounts(keys.stream().toList());
+        MappedBatchLoaderWithContext<Long, Integer> postLoader = (keys, env) -> counterCacheService.loadPostCounts(keys.stream().toList());
 
-        registry
-                .forTypePair(Long.class, Integer.class)
-                .withName("likeCountLoader")
-                .registerMappedBatchLoader((postIds, env) -> {
-                    // postIds: Set<Long>
-                    Map<Long, Integer> map = new HashMap<>();
-                    for (Long id : postIds) {
-                        map.put(id, -11312323);  // default –1 cho mỗi postId
-                    }
-                    return Mono.just(map);
-                });
+        registry.withMappedBatchLoader("likeCountLoader", likeLoader, DataLoader::new);
+        registry.withMappedBatchLoader("memberCountLoader", memberLoader, DataLoader::new);
+        registry.withMappedBatchLoader("postCountLoader", postLoader, DataLoader::new);
+    }
+
+    public static CounterKey likeKey(TableType type, Long id) {
+        return new CounterKey(type, id);
     }
 }

@@ -13,6 +13,7 @@ import com.volunteerhub.community.model.UserProfile;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.cache.CounterInvalidationService;
 import com.volunteerhub.community.service.write_service.IPostService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class PostService implements IPostService {
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
     private final EventRepository eventRepository;
+    private final CounterInvalidationService counterInvalidationService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
@@ -45,6 +47,7 @@ public class PostService implements IPostService {
                 .build();
 
         postRepository.save(post);
+        counterInvalidationService.evictPostCount(input.getEventId());
 
         return ModerationResponse.success(
                 ModerationAction.CREATE_POST,
@@ -98,7 +101,11 @@ public class PostService implements IPostService {
             );
         }
 
+        Long eventId = optional.map(Post::getEventId).orElse(null);
         postRepository.deleteById(postId);
+        if (eventId != null) {
+            counterInvalidationService.evictPostCount(eventId);
+        }
 
         return ModerationResponse.success(
                 ModerationAction.DELETE_POST,
