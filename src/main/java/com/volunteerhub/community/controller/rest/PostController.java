@@ -1,9 +1,9 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ModerationResponse;
-import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
-import com.volunteerhub.community.dto.graphql.input.EditPostInput;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
+import com.volunteerhub.community.dto.rest.request.CreatePostInput;
+import com.volunteerhub.community.dto.rest.request.EditPostInput;
 import com.volunteerhub.community.dto.rest.request.UpdatePostRequest;
 import com.volunteerhub.community.service.write_service.IPostService;
 import jakarta.validation.Valid;

@@ -1,9 +1,9 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.ModerationAction;
-import com.volunteerhub.community.dto.ModerationResponse;
-import com.volunteerhub.community.dto.ModerationStatus;
-import com.volunteerhub.community.dto.ModerationTargetType;
+import com.volunteerhub.community.dto.rest.response.ModerationAction;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
+import com.volunteerhub.community.dto.rest.response.ModerationStatus;
+import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.service.redis_service.RedisLikeService;
 import com.volunteerhub.community.service.write_service.ILikeService;

@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto.graphql.input;
+package com.volunteerhub.community.dto.rest.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.graphql.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.volunteerhub.community.model.UserProfile;
+import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;

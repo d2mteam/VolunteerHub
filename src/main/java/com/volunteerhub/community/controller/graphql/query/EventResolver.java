@@ -1,8 +1,8 @@
 package com.volunteerhub.community.controller.graphql.query;
 
 
-import com.volunteerhub.community.model.Event;
-import com.volunteerhub.community.model.Post;
+import com.volunteerhub.community.model.entity.Event;
+import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
@@ -12,7 +12,6 @@ import com.volunteerhub.ultis.page.PageUtils;
 import graphql.schema.DataFetchingEnvironment;
 import lombok.AllArgsConstructor;
 
-import org.dataloader.DataLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +21,6 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Controller
 @AllArgsConstructor
@@ -75,13 +73,12 @@ public class EventResolver {
     }
 
     @SchemaMapping(typeName = "Event", field = "postCount")
-    public Integer postCount(Event event, DataFetchingEnvironment env) {
+    public Integer postCount(Event event) {
         return -1;
     }
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
-    public CompletableFuture<Integer> likeCount(Event event, DataFetchingEnvironment env) {
-        DataLoader<Long, Integer> dataloader = env.getDataLoader("likeCountLoader");
-        return dataloader.load(event.getEventId());
+    public Integer likeCount(Event event) {
+        return -1;
     }
 }

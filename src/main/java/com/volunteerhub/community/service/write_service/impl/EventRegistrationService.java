@@ -1,14 +1,14 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.ModerationAction;
-import com.volunteerhub.community.dto.ModerationResponse;
-import com.volunteerhub.community.dto.ModerationResult;
-import com.volunteerhub.community.dto.ModerationStatus;
-import com.volunteerhub.community.dto.ModerationTargetType;
-import com.volunteerhub.community.model.Event;
-import com.volunteerhub.community.model.EventRegistration;
-import com.volunteerhub.community.model.RoleInEvent;
-import com.volunteerhub.community.model.UserProfile;
+import com.volunteerhub.community.dto.rest.response.ModerationAction;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
+import com.volunteerhub.community.dto.rest.response.ModerationResult;
+import com.volunteerhub.community.dto.rest.response.ModerationStatus;
+import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
+import com.volunteerhub.community.model.entity.Event;
+import com.volunteerhub.community.model.entity.EventRegistration;
+import com.volunteerhub.community.model.entity.RoleInEvent;
+import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import com.volunteerhub.community.repository.EventRegistrationRepository;
@@ -67,8 +67,8 @@ public class EventRegistrationService implements IEventRegistrationService {
             );
         }
 
-        Long eventId = reg.getEventId();
-        UUID userId = reg.getUserId();
+        Long eventId = reg.getEvent().getEventId();
+        UUID userId = reg.getUserProfile().getUserId();
 
         Optional<RoleInEvent> existingRole = roleInEventRepository
                 .findByUserProfile_UserIdAndEvent_EventId(userId, eventId);
@@ -132,8 +132,8 @@ public class EventRegistrationService implements IEventRegistrationService {
             );
         }
 
-        Long eventId = reg.getEventId();
-        UUID userId = reg.getUserId();
+        Long eventId = reg.getEvent().getEventId();
+        UUID userId = reg.getUserProfile().getUserId();
 
         if (roleInEventRepository.findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
                 .map(RoleInEvent::getParticipationStatus)
@@ -179,7 +179,7 @@ public class EventRegistrationService implements IEventRegistrationService {
         }
 
         Optional<EventRegistration> pendingRegistration = eventRegistrationRepository
-                .findByUserIdAndEventIdAndStatus(userId, eventId, RegistrationStatus.PENDING);
+                .findByUserProfile_UserIdAndEvent_EventIdAndStatus(userId, eventId, RegistrationStatus.PENDING);
         if (pendingRegistration.isPresent()) {
             return ModerationResponse.failure(
                     ModerationAction.REGISTER_EVENT,
@@ -229,7 +229,7 @@ public class EventRegistrationService implements IEventRegistrationService {
 
     @Override
     public ModerationResponse unregisterEvent(UUID userId, Long eventId) {
-        EventRegistration reg = eventRegistrationRepository.findByUserIdAndEventIdAndStatus(
+        EventRegistration reg = eventRegistrationRepository.findByUserProfile_UserIdAndEvent_EventIdAndStatus(
                 userId, eventId, RegistrationStatus.PENDING).orElse(null);
 
         if (reg == null) {

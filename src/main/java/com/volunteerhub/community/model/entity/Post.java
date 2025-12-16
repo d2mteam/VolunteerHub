@@ -1,4 +1,4 @@
-package com.volunteerhub.community.model;
+package com.volunteerhub.community.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,16 +11,16 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "posts")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comment {
+public class Post {
     @Id
-    @Column(name = "comment_id")
-    private Long commentId;
+    @Column(name = "post_id")
+    private Long postId;
 
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
@@ -36,8 +36,8 @@ public class Comment {
     private UserProfile createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", updatable = false)
-    private Post post;
+    @JoinColumn(name = "event_id", updatable = false)
+    private Event event;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata")
@@ -54,3 +54,4 @@ public class Comment {
         this.updatedAt = LocalDateTime.now();
     }
 }
+

@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto;
+package com.volunteerhub.community.dto.rest.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

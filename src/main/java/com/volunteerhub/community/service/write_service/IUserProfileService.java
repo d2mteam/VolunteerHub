@@ -1,7 +1,7 @@
 package com.volunteerhub.community.service.write_service;
 
 import com.volunteerhub.community.dto.rest.request.EditUserProfile;
-import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 
 import java.util.UUID;
 

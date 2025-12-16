@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.request.LikeRequest;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import jakarta.validation.Valid;

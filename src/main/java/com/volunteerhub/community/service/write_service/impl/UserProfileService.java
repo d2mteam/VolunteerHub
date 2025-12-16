@@ -1,12 +1,12 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.ModerationAction;
-import com.volunteerhub.community.dto.ModerationResponse;
-import com.volunteerhub.community.dto.ModerationResult;
-import com.volunteerhub.community.dto.ModerationStatus;
-import com.volunteerhub.community.dto.ModerationTargetType;
+import com.volunteerhub.community.dto.rest.response.ModerationAction;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
+import com.volunteerhub.community.dto.rest.response.ModerationResult;
+import com.volunteerhub.community.dto.rest.response.ModerationStatus;
+import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
 import com.volunteerhub.community.dto.rest.request.EditUserProfile;
-import com.volunteerhub.community.model.UserProfile;
+import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserProfileService;
 import lombok.RequiredArgsConstructor;

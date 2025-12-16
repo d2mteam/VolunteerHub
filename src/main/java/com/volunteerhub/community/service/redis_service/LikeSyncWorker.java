@@ -1,6 +1,6 @@
 package com.volunteerhub.community.service.redis_service;
 
-import com.volunteerhub.community.model.Like;
+import com.volunteerhub.community.model.entity.Like;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;

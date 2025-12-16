@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto.graphql.input;
+package com.volunteerhub.community.dto.rest.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,9 +8,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class CreatePostInput {
-    @NotNull(message = "Event ID is required")
-    private Long eventId;
+public class EditPostInput {
+    @NotNull(message = "Post ID is required")
+    private Long postId;
 
     @NotBlank(message = "Content cannot be empty")
     @Size(max = 500, message = "Content max 500 characters")

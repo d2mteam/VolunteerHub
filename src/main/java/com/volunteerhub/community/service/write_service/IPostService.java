@@ -1,8 +1,8 @@
 package com.volunteerhub.community.service.write_service;
 
-import com.volunteerhub.community.dto.graphql.input.CreatePostInput;
-import com.volunteerhub.community.dto.graphql.input.EditPostInput;
-import com.volunteerhub.community.dto.ModerationResponse;
+import com.volunteerhub.community.dto.rest.request.CreatePostInput;
+import com.volunteerhub.community.dto.rest.request.EditPostInput;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 
 import java.util.UUID;
 

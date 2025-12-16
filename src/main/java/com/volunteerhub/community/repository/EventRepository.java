@@ -1,6 +1,6 @@
 package com.volunteerhub.community.repository;
 
-import com.volunteerhub.community.model.Event;
+import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.db_enum.EventState;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;

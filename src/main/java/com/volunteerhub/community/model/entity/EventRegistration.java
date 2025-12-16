@@ -1,4 +1,4 @@
-package com.volunteerhub.community.model;
+package com.volunteerhub.community.model.entity;
 
 import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import jakarta.persistence.*;
@@ -23,12 +23,6 @@ public class EventRegistration {
     @Id
     @Column(name = "registration_id")
     private Long registrationId;
-
-    @Column(name = "event_id", insertable = false, updatable = false)
-    private Long eventId;
-
-    @Column(name = "user_id", insertable = false, updatable = false)
-    private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)

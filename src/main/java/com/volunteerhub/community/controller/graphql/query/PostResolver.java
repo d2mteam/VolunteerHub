@@ -1,7 +1,9 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.volunteerhub.community.model.Comment;
-import com.volunteerhub.community.model.Post;
+import com.volunteerhub.community.model.entity.Comment;
+import com.volunteerhub.community.model.entity.Post;
+import com.volunteerhub.community.model.entity.UserProfile;
+import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -24,6 +26,7 @@ import java.util.Map;
 public class PostResolver {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final UserProfileRepository userProfileRepository;
 
     @QueryMapping
     public Post getPost(@Argument Long postId) {
@@ -61,12 +64,17 @@ public class PostResolver {
     }
 
     @SchemaMapping(typeName = "Post", field = "commentCount")
-    public Integer commentCount() {
+    public Integer commentCount(Post post) {
         return -1;
     }
 
     @SchemaMapping(typeName = "Post", field = "likeCount")
     public Integer likeCount() {
         return -1;
+    }
+
+    @SchemaMapping(typeName = "Post", field = "createBy")
+    public UserProfile createBy(Post post) {
+        return userProfileRepository.findById(post.getCreatedBy().getUserId()).orElse(null);
     }
 }

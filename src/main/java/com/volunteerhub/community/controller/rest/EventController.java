@@ -1,9 +1,9 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.ModerationResponse;
-import com.volunteerhub.community.dto.graphql.input.CreateEventInput;
-import com.volunteerhub.community.dto.graphql.input.EditEventInput;
+import com.volunteerhub.community.dto.rest.response.ModerationResponse;
+import com.volunteerhub.community.dto.rest.request.CreateEventInput;
+import com.volunteerhub.community.dto.rest.request.EditEventInput;
 import com.volunteerhub.community.dto.rest.request.UpdateEventRequest;
 import com.volunteerhub.community.service.write_service.IEventService;
 import jakarta.validation.Valid;

@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto.graphql.input;
+package com.volunteerhub.community.dto.rest.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;

@@ -1,6 +1,6 @@
 package com.volunteerhub.community.repository;
 
-import com.volunteerhub.community.model.Comment;
+import com.volunteerhub.community.model.entity.Comment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
