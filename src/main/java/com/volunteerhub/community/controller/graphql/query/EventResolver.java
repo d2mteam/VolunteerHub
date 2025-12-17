@@ -3,8 +3,10 @@ package com.volunteerhub.community.controller.graphql.query;
 
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
+import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
+import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -27,6 +29,7 @@ import java.util.Map;
 public class EventResolver {
     private final EventRepository eventRepository;
     private final PostRepository postRepository;
+    private final UserProfileRepository userProfileRepository;
 
     @QueryMapping
     public Event getEvent(@Argument Long eventId) {
@@ -66,19 +69,13 @@ public class EventResolver {
                 .build();
     }
 
-
-    @SchemaMapping(typeName = "Event", field = "memberCount")
-    public Integer memberCount(Event event, DataFetchingEnvironment env) {
-        return -1;
-    }
-
-    @SchemaMapping(typeName = "Event", field = "postCount")
-    public Integer postCount(Event event) {
-        return -1;
-    }
-
     @SchemaMapping(typeName = "Event", field = "likeCount")
     public Integer likeCount(Event event) {
         return -1;
+    }
+
+    @SchemaMapping(typeName = "Event", field = "createBy")
+    public UserProfile createBy(Post post) {
+        return userProfileRepository.findById(post.getCreatedBy().getUserId()).orElse(null);
     }
 }

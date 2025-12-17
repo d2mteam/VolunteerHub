@@ -5,7 +5,7 @@ import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.response.ModerationResult;
 import com.volunteerhub.community.dto.rest.response.ModerationStatus;
 import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
-import com.volunteerhub.community.dto.rest.request.EditUserProfile;
+import com.volunteerhub.community.dto.rest.request.EditUserProfileInput;
 import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserProfileService;
@@ -24,7 +24,7 @@ public class UserProfileService implements IUserProfileService {
     private final UserProfileRepository userProfileRepository;
 
     @Override
-    public ModerationResponse editUserProfile(UUID userId, EditUserProfile input) {
+    public ModerationResponse editUserProfile(UUID userId, EditUserProfileInput input) {
         Optional<UserProfile> optional = userProfileRepository.findById(userId);
         if (optional.isEmpty()) {
             return ModerationResponse.failure(
@@ -53,7 +53,7 @@ public class UserProfileService implements IUserProfileService {
     }
 
     @Override
-    public ModerationResponse createUserProfile(UUID userId, EditUserProfile input) {
+    public ModerationResponse createUserProfile(UUID userId, EditUserProfileInput input) {
         if (userProfileRepository.existsById(userId)) {
             return ModerationResponse.failure(
                     ModerationAction.CREATE_USER_PROFILE,

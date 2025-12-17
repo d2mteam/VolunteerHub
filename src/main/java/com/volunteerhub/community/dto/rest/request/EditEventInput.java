@@ -26,7 +26,4 @@ public class EditEventInput {
     @NotBlank(message = "Event location is required")
     @Size(max = 200, message = "Event location max 200 chars")
     private String eventLocation;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime eventDate;
 }

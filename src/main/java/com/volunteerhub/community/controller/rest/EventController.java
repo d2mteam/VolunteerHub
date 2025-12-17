@@ -4,7 +4,6 @@ import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.request.CreateEventInput;
 import com.volunteerhub.community.dto.rest.request.EditEventInput;
-import com.volunteerhub.community.dto.rest.request.UpdateEventRequest;
 import com.volunteerhub.community.service.write_service.IEventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,18 +28,10 @@ public class EventController {
         return ResponseEntity.ok(eventService.createEvent(userId, input));
     }
 
-    @PutMapping("/{eventId}")
+    @PutMapping
     @PreAuthorize(RolePermission.EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> editEvent(@AuthenticationPrincipal UUID userId,
-                                                        @PathVariable Long eventId,
-                                                        @Valid @RequestBody UpdateEventRequest request) {
-        EditEventInput input = EditEventInput.builder()
-                .eventId(eventId)
-                .eventName(request.getEventName())
-                .eventDescription(request.getEventDescription())
-                .eventLocation(request.getEventLocation())
-                .eventDate(request.getEventDate())
-                .build();
+                                                        @Valid @RequestBody EditEventInput input) {
         return ResponseEntity.ok(eventService.editEvent(userId, input));
     }
 

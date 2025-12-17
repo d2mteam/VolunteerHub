@@ -19,8 +19,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
-import java.util.Map;
-
 @Controller
 @AllArgsConstructor
 public class PostResolver {
@@ -35,8 +33,7 @@ public class PostResolver {
 
     @QueryMapping
     public OffsetPage<Post> findPosts(@Argument Integer page,
-                                      @Argument Integer size,
-                                      @Argument Map<String, Object> filter) {
+                                      @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
@@ -61,11 +58,6 @@ public class PostResolver {
                 .content(commentPage.getContent())
                 .pageInfo(pageInfo)
                 .build();
-    }
-
-    @SchemaMapping(typeName = "Post", field = "commentCount")
-    public Integer commentCount(Post post) {
-        return -1;
     }
 
     @SchemaMapping(typeName = "Post", field = "likeCount")

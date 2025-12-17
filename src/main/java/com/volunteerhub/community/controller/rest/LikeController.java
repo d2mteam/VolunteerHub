@@ -2,7 +2,7 @@ package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.rest.response.ModerationResponse;
-import com.volunteerhub.community.dto.rest.request.LikeRequest;
+import com.volunteerhub.community.dto.rest.request.LikeInput;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +23,14 @@ public class LikeController {
     @PostMapping
     @PreAuthorize(RolePermission.USER)
     public ResponseEntity<ModerationResponse> like(@AuthenticationPrincipal UUID userId,
-                                                   @Valid @RequestBody LikeRequest request) {
+                                                   @Valid @RequestBody LikeInput request) {
         return ResponseEntity.ok(likeService.like(userId, request.getTargetId(), request.getTargetType()));
     }
 
     @DeleteMapping
     @PreAuthorize(RolePermission.USER)
     public ResponseEntity<ModerationResponse> unlike(@AuthenticationPrincipal UUID userId,
-                                                     @Valid @RequestBody LikeRequest request) {
+                                                     @Valid @RequestBody LikeInput request) {
         return ResponseEntity.ok(likeService.unlike(userId, request.getTargetId(), request.getTargetType()));
     }
 }

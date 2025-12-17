@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class EditUserProfile {
+public class EditUserProfileInput {
     @Email(message = "Invalid email format")
     private String email;
 

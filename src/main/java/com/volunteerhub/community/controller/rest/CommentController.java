@@ -4,7 +4,6 @@ import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.request.CreateCommentInput;
 import com.volunteerhub.community.dto.rest.request.EditCommentInput;
-import com.volunteerhub.community.dto.rest.request.UpdateCommentRequest;
 import com.volunteerhub.community.service.write_service.ICommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +28,10 @@ public class CommentController {
         return ResponseEntity.ok(commentService.createComment(userId, input));
     }
 
-    @PutMapping("/{commentId}")
+    @PutMapping
     @PreAuthorize(RolePermission.USER)
     public ResponseEntity<ModerationResponse> editComment(@AuthenticationPrincipal UUID userId,
-                                                          @PathVariable Long commentId,
-                                                          @Valid @RequestBody UpdateCommentRequest request) {
-        EditCommentInput input = new EditCommentInput();
-        input.setCommentId(commentId);
-        input.setContent(request.getContent());
+                                                          @Valid @RequestBody EditCommentInput input) {
         return ResponseEntity.ok(commentService.editComment(userId, input));
     }
 

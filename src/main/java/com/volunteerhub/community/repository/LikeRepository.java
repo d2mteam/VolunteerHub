@@ -2,6 +2,7 @@ package com.volunteerhub.community.repository;
 
 import com.volunteerhub.community.model.entity.Like;
 import com.volunteerhub.community.model.db_enum.TableType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

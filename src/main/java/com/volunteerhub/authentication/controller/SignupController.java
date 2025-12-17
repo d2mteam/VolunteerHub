@@ -24,12 +24,12 @@ public class SignupController {
     @GetMapping("/verify-email")
     public ResponseEntity<?> verify(@RequestParam("token") String rawToken) {
         signupService.verify(rawToken);
-        return ResponseEntity.ok(Map.of("message", "Verify successful."));
+        return ResponseEntity.ok(Map.of("message", "Verify successful"));
     }
 
     @GetMapping("/resend")
     public ResponseEntity<?> resend(@RequestParam("email") String email) {
         signupService.resend(email);
-        return ResponseEntity.ok(Map.of("message", "Resend successful."));
+        return ResponseEntity.ok(Map.of("message", "Resend successful"));
     }
 }

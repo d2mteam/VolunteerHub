@@ -4,7 +4,6 @@ import com.volunteerhub.authentication.model.RolePermission;
 import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.request.CreatePostInput;
 import com.volunteerhub.community.dto.rest.request.EditPostInput;
-import com.volunteerhub.community.dto.rest.request.UpdatePostRequest;
 import com.volunteerhub.community.service.write_service.IPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,15 +28,10 @@ public class PostController {
         return ResponseEntity.ok(postService.createPost(userId, input));
     }
 
-    @PutMapping("/{postId}")
+    @PutMapping
     @PreAuthorize(RolePermission.USER)
     public ResponseEntity<ModerationResponse> editPost(@AuthenticationPrincipal UUID userId,
-                                                       @PathVariable Long postId,
-                                                       @Valid @RequestBody UpdatePostRequest request) {
-        EditPostInput input = EditPostInput.builder()
-                .postId(postId)
-                .content(request.getContent())
-                .build();
+                                                       @Valid @RequestBody EditPostInput input) {
         return ResponseEntity.ok(postService.editPost(userId, input));
     }
 

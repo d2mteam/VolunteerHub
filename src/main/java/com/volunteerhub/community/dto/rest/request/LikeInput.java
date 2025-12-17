@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class LikeRequest {
+public class LikeInput {
     @NotNull(message = "Target ID is required")
     private Long targetId;
 

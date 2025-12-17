@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.rest;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.rest.request.EditUserProfile;
+import com.volunteerhub.community.dto.rest.request.EditUserProfileInput;
 import com.volunteerhub.community.service.write_service.IUserProfileService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,18 +18,18 @@ import java.util.UUID;
 public class UserProfileController {
     private final IUserProfileService userProfileService;
 
-    @PostMapping()
+    @PostMapping
     @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<?> createUserProfile(@AuthenticationPrincipal UUID userId,
-                                               @Valid @RequestBody EditUserProfile editUserProfile) {
+                                               @Valid @RequestBody EditUserProfileInput editUserProfile) {
         return ResponseEntity.ok(userProfileService.createUserProfile(userId, editUserProfile));
     }
 
 
-    @PutMapping()
+    @PutMapping
     @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<?> editUserProfile(@AuthenticationPrincipal UUID userId,
-                                             @Valid @RequestBody EditUserProfile editUserProfile) {
+                                             @Valid @RequestBody EditUserProfileInput editUserProfile) {
         return ResponseEntity.ok(userProfileService.editUserProfile(userId, editUserProfile));
     }
 }

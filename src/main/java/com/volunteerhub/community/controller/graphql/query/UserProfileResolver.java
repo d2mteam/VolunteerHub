@@ -1,7 +1,7 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.volunteerhub.community.model.entity.UserProfile;
+import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.UUID;
@@ -23,10 +22,11 @@ import java.util.UUID;
 public class UserProfileResolver {
     private final UserProfileRepository userProfileRepository;
 
+    private final RoleInEventRepository roleInEventRepository;
+
     @QueryMapping
     public OffsetPage<UserProfile> findUserProfiles(@Argument Integer page,
-                                                    @Argument Integer size,
-                                                    @Argument JsonNode filter)
+                                                    @Argument Integer size)
     {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
@@ -44,21 +44,5 @@ public class UserProfileResolver {
     @QueryMapping
     public UserProfile getUserProfile(@Argument UUID userId) {
         return userProfileRepository.findById(userId).orElse(null);
-    }
-
-
-    @SchemaMapping(typeName = "UserProfile", field = "commentCount")
-    public Integer commentCount(UserProfile userProfile) {
-        return -1;
-    }
-
-    @SchemaMapping(typeName = "UserProfile", field = "eventCount")
-    public Integer eventCount(UserProfile userProfile) {
-        return -1;
-    }
-
-    @SchemaMapping(typeName = "UserProfile", field = "postCount")
-    public Integer postCount(UserProfile userProfile) {
-        return -1;
     }
 }

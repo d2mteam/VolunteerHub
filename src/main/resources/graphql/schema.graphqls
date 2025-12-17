@@ -1,7 +1,5 @@
 scalar JSON
 
-#"yyyy-MM-dd'T'HH:mm:ss"
-
 type UserProfile {
     userId: ID!
     username: String
@@ -11,9 +9,18 @@ type UserProfile {
     bio: String
     status: String
     createdAt: String
-    postCount: Int
-    commentCount: Int
-    eventCount: Int
+
+    getUserParticipationEvent(page: Int = 0, size: Int = 10): ParticipationEvent
+}
+
+type ParticipationEvent {
+    event: EventSummary!
+    participationStatus: String!
+}
+
+type  ParticipationEventPage {
+    content: [ParticipationEvent!]!
+    pageInfo: PageInfo!
 }
 
 type UserProfileMini {
@@ -30,8 +37,6 @@ type Event {
     createdAt: String
     updatedAt: String
 
-    memberCount: Int
-    postCount: Int
     likeCount: Int
     createBy: UserProfileMini
 
@@ -44,8 +49,6 @@ type Post {
     content: String
     createdAt: String
     updatedAt: String
-
-    commentCount: Int
 
     likeCount: Int
 
@@ -80,6 +83,12 @@ type EventPage {
     pageInfo: PageInfo!
 }
 
+type UserProfilePage {
+    content: [UserProfile!]!
+    pageInfo: PageInfo!
+}
+
+
 type PostPage {
     content: [Post!]!
     pageInfo: PageInfo!
@@ -90,10 +99,6 @@ type CommentPage {
     pageInfo: PageInfo!
 }
 
-type UserProfilePage {
-    content: [UserProfile!]!
-    pageInfo: PageInfo!
-}
 
 # Dashboard
 
@@ -106,7 +111,6 @@ type EventSummary {
     likeCount: Int
     creatorInfo: UserProfileMini
 }
-
 
 type PostSummary {
     postId: ID!
@@ -136,99 +140,10 @@ type Query {
     getPost(postId: ID!): Post
 
     findEvents(page: Int = 0, size: Int = 10, filter: JSON = null): EventPage
-    findPosts(page: Int = 0, size: Int = 10, filter: JSON = null): PostPage
-    findUserProfiles(page: Int = 0, size: Int = 10, filter: JSON = null): UserProfilePage
+    findPosts(page: Int = 0, size: Int = 10): PostPage
+    findUserProfiles(page: Int = 0, size: Int = 10): UserProfilePage
 
     # Dashboard
     dashboardEvents(filter: EventFilter): [EventSummary!]
     dashboardPosts(filter: PostFilter): [PostSummary!]
-}
-
-input CreateUserProfile {
-    username: String
-    fullName: String
-    bio: String
-    avatarId: String
-    email: String
-}
-
-input CreateEventInput {
-    eventName: String!
-    eventDescription: String!
-    eventLocation: String!
-    eventDate: String
-}
-
-input CreatePostInput {
-    eventId: ID!
-    content: String!
-}
-
-input CreateCommentInput {
-    postId: ID!
-    content: String!
-}
-
-input LikeInput {
-    targetType: String!
-    targetId: ID!
-}
-
-input EditEventInput {
-    eventId: ID!
-    eventName: String
-    eventDescription: String
-    eventLocation: String
-    eventDate: String
-}
-
-input EditPostInput {
-    postId: ID!
-    content: String!
-}
-
-input EditCommentInput {
-    commentId: ID!
-    content: String!
-}
-
-type MutationResult {
-    ok: Boolean!
-    id: ID
-    message: String
-    updatedAt: String
-    createdAt: String
-}
-
-type Mutation {
-    #USER
-    createUserProfile(input: CreateUserProfile!): MutationResult!
-
-    createPost(input: CreatePostInput!): MutationResult!
-    editPost(input: EditPostInput!): MutationResult!
-    deletePost(postId: ID!): MutationResult!
-
-    createComment(input: CreateCommentInput!): MutationResult!
-    editComment(input: EditCommentInput!): MutationResult!
-    deleteComment(commentId: ID!): MutationResult!
-
-    like(input: LikeInput): MutationResult!
-    unlike(input: LikeInput): MutationResult!
-
-    registerEvent(eventId: ID!): MutationResult!
-    unregisterEvent(eventId: ID!): MutationResult!
-
-    #EVENT MANAGER
-    createEvent(input: CreateEventInput!): MutationResult!
-    editEvent(input: EditEventInput!): MutationResult!
-    deleteEvent(eventId: ID!): MutationResult!
-
-    approveRegistration(registrationId: ID!) : MutationResult!
-    rejectRegistration(registrationId: ID!) : MutationResult!
-
-    #ADMIN
-    approveEvent(eventId: ID!) : MutationResult!
-
-    banUser(userId: ID!) : MutationResult!
-    unbanUser(userId: ID!) : MutationResult!
 }
