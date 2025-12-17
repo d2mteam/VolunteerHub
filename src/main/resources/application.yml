@@ -50,4 +50,3 @@ app:
   api-url: "http://localhost:8080"
   verify-path: "/api/auth/verify-email"
   reset-path: "/api/auth/reset-password"
-  require-verify: "disable"

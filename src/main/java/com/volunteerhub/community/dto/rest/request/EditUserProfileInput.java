@@ -24,4 +24,6 @@ public class EditUserProfileInput {
 
     @Size(max = 255, message = "Bio max 255 characters")
     private String bio;
+
+
 }

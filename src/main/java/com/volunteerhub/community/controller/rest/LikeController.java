@@ -21,14 +21,14 @@ public class LikeController {
     private final ILikeService likeService;
 
     @PostMapping
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> like(@AuthenticationPrincipal UUID userId,
                                                    @Valid @RequestBody LikeInput request) {
         return ResponseEntity.ok(likeService.like(userId, request.getTargetId(), request.getTargetType()));
     }
 
     @DeleteMapping
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> unlike(@AuthenticationPrincipal UUID userId,
                                                      @Valid @RequestBody LikeInput request) {
         return ResponseEntity.ok(likeService.unlike(userId, request.getTargetId(), request.getTargetType()));

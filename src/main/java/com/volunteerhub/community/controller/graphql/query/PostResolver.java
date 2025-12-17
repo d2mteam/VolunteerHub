@@ -1,8 +1,10 @@
 package com.volunteerhub.community.controller.graphql.query;
 
+import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Comment;
 import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.model.entity.UserProfile;
+import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
@@ -25,6 +27,7 @@ public class PostResolver {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserProfileRepository userProfileRepository;
+    private final LikeRepository likeRepository;
 
     @QueryMapping
     public Post getPost(@Argument Long postId) {
@@ -61,8 +64,8 @@ public class PostResolver {
     }
 
     @SchemaMapping(typeName = "Post", field = "likeCount")
-    public Integer likeCount() {
-        return -1;
+    public Integer likeCount(Post post) {
+        return likeRepository.countByTargetIdAndTableType(post.getPostId(), TableType.POST);
     }
 
     @SchemaMapping(typeName = "Post", field = "createBy")

@@ -1,17 +1,18 @@
 package com.volunteerhub.community.controller.graphql.query;
 
 
+import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.EventRepository;
+import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
 
-import graphql.schema.DataFetchingEnvironment;
 import lombok.AllArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ public class EventResolver {
     private final EventRepository eventRepository;
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
+    private final LikeRepository likeRepository;
 
     @QueryMapping
     public Event getEvent(@Argument Long eventId) {
@@ -71,11 +73,11 @@ public class EventResolver {
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
     public Integer likeCount(Event event) {
-        return -1;
+        return likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")
-    public UserProfile createBy(Post post) {
-        return userProfileRepository.findById(post.getCreatedBy().getUserId()).orElse(null);
+    public UserProfile createBy(Event event) {
+        return userProfileRepository.findById(event.getCreatedBy().getUserId()).orElse(null);
     }
 }

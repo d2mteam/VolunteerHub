@@ -38,7 +38,6 @@ public class WebSecurityConfig {
                         -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/graphiql", "/voyager").permitAll()
                                 .anyRequest().authenticated()
                 );
 

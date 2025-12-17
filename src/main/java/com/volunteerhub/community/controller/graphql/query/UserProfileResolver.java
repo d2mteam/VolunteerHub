@@ -26,8 +26,7 @@ public class UserProfileResolver {
 
     @QueryMapping
     public OffsetPage<UserProfile> findUserProfiles(@Argument Integer page,
-                                                    @Argument Integer size)
-    {
+                                                    @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
