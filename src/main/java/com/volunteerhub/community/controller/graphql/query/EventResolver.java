@@ -4,11 +4,9 @@ package com.volunteerhub.community.controller.graphql.query;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
+import com.volunteerhub.community.model.entity.RoleInEvent;
 import com.volunteerhub.community.model.entity.UserProfile;
-import com.volunteerhub.community.repository.EventRepository;
-import com.volunteerhub.community.repository.LikeRepository;
-import com.volunteerhub.community.repository.PostRepository;
-import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.repository.*;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -23,6 +21,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -32,6 +31,7 @@ public class EventResolver {
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
     private final LikeRepository likeRepository;
+    private final RoleInEventRepository roleInEventRepository;
 
     @QueryMapping
     public Event getEvent(@Argument Long eventId) {
@@ -55,7 +55,7 @@ public class EventResolver {
                 .build();
     }
 
-    @SchemaMapping(typeName = "Event", field = "listPosts")
+    @SchemaMapping(typeName = "Event", field = "listPost")
     public OffsetPage<Post> listPosts(Event event,
                                       @Argument Integer page,
                                       @Argument Integer size) {
@@ -79,5 +79,22 @@ public class EventResolver {
     @SchemaMapping(typeName = "Event", field = "createBy")
     public UserProfile createBy(Event event) {
         return userProfileRepository.findById(event.getCreatedBy().getUserId()).orElse(null);
+    }
+
+
+    @SchemaMapping(typeName = "Event", field = "listMember")
+    public OffsetPage<RoleInEvent> listMember(Event event,
+                                              @Argument Integer page,
+                                              @Argument Integer size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size > 0 ? size : 10;
+
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<RoleInEvent> memberPage = roleInEventRepository.findByEvent_EventId(event.getEventId(), pageable);
+        PageInfo pageInfo = PageUtils.from(memberPage);
+        return OffsetPage.<RoleInEvent>builder()
+                .content(memberPage.getContent())
+                .pageInfo(pageInfo)
+                .build();
     }
 }

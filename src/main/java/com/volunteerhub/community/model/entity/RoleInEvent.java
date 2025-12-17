@@ -16,6 +16,13 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@NamedEntityGraph(
+        name = "RoleInEvent.full",
+        attributeNodes = {
+                @NamedAttributeNode("event"),
+                @NamedAttributeNode("userProfile")
+        }
+)
 public class RoleInEvent {
     @Id
     @Column(name = "id")

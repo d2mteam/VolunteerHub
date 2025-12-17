@@ -9,24 +9,20 @@ type UserProfile {
     bio: String
     status: String
     createdAt: String
-
-    getUserParticipationEvent(page: Int = 0, size: Int = 10): ParticipationEvent
 }
 
-type ParticipationEvent {
-    event: EventSummary!
-    participationStatus: String!
-}
-
-type  ParticipationEventPage {
-    content: [ParticipationEvent!]!
-    pageInfo: PageInfo!
-}
-
-type UserProfileMini {
+type UserProfileSummary {
     userId: ID!
     username: String
+    fullName: String
     avatarId: String
+}
+
+type RoleInEvent {
+    userProfile: UserProfileSummary
+    event: EventSummary
+    participationStatus: String
+    eventRole: String
 }
 
 type Event {
@@ -36,37 +32,36 @@ type Event {
     eventLocation: String
     createdAt: String
     updatedAt: String
-
     likeCount: Int
-    createBy: UserProfileMini
+    createBy: UserProfileSummary
+    listPost(page: Int = 0, size: Int = 10): PostPage
 
-    listPosts(page: Int = 0, size: Int = 10): PostPage
+}
+
+type EventSummary {
+    eventId: ID!
+    eventName: String
+    eventDescription: String
+    eventLocation: String
 }
 
 type Post {
     postId: ID!
-    eventId: ID!
     content: String
     createdAt: String
     updatedAt: String
-
     likeCount: Int
-
-    createBy: UserProfileMini
-
+    createBy: UserProfileSummary
     listComment(page: Int = 0, size: Int = 10): CommentPage
 }
 
 type Comment {
     commentId: ID!
-    postId: ID!
     content: String
     createdAt: String
     updatedAt: String
-
     likeCount: Int
-
-    createBy: UserProfileMini
+    createBy: UserProfileSummary
 }
 
 type PageInfo {
@@ -88,7 +83,6 @@ type UserProfilePage {
     pageInfo: PageInfo!
 }
 
-
 type PostPage {
     content: [Post!]!
     pageInfo: PageInfo!
@@ -99,40 +93,15 @@ type CommentPage {
     pageInfo: PageInfo!
 }
 
-
-# Dashboard
-
-type EventSummary {
-    eventId: ID!
-    eventName: String
-    createdAt: String
-    memberCount: Int
-    postCount: Int
-    likeCount: Int
-    creatorInfo: UserProfileMini
+type UserProfileSummaryPage {
+    content: [UserProfileSummary!]!
+    pageInfo: PageInfo!
 }
 
-type PostSummary {
-    postId: ID!
-    eventId: ID!
-    createdAt: String
-    commentCount: Int
-    likeCount: Int
+type RoleInEventPage {
+    content: [RoleInEvent!]!
+    pageInfo: PageInfo!
 }
-
-input EventFilter {
-    recentlyCreated: Boolean
-    trending: Boolean
-    limit: Int
-    since: String
-}
-
-input PostFilter {
-    recent: Boolean
-    limit: Int
-    eventIds: [ID!]
-}
-
 
 type Query {
     getUserProfile(userId: ID!): UserProfile
@@ -143,7 +112,6 @@ type Query {
     findPosts(page: Int = 0, size: Int = 10): PostPage
     findUserProfiles(page: Int = 0, size: Int = 10): UserProfilePage
 
-    # Dashboard
-    dashboardEvents(filter: EventFilter): [EventSummary!]
-    dashboardPosts(filter: PostFilter): [PostSummary!]
+    listMemberInEvent(eventId: ID!, page: Int = 0, size: Int = 10) : RoleInEventPage
+    userHistory(page: Int = 0, size: Int = 10): RoleInEventPage
 }

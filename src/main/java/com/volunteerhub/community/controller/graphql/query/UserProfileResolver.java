@@ -22,8 +22,6 @@ import java.util.UUID;
 public class UserProfileResolver {
     private final UserProfileRepository userProfileRepository;
 
-    private final RoleInEventRepository roleInEventRepository;
-
     @QueryMapping
     public OffsetPage<UserProfile> findUserProfiles(@Argument Integer page,
                                                     @Argument Integer size) {
