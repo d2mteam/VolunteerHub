@@ -6,12 +6,10 @@ import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
-import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
 
-import graphql.schema.DataFetchingEnvironment;
 import lombok.AllArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -22,14 +20,17 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import org.dataloader.DataLoader;
+
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 @AllArgsConstructor
 public class EventResolver {
     private final EventRepository eventRepository;
     private final PostRepository postRepository;
-    private final UserProfileRepository userProfileRepository;
 
     @QueryMapping
     public Event getEvent(@Argument Long eventId) {
@@ -70,12 +71,18 @@ public class EventResolver {
     }
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
-    public Integer likeCount(Event event) {
-        return -1;
+    public CompletableFuture<Integer> likeCount(Event event,
+                                               @org.springframework.graphql.data.method.annotation.DataLoader(name = "eventLikeCountLoader") DataLoader<Long, Integer> likeCountLoader) {
+        return likeCountLoader.load(event.getEventId());
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")
-    public UserProfile createBy(Post post) {
-        return userProfileRepository.findById(post.getCreatedBy().getUserId()).orElse(null);
+    public CompletableFuture<UserProfile> createBy(Event event,
+                                                   @org.springframework.graphql.data.method.annotation.DataLoader(name = "userProfileMiniLoader") DataLoader<UUID, UserProfile> userProfileLoader) {
+        UUID creatorId = event.getCreatedBy() != null ? event.getCreatedBy().getUserId() : null;
+        if (creatorId == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return userProfileLoader.load(creatorId);
     }
 }

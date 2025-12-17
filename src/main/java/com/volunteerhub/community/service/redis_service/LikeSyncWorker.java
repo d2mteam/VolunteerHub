@@ -4,6 +4,7 @@ import com.volunteerhub.community.model.entity.Like;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.redis_service.RedisEngagementViewService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ public class LikeSyncWorker {
     private final RedisTemplate<String, Object> redisTemplate;
     private final LikeRepository likeRepository; // DB
     private final UserProfileRepository userProfileRepository;
+    private final RedisEngagementViewService redisEngagementViewService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Scheduled(fixedDelay = 1000)  // mỗi giây kéo 1 batch
@@ -81,9 +83,13 @@ public class LikeSyncWorker {
                     .createdBy(userProfileRepository.getReferenceById(userId))
                     .build();
             likeRepository.save(like);
+            redisEngagementViewService.incrementLikeCount(tableType, targetId);
         } else if (action.equals("UNLIKE")) {
             likeRepository.findByCreatedBy_UserIdAndTargetIdAndTableType(userId, targetId, tableType)
-                    .ifPresent(likeRepository::delete);
+                    .ifPresent(like -> {
+                        likeRepository.delete(like);
+                        redisEngagementViewService.decrementLikeCount(tableType, targetId);
+                    });
         }
     }
 }

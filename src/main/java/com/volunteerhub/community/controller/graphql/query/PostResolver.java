@@ -3,7 +3,6 @@ package com.volunteerhub.community.controller.graphql.query;
 import com.volunteerhub.community.model.entity.Comment;
 import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.model.entity.UserProfile;
-import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -19,12 +18,16 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import org.dataloader.DataLoader;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
 @Controller
 @AllArgsConstructor
 public class PostResolver {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private final UserProfileRepository userProfileRepository;
 
     @QueryMapping
     public Post getPost(@Argument Long postId) {
@@ -61,12 +64,18 @@ public class PostResolver {
     }
 
     @SchemaMapping(typeName = "Post", field = "likeCount")
-    public Integer likeCount() {
-        return -1;
+    public CompletableFuture<Integer> likeCount(Post post,
+                                               @org.springframework.graphql.data.method.annotation.DataLoader(name = "postLikeCountLoader") DataLoader<Long, Integer> likeCountLoader) {
+        return likeCountLoader.load(post.getPostId());
     }
 
     @SchemaMapping(typeName = "Post", field = "createBy")
-    public UserProfile createBy(Post post) {
-        return userProfileRepository.findById(post.getCreatedBy().getUserId()).orElse(null);
+    public CompletableFuture<UserProfile> createBy(Post post,
+                                                   @org.springframework.graphql.data.method.annotation.DataLoader(name = "userProfileMiniLoader") DataLoader<UUID, UserProfile> userProfileLoader) {
+        UUID creatorId = post.getCreatedBy() != null ? post.getCreatedBy().getUserId() : null;
+        if (creatorId == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return userProfileLoader.load(creatorId);
     }
 }

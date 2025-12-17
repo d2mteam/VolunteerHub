@@ -1,95 +1,69 @@
-//package com.volunteerhub.community.configuration.graphql;
-//
-//
-//import com.volunteerhub.community.configuration.graphql.count_cache.DatabaseLoader;
-//import com.volunteerhub.community.service.redis_service.RedisCountCacheService;
-//import com.volunteerhub.community.configuration.graphql.count_cache.CountDefinition;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.graphql.execution.BatchLoaderRegistry;
-//import reactor.core.publisher.Mono;
-//import reactor.core.scheduler.Schedulers;
-//
-//import java.time.Duration;
-//import java.util.*;
-//
-//@Configuration
-//public class BatchLoaderConfig {
-//    private final RedisCountCacheService redisCountCacheService;
-//    private final DatabaseLoader databaseLoader;
-//
-//    public BatchLoaderConfig(BatchLoaderRegistry registry,
-//                             RedisCountCacheService redisCountCacheService,
-//                             List<CountDefinition<Long>> countDefinitions,
-//                                DatabaseLoader databaseLoader) {
-//        this.redisCountCacheService = redisCountCacheService;
-//        this.databaseLoader = databaseLoader;
-//
-//        for (CountDefinition<Long> countDefinition : countDefinitions) {
-//            registry.forTypePair(Long.class, Integer.class)
-//                    .withName(countDefinition.name())
-//                    .registerMappedBatchLoader((postIds, env)
-//                            -> loadCount(postIds, countDefinition));
-//        }
-//    }
-//
-//    public Mono<Map<Long, Integer>> loadCount(
-//            Set<Long> postIds,
-//            CountDefinition<Long> countDefinition
-//    ) {
-//        List<Long> ids = new ArrayList<>(postIds);
-//
-//        List<String> redisKeys = ids.stream()
-//                .map(id -> countDefinition.keyBuilder().build(id))
-//                .toList();
-//
-//        return Mono.fromCallable(() -> {
-//
-//            Map<Long, Integer> result = new HashMap<>();
-//            List<Integer> redisValues;
-//
-//            // 1️⃣ Try Redis
-//            try {
-//                redisValues = redisCountCacheService.get(redisKeys);
-//            } catch (Exception e) {
-//                // Redis DOWN → DB ALL
-//                return databaseLoader.load(ids, countDefinition);
-//            }
-//
-//            // 2️⃣ Find miss
-//            List<Long> missIds = new ArrayList<>();
-//
-//            for (int i = 0; i < ids.size(); i++) {
-//                Integer v = redisValues.get(i);
-//                if (v != null) {
-//                    result.put(ids.get(i), v);
-//                } else {
-//                    missIds.add(ids.get(i));
-//                }
-//            }
-//
-//            // 3️⃣ DB fallback only for miss
-//            if (!missIds.isEmpty()) {
-//                Map<Long, Integer> dbResult =
-//                        databaseLoader.load(ids, countDefinition);
-//
-//                result.putAll(dbResult);
-//
-//                // 4️⃣ Best-effort backfill Redis
-//                redisCountCacheService.set(
-//                        missIds.stream()
-//                                .map(id -> countDefinition.keyBuilder().build(id))
-//                                .toList(),
-//                        missIds.stream()
-//                                .map(id -> dbResult.getOrDefault(id, 0))
-//                                .toList(),
-//                        Duration.ofSeconds(countDefinition.cachePolicy().ttl())
-//                );
-//            }
-//
-//            // 5️⃣ Fill missing = 0
-//            ids.forEach(id -> result.putIfAbsent(id, 0));
-//            return result;
-//
-//        }).subscribeOn(Schedulers.boundedElastic());
-//    }
-//}
+package com.volunteerhub.community.configuration.graphql;
+
+import com.volunteerhub.community.model.db_enum.TableType;
+import com.volunteerhub.community.model.entity.UserProfile;
+import com.volunteerhub.community.repository.LikeRepository;
+import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.repository.projection.LikeCountProjection;
+import com.volunteerhub.community.service.redis_service.RedisEngagementViewService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.graphql.execution.BatchLoaderRegistry;
+import org.springframework.graphql.execution.BatchLoaderRegistryConfigurer;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+@Configuration
+@RequiredArgsConstructor
+public class BatchLoaderConfig implements BatchLoaderRegistryConfigurer {
+    private final RedisEngagementViewService redisEngagementViewService;
+    private final LikeRepository likeRepository;
+    private final UserProfileRepository userProfileRepository;
+
+    @Override
+    public void configure(BatchLoaderRegistry registry) {
+        registerLikeCountLoader(registry, TableType.EVENT, "eventLikeCountLoader");
+        registerLikeCountLoader(registry, TableType.POST, "postLikeCountLoader");
+        registerLikeCountLoader(registry, TableType.COMMENT, "commentLikeCountLoader");
+
+        registry.forTypePair(UUID.class, UserProfile.class)
+                .withName("userProfileMiniLoader")
+                .registerMappedBatchLoader((userIds, env) -> CompletableFuture.supplyAsync(() ->
+                        userProfileRepository.findAllById(userIds).stream()
+                                .collect(Collectors.toMap(UserProfile::getUserId, profile -> profile))
+                ));
+    }
+
+    private void registerLikeCountLoader(BatchLoaderRegistry registry, TableType tableType, String loaderName) {
+        registry.forTypePair(Long.class, Integer.class)
+                .withName(loaderName)
+                .registerMappedBatchLoader((targetIds, env) -> CompletableFuture.supplyAsync(() -> {
+                    Map<Long, Integer> result = new HashMap<>();
+                    Map<Long, Long> cachedCounts = redisEngagementViewService.getLikeCounts(tableType, targetIds);
+                    List<Long> missingIds = new ArrayList<>();
+
+                    for (Long targetId : targetIds) {
+                        Long cached = cachedCounts.get(targetId);
+                        if (cached != null) {
+                            result.put(targetId, cached.intValue());
+                        } else {
+                            missingIds.add(targetId);
+                        }
+                    }
+
+                    if (!missingIds.isEmpty()) {
+                        Map<Long, Long> dbCounts = likeRepository.countByTableTypeAndTargetIdIn(tableType, missingIds)
+                                .stream()
+                                .collect(Collectors.toMap(LikeCountProjection::getTargetId, LikeCountProjection::getCount));
+
+                        dbCounts.forEach((id, count) -> result.put(id, count.intValue()));
+                        redisEngagementViewService.setLikeCounts(tableType, dbCounts);
+                    }
+
+                    targetIds.forEach(id -> result.putIfAbsent(id, 0));
+                    return result;
+                }));
+    }
+}
