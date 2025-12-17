@@ -7,8 +7,6 @@ services:
     ports:
       - "6379:6379"  # Port kết nối cho Spring Boot
       - "8001:8001"  # Port cho giao diện RedisInsight (Web UI)
-#    environment:
-#      - REDIS_ARGS=--requirepass "YourSecurePassword" --appendonly yes
     volumes:
       - redis-stack:/data
     restart: always

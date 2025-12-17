@@ -1,6 +1,7 @@
 package com.volunteerhub.authentication.service;
 
 import com.volunteerhub.authentication.dto.request.SignUpRequest;
+import com.volunteerhub.authentication.model.Role;
 import com.volunteerhub.authentication.model.UserAuth;
 import com.volunteerhub.authentication.model.UserAuthStatus;
 import com.volunteerhub.authentication.repository.UserAuthRepository;
@@ -40,6 +41,8 @@ public class SignupService {
 
     @Transactional
     public void signup(SignUpRequest request) {
+        Role role = request.isEventManager() ? Role.EVENT_MANAGER : Role.USER;
+
         if (userAuthRepository.existsByEmail(request.getEmail())) {
             throw new VerificationException("Email already registered");
         }
@@ -48,6 +51,7 @@ public class SignupService {
         if ("enable".equals(requireVerify)) {
             UserAuth userAuth = UserAuth.builder()
                     .userId(newUserId)
+                    .role(role)
                     .email(request.getEmail())
                     .passwordHash(passwordEncoder.encode(request.getPassword()))
                     .build();
@@ -60,6 +64,7 @@ public class SignupService {
 
         UserAuth userAuth = UserAuth.builder()
                 .userId(newUserId)
+                .role(role)
                 .emailVerified(true)
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
