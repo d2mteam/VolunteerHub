@@ -10,16 +10,19 @@ type UserProfile {
     status: String
     createdAt: String
 
-    getUserParticipationEvent(page: Int = 0, size: Int = 10): ParticipationEvent
+    participationHistory(page: Int = 0, size: Int = 10): ParticipationHistoryPage
 }
 
-type ParticipationEvent {
-    event: EventSummary!
+type ParticipationHistory {
+    event: Event!
+    eventRole: String!
     participationStatus: String!
+    joinedAt: String
+    updatedAt: String
 }
 
-type  ParticipationEventPage {
-    content: [ParticipationEvent!]!
+type ParticipationHistoryPage {
+    content: [ParticipationHistory!]!
     pageInfo: PageInfo!
 }
 
@@ -120,6 +123,17 @@ type PostSummary {
     likeCount: Int
 }
 
+enum ExportFormat {
+    CSV
+    JSON
+}
+
+type ExportPayload {
+    filename: String!
+    contentType: String!
+    data: String!
+}
+
 input EventFilter {
     recentlyCreated: Boolean
     trending: Boolean
@@ -131,6 +145,8 @@ input PostFilter {
     recent: Boolean
     limit: Int
     eventIds: [ID!]
+    since: String
+    trending: Boolean
 }
 
 
@@ -146,4 +162,11 @@ type Query {
     # Dashboard
     dashboardEvents(filter: EventFilter): [EventSummary!]
     dashboardPosts(filter: PostFilter): [PostSummary!]
+
+    # Participation history
+    userParticipationHistory(userId: ID!, page: Int = 0, size: Int = 10): ParticipationHistoryPage
+
+    # Data export (Admin)
+    exportEvents(format: ExportFormat!): ExportPayload!
+    exportVolunteers(format: ExportFormat!): ExportPayload!
 }
