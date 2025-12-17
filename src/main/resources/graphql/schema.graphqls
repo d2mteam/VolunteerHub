@@ -93,6 +93,26 @@ type CommentPage {
     pageInfo: PageInfo!
 }
 
+type DashboardEventActivity {
+    event: EventSummary!
+    newPostCount: Int!
+    latestPostAt: String
+}
+
+type DashboardTrendingEvent {
+    event: EventSummary!
+    newMemberCount: Int!
+    newCommentCount: Int!
+    newLikeCount: Int!
+    latestInteractionAt: String
+}
+
+type DashboardOverview {
+    newlyPublished: [EventSummary!]!
+    recentWithNewPosts: [DashboardEventActivity!]!
+    trending: [DashboardTrendingEvent!]!
+}
+
 type UserProfileSummaryPage {
     content: [UserProfileSummary!]!
     pageInfo: PageInfo!
@@ -114,4 +134,6 @@ type Query {
 
     listMemberInEvent(eventId: ID!, page: Int = 0, size: Int = 10) : RoleInEventPage
     userHistory(page: Int = 0, size: Int = 10): RoleInEventPage
+
+    dashboardOverview(hours: Int = 24, size: Int = 5): DashboardOverview
 }
