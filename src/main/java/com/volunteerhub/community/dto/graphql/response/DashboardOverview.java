@@ -1,4 +1,4 @@
-package com.volunteerhub.community.controller.graphql.dto;
+package com.volunteerhub.community.dto.dto;
 
 import com.volunteerhub.community.model.entity.Event;
 import lombok.Builder;
