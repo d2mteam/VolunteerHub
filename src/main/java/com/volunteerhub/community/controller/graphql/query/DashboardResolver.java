@@ -1,8 +1,8 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.volunteerhub.community.controller.graphql.dto.DashboardEventActivity;
-import com.volunteerhub.community.controller.graphql.dto.DashboardOverview;
-import com.volunteerhub.community.controller.graphql.dto.DashboardTrendingEvent;
+import com.volunteerhub.community.dto.graphql.response.DashboardEventActivity;
+import com.volunteerhub.community.dto.graphql.response.DashboardOverview;
+import com.volunteerhub.community.dto.graphql.response.DashboardTrendingEvent;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.repository.EventRepository;
