@@ -1,496 +1,139 @@
-# 📘 VolunteerHub API Guide — REST & GraphQL
+# 📘 VolunteerHub API Guide — REST & GraphQL (project endpoints)
 
-## 🔹 REST API Endpoints
+## 🔹 REST API
 
-### 🧾 Authentication
+**Base URL:** `http://localhost:8080`
 
-#### 🔑 Login
+> Tất cả REST endpoints trả về JSON. Các thao tác ghi (tạo/sửa/xóa) trả về `ModerationResponse` với các trường:
+> `result` (`SUCCESS|DENIED|INVALID|NOT_FOUND|ERROR`), `action`, `targetType`, `targetId`, `status`, `message`, `reasonCode?`, `moderatedAt`.
 
-```
-POST http://localhost:8080/api/auth/login
-Content-Type: application/json
-```
+### 🧾 Authentication & Account
 
-**Request body:**dơn
+| Method & Path | Mô tả | Payload | Phản hồi chính |
+| --- | --- | --- | --- |
+| `POST /api/auth/signup` | Đăng ký tài khoản (có thể đánh dấu event manager) | `{ "email", "password", "eventManager" }` (`eventManager` boolean) | `{ "message": "Signup successful. Please check your email." }`【F:src/main/java/com/volunteerhub/authentication/controller/SignupController.java†L15-L25】【F:src/main/java/com/volunteerhub/authentication/dto/request/SignUpRequest.java†L10-L23】 |
+| `GET /api/auth/verify-email?token=...` | Xác minh email từ link gửi về mail | query `token` | `{ "message": "Verify successful" }`【F:src/main/java/com/volunteerhub/authentication/controller/SignupController.java†L27-L33】 |
+| `GET /api/auth/resend?email=...` | Gửi lại email xác minh | query `email` | `{ "message": "Resend successful" }`【F:src/main/java/com/volunteerhub/authentication/controller/SignupController.java†L35-L39】 |
+| `POST /api/auth/login` | Đăng nhập, đặt `refresh_token` cookie (HttpOnly, Secure, SameSite=Strict) | `{ "email", "password" }` | `{ "accessToken": "..." }`【F:src/main/java/com/volunteerhub/authentication/controller/LoginController.java†L24-L38】【F:src/main/java/com/volunteerhub/authentication/dto/request/LoginRequest.java†L8-L19】 |
+| `POST /api/auth/refresh` | Lấy access token mới bằng cookie `refresh_token` | Cookie `refresh_token` gửi kèm request | `{ "accessToken": "..." }` (và cookie refresh mới)【F:src/main/java/com/volunteerhub/authentication/controller/LoginController.java†L40-L52】 |
 
-```json
-{
-  "email": "",
-  "password": ""
-}
-```
+### 👤 User Profiles (USER / EVENT_MANAGER)
 
-**Response:**
+`Authorization: Bearer <accessToken>`
 
-```json
-{
-  "accessToken": "xxx",
-  "refreshToken": "yyy",
-  "tokenType": "Bearer"
-}
-```
+| Method & Path | Payload | Mô tả |
+| --- | --- | --- |
+| `POST /api/user-profiles` | `{ "email"?, "fullName", "username", "avatarId"?, "bio"? }` | Tạo hồ sơ người dùng【F:src/main/java/com/volunteerhub/community/controller/rest/UserProfileController.java†L17-L26】【F:src/main/java/com/volunteerhub/community/dto/rest/request/EditUserProfileInput.java†L8-L25】 |
+| `PUT /api/user-profiles` | Như trên | Cập nhật hồ sơ【F:src/main/java/com/volunteerhub/community/controller/rest/UserProfileController.java†L28-L35】 |
 
-> `refreshToken` thường set trong **HttpOnly cookie**; `accessToken` dùng cho Authorization header.
+### 📝 Posts (USER)
 
----
+| Method & Path | Payload | Mô tả |
+| --- | --- | --- |
+| `POST /api/posts` | `{ "eventId", "content" }` | Tạo bài viết trong sự kiện【F:src/main/java/com/volunteerhub/community/controller/rest/PostController.java†L18-L27】【F:src/main/java/com/volunteerhub/community/dto/rest/request/CreatePostInput.java†L10-L17】 |
+| `PUT /api/posts` | `{ "postId", "content" }` | Sửa bài viết【F:src/main/java/com/volunteerhub/community/controller/rest/PostController.java†L29-L36】【F:src/main/java/com/volunteerhub/community/dto/rest/request/EditPostInput.java†L10-L17】 |
+| `DELETE /api/posts/{postId}` | — | Xóa bài viết【F:src/main/java/com/volunteerhub/community/controller/rest/PostController.java†L38-L46】 |
 
-#### 🔄 Refresh Token
+### 💬 Comments (USER)
 
-```
-POST http://localhost:8080/api/auth/refresh
-```
+| Method & Path | Payload | Mô tả |
+| --- | --- | --- |
+| `POST /api/comments` | `{ "postId", "content" }` | Tạo bình luận【F:src/main/java/com/volunteerhub/community/controller/rest/CommentController.java†L18-L27】【F:src/main/java/com/volunteerhub/community/dto/rest/request/CreateCommentInput.java†L8-L12】 |
+| `PUT /api/comments` | `{ "commentId", "content" }` | Sửa bình luận【F:src/main/java/com/volunteerhub/community/controller/rest/CommentController.java†L29-L36】【F:src/main/java/com/volunteerhub/community/dto/rest/request/EditCommentInput.java†L8-L17】 |
+| `DELETE /api/comments/{commentId}` | — | Xóa bình luận【F:src/main/java/com/volunteerhub/community/controller/rest/CommentController.java†L38-L45】 |
 
-- Lấy `refreshToken` từ **cookie**
-- **Response:**
+### 🎟️ Events (EVENT_MANAGER, một số route yêu cầu ADMIN)
 
-```json
-{
-  "accessToken": "new_xxx",
-  "tokenType": "Bearer"
-}
-```
+| Method & Path | Payload | Mô tả |
+| --- | --- | --- |
+| `POST /api/events` | `{ "eventName", "eventDescription", "eventLocation" }` | Tạo sự kiện【F:src/main/java/com/volunteerhub/community/controller/rest/EventController.java†L18-L28】【F:src/main/java/com/volunteerhub/community/dto/rest/request/CreateEventInput.java†L12-L23】 |
+| `PUT /api/events` | `{ "eventId", "eventName", "eventDescription", "eventLocation" }` | Cập nhật sự kiện【F:src/main/java/com/volunteerhub/community/controller/rest/EventController.java†L30-L37】【F:src/main/java/com/volunteerhub/community/dto/rest/request/EditEventInput.java†L12-L25】 |
+| `DELETE /api/events/{eventId}` | — | Xóa sự kiện【F:src/main/java/com/volunteerhub/community/controller/rest/EventController.java†L39-L47】 |
+| `POST /api/events/{eventId}/approve` | — | Duyệt sự kiện (ADMIN)【F:src/main/java/com/volunteerhub/community/controller/rest/EventController.java†L49-L55】 |
 
----
+### 🤝 Event Registration (USER / EVENT_MANAGER)
 
-#### 📝 Signup
+| Method & Path | Payload | Mô tả |
+| --- | --- | --- |
+| `POST /api/events/{eventId}/registrations` | — | Đăng ký tham gia sự kiện (USER)【F:src/main/java/com/volunteerhub/community/controller/rest/EventRegistrationController.java†L18-L26】 |
+| `DELETE /api/events/{eventId}/registrations` | — | Hủy đăng ký (USER)【F:src/main/java/com/volunteerhub/community/controller/rest/EventRegistrationController.java†L28-L35】 |
+| `POST /api/event-registrations/{registrationId}/approve` | — | Phê duyệt đăng ký (EVENT_MANAGER)【F:src/main/java/com/volunteerhub/community/controller/rest/EventRegistrationController.java†L37-L43】 |
+| `POST /api/event-registrations/{registrationId}/reject` | — | Từ chối đăng ký (EVENT_MANAGER)【F:src/main/java/com/volunteerhub/community/controller/rest/EventRegistrationController.java†L45-L51】 |
 
-```
-POST http://localhost:8080/api/auth/signup
-Content-Type: application/json
-```
+### ❤️ Likes (USER / EVENT_MANAGER)
 
-**Request body:**
+`targetType` nhận giá trị từ enum `COMMENT`, `POST`, `EVENT`, `LIKE`.
 
-```json
-{
-  "email": "",
-  "password": ""
-}
-```
+| Method & Path | Payload | Mô tả |
+| --- | --- | --- |
+| `POST /api/likes` | `{ "targetId", "targetType" }` | Thích nội dung【F:src/main/java/com/volunteerhub/community/controller/rest/LikeController.java†L17-L25】【F:src/main/java/com/volunteerhub/community/model/db_enum/TableType.java†L3-L5】 |
+| `DELETE /api/likes` | `{ "targetId", "targetType" }` | Bỏ thích【F:src/main/java/com/volunteerhub/community/controller/rest/LikeController.java†L27-L34】 |
 
-**Response:**
+### 🛡️ User Moderation (ADMIN)
 
-```json
-{
-  "ok": true,
-  "message": "User registered successfully",
-  "id": "uuid-generated"
-}
-```
+| Method & Path | Mô tả |
+| --- | --- |
+| `POST /api/users/{userId}/ban` | Khóa người dùng【F:src/main/java/com/volunteerhub/community/controller/rest/UserManagementController.java†L15-L22】 |
+| `DELETE /api/users/{userId}/ban` | Mở khóa người dùng【F:src/main/java/com/volunteerhub/community/controller/rest/UserManagementController.java†L24-L30】 |
 
----
+### 📤 Exports (ADMIN)
 
-### 🧾 User Profile
-
-> Yêu cầu đăng nhập thành công (Authorization: Bearer `<accessToken>`)
-
-```
-PUT http://localhost:8080/api/user-profile
-Content-Type: application/json
-Authorization: Bearer <accessToken>
-```
-
-**Request body:**
-
-```json
-{
-  "email": "",
-  "fullName": "",
-  "username": "",
-  "avatarId": "",
-  "bio": ""
-}
-```
-
-**Response:**
-
-```json
-{
-  "ok": true,
-  "message": "Profile updated successfully",
-  "id": "uuid-generated",
-  "updatedAt": "2025-12-05T16:00:00Z"
-}
-```
+| Method & Path | Payload | Phản hồi |
+| --- | --- | --- |
+| `POST /api/exports/event-volunteers` | `{ "eventId", "format": "CSV"|"JSON" }` | CSV (kèm header download) hoặc JSON danh sách volunteer tùy `format`【F:src/main/java/com/volunteerhub/export_data/ExportController.java†L19-L37】 |
 
 ---
 
-## 🔹 REST API for **Write** Operations
+## 🔹 GraphQL API (read-only)
 
-> Tách các thao tác **create / update / delete** khỏi GraphQL; các route sau trả về schema giống `MutationResult` (`ok`, `id`, `message`, `createdAt`, `updatedAt`).
+**Endpoint:** `POST http://localhost:8080/graphql`  
+**Auth:** Tùy query; `@AuthenticationPrincipal` chỉ dùng cho `userHistory`.
 
-### 📝 Posts (`USER`)
+### Top-level Queries
 
-```
-POST   /api/posts                      # create post
-PUT    /api/posts/{postId}             # edit post
-DELETE /api/posts/{postId}             # delete post
-```
+| Query | Args | Trả về |
+| --- | --- | --- |
+| `getUserProfile(userId: ID!)` | `userId` (UUID) | `UserProfile`【F:src/main/java/com/volunteerhub/community/controller/graphql/query/UserProfileResolver.java†L21-L32】 |
+| `getEvent(eventId: ID!)` | — | `Event`【F:src/main/java/com/volunteerhub/community/controller/graphql/query/EventResolver.java†L30-L35】 |
+| `getPost(postId: ID!)` | — | `Post`【F:src/main/java/com/volunteerhub/community/controller/graphql/query/PostResolver.java†L31-L35】 |
+| `findEvents(page: Int = 0, size: Int = 10, filter: JSON = null)` | phân trang | `OffsetPage<Event>`【F:src/main/java/com/volunteerhub/community/controller/graphql/query/EventResolver.java†L37-L52】【F:src/main/resources/graphql/schema.graphqls†L41-L53】 |
+| `findPosts(page: Int = 0, size: Int = 10)` | phân trang | `OffsetPage<Post>`【F:src/main/java/com/volunteerhub/community/controller/graphql/query/PostResolver.java†L37-L49】【F:src/main/resources/graphql/schema.graphqls†L55-L59】 |
+| `findUserProfiles(page: Int = 0, size: Int = 10)` | phân trang | `OffsetPage<UserProfile>`【F:src/main/java/com/volunteerhub/community/controller/graphql/query/UserProfileResolver.java†L17-L32】【F:src/main/resources/graphql/schema.graphqls†L61-L66】 |
+| `listMemberInEvent(eventId: ID!, page: Int = 0, size: Int = 10)` | — | `OffsetPage<RoleInEvent>`【F:src/main/java/com/volunteerhub/community/controller/graphql/query/HistoryResolver.java†L19-L33】【F:src/main/resources/graphql/schema.graphqls†L68-L70】 |
+| `userHistory(page: Int = 0, size: Int = 10)` | requires login | Lịch sử tham gia (`OffsetPage<RoleInEvent>`)【F:src/main/java/com/volunteerhub/community/controller/graphql/query/HistoryResolver.java†L35-L49】【F:src/main/resources/graphql/schema.graphqls†L70-L71】 |
+| `dashboardOverview(hours: Int = 24, size: Int = 5)` | bộ lọc thời gian & size | `DashboardOverview` (trending/new posts, v.v.)【F:src/main/java/com/volunteerhub/community/controller/graphql/query/DashboardResolver.java†L20-L47】【F:src/main/resources/graphql/schema.graphqls†L72-L74】 |
 
-**Request body (create/edit):**
+### Schema Highlights & Pagination
 
-```json
-{
-  "eventId": "<eventId>",
-  "content": "<text>"
-}
-```
+- `PageInfo` trong `OffsetPage` gồm `page`, `size`, `totalElements`, `totalPages`, `hasNext`, `hasPrevious`【F:src/main/resources/graphql/schema.graphqls†L25-L48】.
+- `Event` có các field phân trang: `listPost(page,size)` và `listMember(page,size)`; `Post` có `listComment(page,size)`; các field `likeCount` và `createBy` được resolver tính toán.【F:src/main/java/com/volunteerhub/community/controller/graphql/query/EventResolver.java†L54-L91】【F:src/main/java/com/volunteerhub/community/controller/graphql/query/PostResolver.java†L51-L69】
 
-### 💬 Comments (`USER`)
-
-```
-POST   /api/comments                   # create comment
-PUT    /api/comments/{commentId}       # edit comment
-DELETE /api/comments/{commentId}       # delete comment
-```
-
-**Request body (create/edit):**
-
-```json
-{
-  "postId": "<postId>",
-  "content": "<text>"
-}
-```
-
-### ❤️ Likes (`USER`)
-
-```
-POST   /api/likes                      # like (body: targetId, targetType)
-DELETE /api/likes                      # unlike (body: targetId, targetType)
-```
-
-### 🎟️ Event Participation (`USER`)
-
-```
-POST   /api/events/{eventId}/registrations     # register
-DELETE /api/events/{eventId}/registrations     # unregister
-POST   /api/event-registrations/{id}/approve   # approve registration
-POST   /api/event-registrations/{id}/reject    # reject registration
-```
-
-### 🧭 Event Management (`EVENT_MANAGER`)
-
-```
-POST   /api/events                     # create event
-PUT    /api/events/{eventId}           # edit event
-DELETE /api/events/{eventId}           # delete event
-POST   /api/events/{eventId}/approve   # approve event (ADMIN)
-```
-
-**Request body (create/edit):**
-
-```json
-{
-  "eventName": "<text>",
-  "eventDescription": "<text>",
-  "eventLocation": "<text>"
-}
-```
-
-### 🛡️ Admin / Event Manager Moderation
-
-```
-POST   /api/users/{userId}/ban           # ban user
-DELETE /api/users/{userId}/ban           # unban user
-```
-
-**Response (moderation route):**
-
-```json
-{
-  "result": "SUCCESS",
-  "action": "BAN_USER",
-  "targetType": "USER",
-  "targetId": "c5b05670-5f6d-4e5b-9d82-5c34a8b9bf9b",
-  "status": "BANNED",
-  "message": "User c5b05670-5f6d-4e5b-9d82-5c34a8b9bf9b has been banned",
-  "reasonCode": null,
-  "moderatedAt": "2025-11-04T07:52:12.124Z"
-}
-```
-
----
-
-## 🔹 GraphQL API
-
-**Base URL:**
-
-```
-GRAPHQL http://localhost:8080/graphql
-Authorization: Bearer <accessToken>  # Optional for queries, required for mutations
-```
-
-- `UserId` sử dụng **UUID**
-- Các `ID` khác (Post, Comment, Event) là **Snowflake ID dạng string**
-- **Anonymous user**: chỉ query, mutation cần role (`USER`, `EVENT_MANAGER`, `ADMIN`)
-
----
-
-## 🔸 Query Examples (Read)
-
-### 🧱 1. Lấy chi tiết **Post**
+### Ví dụ Query (event + post/comment)
 
 ```graphql
-query {
-    getPost(postId: "1") {
+query ExampleEvent($eventId: ID!) {
+  getEvent(eventId: $eventId) {
+    eventId
+    eventName
+    eventDescription
+    eventLocation
+    likeCount
+    createBy { userId username avatarId }
+    listPost(page: 0, size: 10) {
+      pageInfo { page size totalElements totalPages hasNext hasPrevious }
+      content {
         postId
-        eventId
         content
-        createdAt
-        updatedAt
-        commentCount
         likeCount
-        creatorInfo {
-            userId
-            username
-            avatarId
+        createBy { userId username }
+        listComment(page: 0, size: 5) {
+          pageInfo { page size totalElements totalPages hasNext hasPrevious }
+          content { commentId content likeCount createBy { userId username } }
         }
-    }
-}
-```
-
----
-
-### 🧱 2. Lấy chi tiết **Event** cùng danh sách Post & Comment
-
-```graphql
-query {
-    getEvent(eventId: "1") {
-        eventId
-        eventName
-        eventDescription
-        eventLocation
-        createdAt
-        updatedAt
-        memberCount
-        postCount
-        likeCount
-        creatorInfo {
-            userId
-            username
-            avatarId
-        }
-
-        listPosts(page: 0, size: 10) {
-            pageInfo {
-                page
-                size
-                totalElements
-                totalPages
-                hasNext
-                hasPrevious
-            }
-            content {
-                postId
-                eventId
-                content
-                createdAt
-                updatedAt
-                commentCount
-                likeCount
-                creatorInfo {
-                    userId
-                    username
-                    avatarId
-                }
-
-                listComment(page: 0, size: 5) {
-                    pageInfo {
-                        page
-                        size
-                        totalElements
-                        totalPages
-                        hasNext
-                        hasPrevious
-                    }
-                    content {
-                        commentId
-                        postId
-                        content
-                        createdAt
-                        updatedAt
-                        likeCount
-                        creatorInfo {
-                            userId
-                            username
-                            avatarId
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-```
-
----
-
-### 🧱 3. Lấy chi tiết **UserProfile** + Event tham gia
-
-```graphql
-query {
-    getUserProfile(userId: "d4e5f6a7-b8c9-0123-def0-4567890123cd") {
-        userId
-        username
-        fullName
-        email
-        status
-        createdAt
-        postCount
-        commentCount
-        eventCount
-
-        listEvents(page: 0, size: 10) {
-            pageInfo {
-                page
-                size
-                totalElements
-                totalPages
-                hasNext
-                hasPrevious
-            }
-            content {
-                eventId
-                eventName
-                eventDescription
-                eventLocation
-                createdAt
-                updatedAt
-                memberCount
-                postCount
-                likeCount
-                creatorInfo {
-                    userId
-                    username
-                    avatarId
-                }
-            }
-        }
-    }
-}
-```
-
----
-
-## 🔸 Mutation Examples (Write)
-
-- Tất cả mutation ghi (tạo/sửa/xóa post/comment/event, like/unlike, đăng ký/hủy đăng ký sự kiện, phê duyệt/từ chối, ban/unban, cập nhật hồ sơ) trả về **ModerationResponse** để phản ánh rõ hành động và trạng thái:
-
-```graphql
-{
-    result: ModerationResult!           # SUCCESS | DENIED | INVALID | NOT_FOUND | ERROR
-    action: ModerationAction!
-    targetType: ModerationTargetType!   # POST | COMMENT | EVENT | EVENT_REGISTRATION | USER_PROFILE | USER | LIKE
-    targetId: ID!
-    status: ModerationStatus            # includes success + failure states (e.g., BANNED, DENIED, FAILED)
-    message: String                     # human-readable
-    reasonCode: String                  # machine-readable error/success code
-    moderatedAt: String!                # always present, even on failures
-}
-```
-
-- **Authorization required**
-- Anonymous user không thể thực hiện mutation
-
----
-
-### 🧭 Event Mutations (`EVENT_MANAGER`)
-
-```graphql
-createEvent(input: CreateEventInput!)
-editEvent(input: EditEventInput!)
-deleteEvent(eventId: ID!)
-approveEvent(eventId: ID!)
-```
-
-### 🧭 Post Mutations (`USER`)
-
-```graphql
-createPost(input: CreatePostInput!)
-editPost(input: EditPostInput!)
-deletePost(postId: ID!)
-```
-
-### 🧭 Comment Mutations (`USER`)
-
-```graphql
-createComment(input: CreateCommentInput!)
-editComment(input: EditCommentInput!)
-deleteComment(commentId: ID!)
-```
-
-### ❤️ Like / Unlike (`USER`)
-
-```graphql
-like(input: LikeInput!)
-unlike(input: LikeInput!)
-```
-
-### 🧭 User Registration / Event Participation (`USER`)
-
-```graphql
-registerEvent(eventId: ID!)
-unregisterEvent(eventId: ID!)
-```
-
-### 🧭 Admin / Event Manager Actions
-
-```graphql
-approveRegistration(registrationId: ID!)
-rejectRegistration(registrationId: ID!)
-banUser(userId: ID!)
-unbanUser(userId: ID!)
-```
-
----
-
-## 🔹 Pagination & Nested Types
-
-- `PageInfo` dùng cho query list (zero-based pagination):
-
-```graphql
-type PageInfo {
-    page: Int!
-    size: Int!
-    totalElements: Int!
-    totalPages: Int!
-    hasNext: Boolean!
-    hasPrevious: Boolean!
-}
-```
-
-- Nested types ví dụ: `Event -> listPosts -> listComment`
-- `creatorInfo` luôn trả về **UserProfileMini** (userId, username, avatarId)
-
----
-
-## 🔹 Response Format
-
-**Thành công:**
-
-```json
-{
-  "data": {
-    "createEvent": {
-      "ok": true,
-      "id": "773316679898759168",
-      "message": "Success",
-      "updatedAt": "2025-11-04T07:52:12.124Z"
+      }
     }
   }
 }
 ```
 
-**Lỗi hoặc không tìm thấy:**
-
-```json
-{
-  "data": {
-    "editEvent": {
-      "ok": false,
-      "message": "Event not found"
-    }
-  }
-}
-```
+> Lưu ý: Các thao tác ghi (tạo/sửa/xóa) hiện diện dưới REST, GraphQL chỉ phục vụ đọc dữ liệu.
