@@ -2,7 +2,7 @@ spring:
   application:
     name: VolunteerHubProject
   datasource:
-    url: jdbc:postgresql://localhost:5431/volunteerhub
+    url: jdbc:postgresql://localhost:5432/volunteerhub
     username: admin
     password: admin123
   jpa:

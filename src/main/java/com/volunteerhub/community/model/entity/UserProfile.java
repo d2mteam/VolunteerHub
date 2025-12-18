@@ -28,9 +28,10 @@ public class UserProfile {
     @Column(name = "email", length = 100)
     private String email;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private UserStatus status;
+    private UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;

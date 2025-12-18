@@ -1,16 +1,15 @@
-package com.volunteerhub.community.controller.rest;
+package com.volunteerhub.export_data;
 
 import com.volunteerhub.authentication.model.RolePermission;
-import com.volunteerhub.community.dto.rest.request.EventVolunteerExportRequest;
-import com.volunteerhub.community.service.read_service.EventVolunteerExportService;
-import com.volunteerhub.community.service.read_service.EventVolunteerExportService.EventVolunteerExportResult;
-import com.volunteerhub.community.service.read_service.EventVolunteerExportService.ExportFormat;
+import com.volunteerhub.export_data.EventVolunteerExportService.EventVolunteerExportResult;
+import com.volunteerhub.export_data.EventVolunteerExportService.ExportFormat;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +30,7 @@ public class ExportController {
         if (result.format() == ExportFormat.CSV) {
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=event-volunteers.csv")
-                    .contentType(MediaType.TEXT_PLAIN)
+                    .contentType(MediaType.asMediaType(MimeType.valueOf("text/csv; charset=UTF-8")))
                     .body(result.csvContent());
         }
 

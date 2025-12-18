@@ -1,6 +1,5 @@
-package com.volunteerhub.community.service.read_service;
+package com.volunteerhub.export_data;
 
-import com.volunteerhub.community.dto.rest.request.EventVolunteerExportRequest;
 import com.volunteerhub.community.model.db_enum.EventRole;
 import com.volunteerhub.community.model.db_enum.EventState;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
@@ -42,7 +41,7 @@ public class EventVolunteerExportService {
             Map.entry("roleUpdatedAt", "r.updated_at"),
             Map.entry("userId", "u.user_id"),
             Map.entry("username", "u.username"),
-            Map.entry("fullName", "u.\"fullName\""),
+            Map.entry("fullName", "u.full_name"),
             Map.entry("email", "u.email"),
             Map.entry("userStatus", "u.status"),
             Map.entry("userCreatedAt", "u.created_at"),
