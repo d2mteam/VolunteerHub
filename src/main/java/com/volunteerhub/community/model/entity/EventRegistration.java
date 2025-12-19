@@ -14,6 +14,13 @@ import java.util.UUID;
                 columnList = "user_id, event_id"
         )
 })
+@NamedEntityGraph(
+        name = "EventRegistration.full",
+        attributeNodes = {
+                @NamedAttributeNode("event"),
+                @NamedAttributeNode("userProfile")
+        }
+)
 @Getter
 @Setter
 @Builder

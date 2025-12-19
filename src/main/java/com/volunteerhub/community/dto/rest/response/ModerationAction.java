@@ -1,6 +1,8 @@
 package com.volunteerhub.community.dto.rest.response;
 
 public enum ModerationAction {
+    COMPLETE_EVENT,
+    CHANGE_PARTICIPATION_STATUS,
     CREATE_POST,
     EDIT_POST,
     DELETE_POST,

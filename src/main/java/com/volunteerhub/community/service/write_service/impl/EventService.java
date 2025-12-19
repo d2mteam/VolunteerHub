@@ -7,6 +7,7 @@ import com.volunteerhub.community.dto.rest.response.ModerationStatus;
 import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
 import com.volunteerhub.community.dto.rest.request.CreateEventInput;
 import com.volunteerhub.community.dto.rest.request.EditEventInput;
+import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.RoleInEvent;
 import com.volunteerhub.community.model.entity.UserProfile;
@@ -145,6 +146,31 @@ public class EventService implements IEventService {
                 eventId.toString(),
                 ModerationStatus.DELETED,
                 "Event deleted"
+        );
+    }
+
+    @Override
+    public ModerationResponse changeParticipationStatus(Long eventId, UUID userId, ParticipationStatus participationStatus) {
+        int updated = roleInEventRepository.changeParticipationStatus(eventId, userId, participationStatus);
+
+        if (updated == 0) {
+            return ModerationResponse.failure(
+                    ModerationAction.CHANGE_PARTICIPATION_STATUS,
+                    ModerationTargetType.USER,
+                    userId.toString(),
+                    ModerationResult.NOT_FOUND,
+                    ModerationStatus.FAILED,
+                    String.format("User with ID %s does not participation event", userId),
+                    "USER_NOT_PARTICIPATE_EVENT"
+            );
+        }
+
+        return ModerationResponse.success(
+                ModerationAction.CHANGE_PARTICIPATION_STATUS,
+                ModerationTargetType.USER,
+                userId.toString(),
+                ModerationStatus.UPDATED,
+                String.format("User %s has change participation status", userId)
         );
     }
 }

@@ -40,7 +40,11 @@ public class UserProfileService implements IUserProfileService {
 
         UserProfile userProfile = optional.get();
         userProfile.setEmail(input.getEmail());
+        userProfile.setUsername(input.getUsername());
         userProfile.setFullName(input.getFullName());
+        userProfile.setBio(input.getBio());
+        userProfile.setAvatarId(input.getAvatarId());
+
         userProfileRepository.save(userProfile);
 
         return ModerationResponse.success(

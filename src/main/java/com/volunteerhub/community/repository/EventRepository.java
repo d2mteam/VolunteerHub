@@ -22,18 +22,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findByOrderByCreatedAtDesc(Pageable pageable);
 
     @Query("""
-            SELECT e
-            FROM Event e
-            WHERE EXISTS (
-                SELECT 1 FROM Post p WHERE p.event = e AND p.createdAt >= :since
-            )
-            ORDER BY (
-                SELECT MAX(p.createdAt) FROM Post p WHERE p.event = e
-            ) DESC
-            """)
-    Page<Event> findEventsWithRecentPosts(@Param("since") LocalDateTime since, Pageable pageable);
-
-    @Query("""
             SELECT new com.volunteerhub.community.repository.view.EventEngagementSummary(
                 e,
                 COUNT(DISTINCT er.registrationId),
@@ -53,4 +41,46 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<EventEngagementSummary> findTrendingEventsSince(@Param("since") LocalDateTime since,
                                                          @Param("likeTableType") TableType likeTableType,
                                                          Pageable pageable);
+
+
+    @Query(
+            value = """
+                    SELECT e.*
+                    FROM events e
+                    WHERE
+                        (
+                            :keyword IS NULL
+                            OR lower(e.event_name) LIKE lower(concat(:keyword, '%'))
+                        )
+                    AND
+                        (
+                            :location IS NULL
+                            OR lower(e.event_location) LIKE lower(concat(:location, '%'))
+                        )
+                    AND
+                        e.created_at >= COALESCE(CAST(:startDateFrom AS timestamp),
+                            e.created_at
+                        )
+                    AND
+                        e.created_at <= COALESCE(CAST(:startDateTo AS timestamp),
+                            e.created_at
+                        )
+                    AND
+                        e.event_state = COALESCE(CAST(:eventState AS varchar),
+                                            e.event_state
+                        )
+                    AND
+                        (:categories IS NULL OR true)
+                    ORDER BY e.created_at DESC
+                    """,
+            nativeQuery = true
+    )
+    List<Event> searchEvents(
+            @Param("keyword") String keyword,
+            @Param("location") String location,
+            @Param("categories") String[] categories,
+            @Param("startDateFrom") LocalDateTime startDateFrom,
+            @Param("startDateTo") LocalDateTime startDateTo,
+            @Param("eventState") String eventState
+    );
 }

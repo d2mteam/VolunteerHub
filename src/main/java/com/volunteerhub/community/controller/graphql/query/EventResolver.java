@@ -1,6 +1,7 @@
 package com.volunteerhub.community.controller.graphql.query;
 
 
+import com.volunteerhub.community.dto.graphql.input.EventFilterInput;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
@@ -82,19 +83,13 @@ public class EventResolver {
     }
 
 
-    @SchemaMapping(typeName = "Event", field = "listMember")
-    public OffsetPage<RoleInEvent> listMember(Event event,
-                                              @Argument Integer page,
-                                              @Argument Integer size) {
-        int safePage = Math.max(page, 0);
-        int safeSize = size > 0 ? size : 10;
-
-        Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<RoleInEvent> memberPage = roleInEventRepository.findByEvent_EventId(event.getEventId(), pageable);
-        PageInfo pageInfo = PageUtils.from(memberPage);
-        return OffsetPage.<RoleInEvent>builder()
-                .content(memberPage.getContent())
-                .pageInfo(pageInfo)
-                .build();
+    @QueryMapping
+    public List<Event> searchEvents(@Argument EventFilterInput filter) {
+        return eventRepository.searchEvents(filter.getKeyword(),
+                filter.getLocation(),
+                filter.getCategories().toArray(String[]::new),
+                filter.getStartDateFrom(),
+                filter.getStartDateTo(),
+                filter.getEventState());
     }
 }

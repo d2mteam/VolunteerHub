@@ -1,4 +1,4 @@
-package com.volunteerhub.community.dto.graphql.response;
+package com.volunteerhub.community.dto.graphql.output;
 
 import com.volunteerhub.community.model.entity.Event;
 import lombok.Builder;

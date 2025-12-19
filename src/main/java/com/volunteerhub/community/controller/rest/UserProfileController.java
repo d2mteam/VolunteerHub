@@ -32,4 +32,6 @@ public class UserProfileController {
                                              @Valid @RequestBody EditUserProfileInput editUserProfile) {
         return ResponseEntity.ok(userProfileService.editUserProfile(userId, editUserProfile));
     }
+
+
 }

@@ -5,7 +5,9 @@ import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.response.ModerationResult;
 import com.volunteerhub.community.dto.rest.response.ModerationStatus;
 import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
+import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.db_enum.UserStatus;
+import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserManagerService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.UUID;
 @Transactional
 public class UserManagerService implements IUserManagerService {
     private final UserProfileRepository userProfileRepository;
+    private final RoleInEventRepository roleInEventRepository;
 
     @Override
     public ModerationResponse banUser(UUID userId) {
@@ -31,7 +34,7 @@ public class UserManagerService implements IUserManagerService {
                     userId.toString(),
                     ModerationResult.NOT_FOUND,
                     ModerationStatus.FAILED,
-                    String.format("User with ID %s does not exist", userId),
+                    String.format("User with ID %s does not participation event", userId),
                     "USER_NOT_FOUND"
             );
         }
@@ -56,7 +59,7 @@ public class UserManagerService implements IUserManagerService {
                     userId.toString(),
                     ModerationResult.NOT_FOUND,
                     ModerationStatus.FAILED,
-                    String.format("User with ID %s does not exist", userId),
+                    String.format("User with ID %s does not participation event", userId),
                     "USER_NOT_FOUND"
             );
         }
@@ -69,5 +72,4 @@ public class UserManagerService implements IUserManagerService {
                 String.format("User %s has been unbanned", userId)
         );
     }
-
 }

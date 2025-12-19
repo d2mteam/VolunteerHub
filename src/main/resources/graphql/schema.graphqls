@@ -36,6 +36,7 @@ type Event {
     createBy: UserProfileSummary
     listPost(page: Int = 0, size: Int = 10): PostPage
 
+    eventState: String
 }
 
 type EventSummary {
@@ -43,7 +44,7 @@ type EventSummary {
     eventName: String
     eventDescription: String
     eventLocation: String
-    likeCount: Int
+    eventState: String
 }
 
 type Post {
@@ -130,14 +131,14 @@ input EventFilterInput {
     startDateFrom: String
     startDateTo: String
     location: String
-    status: String
+    eventState: String
 }
 
 type EventRegistration {
     registrationId: ID!
-    userProfile: UserProfile
-    event: EventSummary
-    status: String
+    userProfile: UserProfile!
+    event: EventSummary!
+    status: String!
 }
 
 type EventRegistrationPage {
@@ -154,12 +155,11 @@ type Query {
     findPosts(page: Int = 0, size: Int = 10): PostPage
     findUserProfiles(page: Int = 0, size: Int = 10): UserProfilePage
 
-    listMemberInEvent(eventId: ID!, page: Int = 0, size: Int = 10) : RoleInEventPage
     userHistory(page: Int = 0, size: Int = 10): RoleInEventPage
-
     dashboardOverview(hours: Int = 24, size: Int = 5): DashboardOverview
 
-    browseEvents(page: Int = 0, size: Int = 10, filter: EventFilterInput): EventPage
-    getEventRegistrationByUserId(userId: ID!) : EventRegistrationPage
-    getEventRegistrationByEventId(eventId: ID!) : EventRegistrationPage
+    searchEvents(filter: EventFilterInput): [EventSummary!]
+    listMemberInEvent(eventId: ID!, page: Int = 0, size: Int = 10) : RoleInEventPage
+    getEventRegistrationByUserId(page: Int = 0, size: Int = 10, userId: ID!) : EventRegistrationPage
+    getEventRegistrationByEventId(page: Int = 0, size: Int = 10, eventId: ID!) : EventRegistrationPage
 }

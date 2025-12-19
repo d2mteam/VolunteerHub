@@ -56,9 +56,7 @@ CREATE TABLE likes
     created_at  timestamp(6) NOT NULL,
     target_type varchar(255),
     target_id   bigint,
-    created_by  uuid,
-    CONSTRAINT fk_likes_created_by
-        FOREIGN KEY (created_by) REFERENCES user_profiles (user_id)
+    created_by  uuid
 );
 
 CREATE TABLE posts
