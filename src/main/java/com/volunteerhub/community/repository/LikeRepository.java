@@ -3,8 +3,6 @@ package com.volunteerhub.community.repository;
 import com.volunteerhub.community.model.entity.Like;
 import com.volunteerhub.community.model.db_enum.TableType;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,11 +24,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     int countByTargetIdAndTableType(
             @Param("targetId") Long targetId,
             @Param("tableType") TableType tableType
-    );
-
-    Page<Like> findByTargetIdAndTableType(
-            Long targetId,
-            TableType tableType,
-            Pageable pageable
     );
 }

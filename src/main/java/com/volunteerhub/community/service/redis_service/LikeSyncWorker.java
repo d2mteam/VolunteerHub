@@ -5,6 +5,7 @@ import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.stream.*;
@@ -30,23 +31,29 @@ public class LikeSyncWorker {
     private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator idGenerator;
 
-    @Scheduled(fixedDelay = 1000)  // mỗi giây kéo 1 batch
-    @Transactional
-    public void consume() {
+    @PostConstruct
+    public void init() {
         try {
-            redisTemplate.opsForStream().createGroup(redisLikeEvent, ReadOffset.from("0"), "like_group");
+            redisTemplate.opsForStream().createGroup(redisLikeEvent, ReadOffset.from("0"), "like_group_11");
         } catch (Exception e) {
             // ignore nếu group đã tồn tại
         }
+    }
 
-        List<MapRecord<String,Object,Object>> records =
-            redisTemplate.opsForStream().read(
-                Consumer.from("like_group", "worker1"),
-                StreamReadOptions.empty().count(200),
-                StreamOffset.create(redisLikeEvent, ReadOffset.lastConsumed())
-            );
+    @Scheduled(fixedDelay = 1000)  // mỗi giây kéo 1 batch
+    @Transactional
+    public void consume() {
+        List<MapRecord<String, Object, Object>> records =
+                redisTemplate.opsForStream().read(
+                        Consumer.from("like_group_11", "worker1"),
+                        StreamReadOptions.empty().count(200),
+                        StreamOffset.create(redisLikeEvent, ReadOffset.lastConsumed())
+                );
+
 
         if (records == null) return;
+
+        log.info("consume records: {}", records.size());
 
         for (var record : records) {
             try {
@@ -60,6 +67,9 @@ public class LikeSyncWorker {
 
     private void processRecord(MapRecord<String, Object, Object> record) {
         Map<Object, Object> values = record.getValue();
+
+        log.info("process record: {}", values);
+
         String action = values.get("action").toString();
         TableType tableType = TableType.valueOf(values.get("tableType").toString());
         Long targetId = Long.valueOf(values.get("targetId").toString());

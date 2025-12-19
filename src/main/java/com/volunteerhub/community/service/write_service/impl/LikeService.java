@@ -5,6 +5,7 @@ import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.response.ModerationStatus;
 import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
 import com.volunteerhub.community.model.db_enum.TableType;
+import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.service.redis_service.RedisLikeService;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class LikeService implements ILikeService {
 
     private final RedisLikeService redisLikeService;
+    private final LikeRepository likeRepository;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
