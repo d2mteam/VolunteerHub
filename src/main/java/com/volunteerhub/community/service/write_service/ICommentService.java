@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface ICommentService {
     ModerationResponse createComment(UUID userId, CreateCommentInput input);
-    ModerationResponse  editComment(UUID userId, EditCommentInput input);
-    ModerationResponse  deleteComment(UUID userId, Long commentId);
+
+    ModerationResponse editComment(UUID userId, EditCommentInput input);
+
+    ModerationResponse deleteComment(UUID userId, Long commentId);
 }

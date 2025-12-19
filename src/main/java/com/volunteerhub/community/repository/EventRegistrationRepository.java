@@ -11,11 +11,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EventRegistrationRepository extends JpaRepository<EventRegistration, Long> {
-    Optional<EventRegistration> findByUserProfile_UserIdAndEvent_EventIdAndStatus(UUID userId, Long eventId, RegistrationStatus registrationStatus);
+    Optional<EventRegistration> findByUserIdAndEventIdAndStatus(UUID userId,
+                                                                Long eventId,
+                                                                RegistrationStatus registrationStatus);
 
     @EntityGraph(value = "EventRegistration.full", type = EntityGraph.EntityGraphType.FETCH)
-    Page<EventRegistration> findByUserProfile_UserId(UUID userId, Pageable pageable);
+    Page<EventRegistration> findByUserId(UUID userId, Pageable pageable);
 
     @EntityGraph(value = "EventRegistration.full", type = EntityGraph.EntityGraphType.FETCH)
-    Page<EventRegistration> findByEvent_EventId(Long eventId, Pageable pageable);
+    Page<EventRegistration> findByEventId(Long eventId, Pageable pageable);
 }

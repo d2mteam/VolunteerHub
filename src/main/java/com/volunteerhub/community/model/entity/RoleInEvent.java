@@ -42,6 +42,7 @@ public class RoleInEvent {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "event_role", nullable = false)
     private EventRole eventRole = EventRole.EVENT_MEMBER;

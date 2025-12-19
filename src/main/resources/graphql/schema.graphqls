@@ -18,12 +18,6 @@ type UserProfileSummary {
     avatarId: String
 }
 
-type RoleInEvent {
-    userProfile: UserProfileSummary
-    event: EventSummary
-    participationStatus: String
-    eventRole: String
-}
 
 type Event {
     eventId: ID!
@@ -134,9 +128,16 @@ input EventFilterInput {
     eventState: String
 }
 
+type RoleInEvent {
+    userProfile: UserProfileSummary
+    event: EventSummary
+    participationStatus: String
+    eventRole: String
+}
+
 type EventRegistration {
     registrationId: ID!
-    userProfile: UserProfile!
+    userProfile: UserProfileSummary!
     event: EventSummary!
     status: String!
 }

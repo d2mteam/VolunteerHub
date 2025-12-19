@@ -1,16 +1,12 @@
 package com.volunteerhub.community.service.write_service.impl;
 
-import com.volunteerhub.community.dto.rest.response.ModerationAction;
-import com.volunteerhub.community.dto.rest.response.ModerationResponse;
-import com.volunteerhub.community.dto.rest.response.ModerationResult;
-import com.volunteerhub.community.dto.rest.response.ModerationStatus;
-import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
+import com.volunteerhub.community.dto.rest.response.*;
+import com.volunteerhub.community.model.db_enum.ParticipationStatus;
+import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.EventRegistration;
 import com.volunteerhub.community.model.entity.RoleInEvent;
 import com.volunteerhub.community.model.entity.UserProfile;
-import com.volunteerhub.community.model.db_enum.ParticipationStatus;
-import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import com.volunteerhub.community.repository.EventRegistrationRepository;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
@@ -21,7 +17,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -30,229 +25,226 @@ import java.util.UUID;
 @AllArgsConstructor
 public class EventRegistrationService implements IEventRegistrationService {
 
-    private static final Set<ParticipationStatus> ACTIVE_PARTICIPATION =
+    private static final Set<ParticipationStatus> ACTIVE_STATES =
             Set.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED);
 
-    private final EventRegistrationRepository eventRegistrationRepository;
     private final RoleInEventRepository roleInEventRepository;
+    private final EventRegistrationRepository eventRegistrationRepository;
     private final EventRepository eventRepository;
     private final UserProfileRepository userProfileRepository;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
-    @Override
-    public ModerationResponse approveRegistration(Long registrationId) {
-        EventRegistration reg = eventRegistrationRepository.findById(registrationId).orElse(null);
-
-        if (reg == null) {
-            return ModerationResponse.failure(
-                    ModerationAction.APPROVE_REGISTRATION,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    registrationId.toString(),
-                    ModerationResult.NOT_FOUND,
-                    ModerationStatus.FAILED,
-                    String.format("Registration not found (registrationId: %d)", registrationId),
-                    "REGISTRATION_NOT_FOUND"
-            );
-        }
-
-        if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ModerationResponse.failure(
-                    ModerationAction.APPROVE_REGISTRATION,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    registrationId.toString(),
-                    ModerationResult.INVALID,
-                    ModerationStatus.DENIED,
-                    "Registration cannot be approved because it has already been processed",
-                    "REGISTRATION_ALREADY_PROCESSED"
-            );
-        }
-
-        Long eventId = reg.getEvent().getEventId();
-        UUID userId = reg.getUserProfile().getUserId();
-
-        Optional<RoleInEvent> existingRole = roleInEventRepository
-                .findByUserProfile_UserIdAndEvent_EventId(userId, eventId);
-        if (existingRole.map(RoleInEvent::getParticipationStatus).filter(ACTIVE_PARTICIPATION::contains).isPresent()) {
-            return ModerationResponse.failure(
-                    ModerationAction.APPROVE_REGISTRATION,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    registrationId.toString(),
-                    ModerationResult.INVALID,
-                    ModerationStatus.DENIED,
-                    String.format("User already registered for this event (eventId: %d)", eventId),
-                    "USER_ALREADY_REGISTERED"
-            );
-        }
-
-        reg.setStatus(RegistrationStatus.APPROVED);
-        eventRegistrationRepository.save(reg);
-
-        RoleInEvent roleInEvent = existingRole.orElseGet(() -> RoleInEvent.builder()
-                .id(snowflakeIdGenerator.nextId())
-                .event(reg.getEvent())
-                .userProfile(reg.getUserProfile())
-                .build());
-        roleInEvent.setParticipationStatus(ParticipationStatus.APPROVED);
-        roleInEventRepository.save(roleInEvent);
-
-        return ModerationResponse.success(
-                ModerationAction.APPROVE_REGISTRATION,
-                ModerationTargetType.EVENT_REGISTRATION,
-                registrationId.toString(),
-                ModerationStatus.APPROVED,
-                "Registration approved"
-        );
-    }
-
-    @Override
-    public ModerationResponse rejectRegistration(Long registrationId) {
-        EventRegistration reg = eventRegistrationRepository.findById(registrationId).orElse(null);
-
-        if (reg == null) {
-            return ModerationResponse.failure(
-                    ModerationAction.REJECT_REGISTRATION,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    registrationId.toString(),
-                    ModerationResult.NOT_FOUND,
-                    ModerationStatus.FAILED,
-                    String.format("Registration not found (registrationId: %d)", registrationId),
-                    "REGISTRATION_NOT_FOUND"
-            );
-        }
-
-        if (reg.getStatus() != RegistrationStatus.PENDING) {
-            return ModerationResponse.failure(
-                    ModerationAction.REJECT_REGISTRATION,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    registrationId.toString(),
-                    ModerationResult.INVALID,
-                    ModerationStatus.DENIED,
-                    "Registration cannot be updated because it has already been processed",
-                    "REGISTRATION_ALREADY_PROCESSED"
-            );
-        }
-
-        Long eventId = reg.getEvent().getEventId();
-        UUID userId = reg.getUserProfile().getUserId();
-
-        if (roleInEventRepository.findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
-                .map(RoleInEvent::getParticipationStatus)
-                .filter(ACTIVE_PARTICIPATION::contains)
-                .isPresent()) {
-            return ModerationResponse.failure(
-                    ModerationAction.REJECT_REGISTRATION,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    registrationId.toString(),
-                    ModerationResult.INVALID,
-                    ModerationStatus.DENIED,
-                    String.format("User already registered for this event (eventId: %d)", eventId),
-                    "USER_ALREADY_REGISTERED"
-            );
-        }
-
-        reg.setStatus(RegistrationStatus.REJECTED);
-        eventRegistrationRepository.save(reg);
-
-        return ModerationResponse.success(
-                ModerationAction.REJECT_REGISTRATION,
-                ModerationTargetType.EVENT_REGISTRATION,
-                registrationId.toString(),
-                ModerationStatus.REJECTED,
-                "Registration rejected"
-        );
-    }
+    // ========================= REGISTER =========================
 
     @Override
     public ModerationResponse registerEvent(UUID userId, Long eventId) {
 
-        Optional<Event> eventOptional = eventRepository.findById(eventId);
-        if (eventOptional.isEmpty()) {
-            return ModerationResponse.failure(
-                    ModerationAction.REGISTER_EVENT,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    eventId.toString(),
-                    ModerationResult.NOT_FOUND,
-                    ModerationStatus.FAILED,
-                    String.format("Event not found (eventId: %d)", eventId),
-                    "EVENT_NOT_FOUND"
-            );
+        Event event = eventRepository.findById(eventId).orElse(null);
+        if (event == null) {
+            return failure(ModerationAction.REGISTER_EVENT, eventId, "EVENT_NOT_FOUND");
         }
 
-        Optional<EventRegistration> pendingRegistration = eventRegistrationRepository
-                .findByUserProfile_UserIdAndEvent_EventIdAndStatus(userId, eventId, RegistrationStatus.PENDING);
-        if (pendingRegistration.isPresent()) {
-            return ModerationResponse.failure(
-                    ModerationAction.REGISTER_EVENT,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    pendingRegistration.get().getRegistrationId().toString(),
-                    ModerationResult.INVALID,
-                    ModerationStatus.DENIED,
-                    "Registration is already pending",
-                    "REGISTRATION_PENDING"
-            );
+        RoleInEvent roleInEvent = roleInEventRepository
+                .findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
+                .orElse(null);
+
+        if (roleInEvent != null) {
+            if (ACTIVE_STATES.contains(roleInEvent.getParticipationStatus())
+                    || roleInEvent.getParticipationStatus() == ParticipationStatus.PENDING) {
+                return failure(
+                        ModerationAction.REGISTER_EVENT,
+                        eventId,
+                        "USER_ALREADY_REGISTERED"
+                );
+            }
+
+            roleInEvent.setParticipationStatus(ParticipationStatus.PENDING);
+            roleInEventRepository.save(roleInEvent);
+        } else {
+            UserProfile user = userProfileRepository.getReferenceById(userId);
+
+            roleInEvent = RoleInEvent.builder()
+                    .id(snowflakeIdGenerator.nextId())
+                    .event(event)
+                    .userProfile(user)
+                    .participationStatus(ParticipationStatus.PENDING)
+                    .build();
+
+            roleInEventRepository.save(roleInEvent);
         }
 
-        if (roleInEventRepository.findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
-                .map(RoleInEvent::getParticipationStatus)
-                .filter(ACTIVE_PARTICIPATION::contains)
-                .isPresent()) {
-            return ModerationResponse.failure(
-                    ModerationAction.REGISTER_EVENT,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    eventId.toString(),
-                    ModerationResult.INVALID,
-                    ModerationStatus.DENIED,
-                    String.format("User already registered for this event (eventId: %d)", eventId),
-                    "USER_ALREADY_REGISTERED"
-            );
-        }
 
-        UserProfile userProfile = userProfileRepository.getReferenceById(userId);
-        Event event = eventOptional.get();
-
-        EventRegistration reg = EventRegistration.builder()
-                .registrationId(snowflakeIdGenerator.nextId())
-                .userProfile(userProfile)
-                .event(event)
-                .build();
-
-        eventRegistrationRepository.save(reg);
+        Long roleInEventId = roleInEvent.getId();
+        // ===== sync EventRegistration (READ MODEL) =====
+        eventRegistrationRepository
+                .findByUserIdAndEventIdAndStatus(
+                        userId, eventId, RegistrationStatus.PENDING
+                )
+                .orElseGet(() -> {
+                    EventRegistration reg = EventRegistration.builder()
+                            .registrationId(roleInEventId)
+                            .userId(userId)
+                            .eventId(eventId)
+                            .status(RegistrationStatus.PENDING)
+                            .build();
+                    return eventRegistrationRepository.save(reg);
+                });
 
         return ModerationResponse.success(
                 ModerationAction.REGISTER_EVENT,
-                ModerationTargetType.EVENT_REGISTRATION,
-                reg.getRegistrationId().toString(),
+                ModerationTargetType.EVENT,
+                roleInEvent.getId().toString(),
                 ModerationStatus.REGISTERED,
                 "Registration created"
         );
     }
 
-    @Override
-    public ModerationResponse unregisterEvent(UUID userId, Long eventId) {
-        EventRegistration reg = eventRegistrationRepository.findByUserProfile_UserIdAndEvent_EventIdAndStatus(
-                userId, eventId, RegistrationStatus.PENDING).orElse(null);
+    // ========================= APPROVE =========================
 
-        if (reg == null) {
-            return ModerationResponse.failure(
-                    ModerationAction.UNREGISTER_EVENT,
-                    ModerationTargetType.EVENT_REGISTRATION,
-                    eventId.toString(),
-                    ModerationResult.NOT_FOUND,
-                    ModerationStatus.FAILED,
-                    "Unable to unregister because this registration either does not exist or has already been processed",
-                    "REGISTRATION_NOT_FOUND_OR_PROCESSED"
+    @Override
+    public ModerationResponse approveRegistration(Long roleInEventId) {
+
+        RoleInEvent roleInEvent = roleInEventRepository.findById(roleInEventId).orElse(null);
+        if (roleInEvent == null) {
+            return failure(
+                    ModerationAction.APPROVE_REGISTRATION,
+                    roleInEventId,
+                    "ROLE_NOT_FOUND"
             );
         }
 
-        reg.setStatus(RegistrationStatus.CANCELLED_BY_USER);
-        eventRegistrationRepository.save(reg);
+        if (roleInEvent.getParticipationStatus() != ParticipationStatus.PENDING) {
+            return failure(
+                    ModerationAction.APPROVE_REGISTRATION,
+                    roleInEventId,
+                    "ROLE_ALREADY_PROCESSED"
+            );
+        }
+
+        roleInEvent.setParticipationStatus(ParticipationStatus.APPROVED);
+        roleInEventRepository.save(roleInEvent);
+
+        // ===== sync EventRegistration =====
+        eventRegistrationRepository
+                .findByUserIdAndEventIdAndStatus(
+                        roleInEvent.getUserProfile().getUserId(),
+                        roleInEvent.getEvent().getEventId(),
+                        RegistrationStatus.PENDING
+                )
+                .ifPresent(reg -> {
+                    reg.setStatus(RegistrationStatus.APPROVED);
+                    eventRegistrationRepository.save(reg);
+                });
+
+        return ModerationResponse.success(
+                ModerationAction.APPROVE_REGISTRATION,
+                ModerationTargetType.EVENT,
+                roleInEventId.toString(),
+                ModerationStatus.APPROVED,
+                "Registration approved"
+        );
+    }
+
+    // ========================= REJECT =========================
+
+    @Override
+    public ModerationResponse rejectRegistration(Long roleInEventId) {
+
+        RoleInEvent roleInEvent = roleInEventRepository.findById(roleInEventId).orElse(null);
+        if (roleInEvent == null) {
+            return failure(
+                    ModerationAction.REJECT_REGISTRATION,
+                    roleInEventId,
+                    "ROLE_NOT_FOUND"
+            );
+        }
+
+        if (roleInEvent.getParticipationStatus() != ParticipationStatus.PENDING) {
+            return failure(
+                    ModerationAction.REJECT_REGISTRATION,
+                    roleInEventId,
+                    "ROLE_ALREADY_PROCESSED"
+            );
+        }
+
+        roleInEvent.setParticipationStatus(ParticipationStatus.REJECTED);
+        roleInEventRepository.save(roleInEvent);
+
+        // ===== sync EventRegistration =====
+        eventRegistrationRepository
+                .findByUserIdAndEventIdAndStatus(
+                        roleInEvent.getUserProfile().getUserId(),
+                        roleInEvent.getEvent().getEventId(),
+                        RegistrationStatus.PENDING
+                )
+                .ifPresent(reg -> {
+                    reg.setStatus(RegistrationStatus.REJECTED);
+                    eventRegistrationRepository.save(reg);
+                });
+
+        return ModerationResponse.success(
+                ModerationAction.REJECT_REGISTRATION,
+                ModerationTargetType.EVENT,
+                roleInEventId.toString(),
+                ModerationStatus.REJECTED,
+                "Registration rejected"
+        );
+    }
+
+    // ========================= UNREGISTER =========================
+
+    @Override
+    public ModerationResponse unregisterEvent(UUID userId, Long eventId) {
+
+        RoleInEvent roleInEvent = roleInEventRepository
+                .findByUserProfile_UserIdAndEvent_EventId(userId, eventId)
+                .orElse(null);
+
+        if (roleInEvent == null || roleInEvent.getParticipationStatus() != ParticipationStatus.PENDING) {
+            return failure(
+                    ModerationAction.UNREGISTER_EVENT,
+                    eventId,
+                    "ROLE_NOT_PENDING"
+            );
+        }
+
+        roleInEvent.setParticipationStatus(ParticipationStatus.CANCELLED);
+        roleInEventRepository.save(roleInEvent);
+
+        // ===== sync EventRegistration =====
+        eventRegistrationRepository
+                .findByUserIdAndEventIdAndStatus(
+                        userId, eventId, RegistrationStatus.PENDING
+                )
+                .ifPresent(reg -> {
+                    reg.setStatus(RegistrationStatus.CANCELLED_BY_USER);
+                    eventRegistrationRepository.save(reg);
+                });
 
         return ModerationResponse.success(
                 ModerationAction.UNREGISTER_EVENT,
-                ModerationTargetType.EVENT_REGISTRATION,
-                reg.getRegistrationId().toString(),
+                ModerationTargetType.EVENT,
+                roleInEvent.getId().toString(),
                 ModerationStatus.UNREGISTERED,
                 "Registration cancelled"
+        );
+    }
+
+    // ========================= UTIL =========================
+
+    private ModerationResponse failure(
+            ModerationAction action,
+            Object targetId,
+            String reasonCode
+    ) {
+        return ModerationResponse.failure(
+                action,
+                ModerationTargetType.EVENT,
+                targetId.toString(),
+                ModerationResult.INVALID,
+                ModerationStatus.DENIED,
+                reasonCode,
+                reasonCode
         );
     }
 }

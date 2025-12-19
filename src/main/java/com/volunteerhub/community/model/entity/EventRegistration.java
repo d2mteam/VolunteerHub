@@ -8,11 +8,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "event_registration", indexes = {
-        @Index(
-                name = "idx_user_event",
-                columnList = "user_id, event_id"
-        )
+@Table(name = "event_registration", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "event_id"})
 })
 @NamedEntityGraph(
         name = "EventRegistration.full",
@@ -32,11 +29,11 @@ public class EventRegistration {
     private Long registrationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
+    @JoinColumn(name = "event_id", insertable = false, updatable = false)
     private Event event;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private UserProfile userProfile;
 
     @Builder.Default
@@ -49,6 +46,13 @@ public class EventRegistration {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "event_id", nullable = false)
+    private Long eventId;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
 
     @PrePersist
     public void prePersist() {

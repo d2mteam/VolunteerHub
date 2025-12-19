@@ -22,21 +22,21 @@ public class CommentController {
     private final ICommentService commentService;
 
     @PostMapping
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> createComment(@AuthenticationPrincipal UUID userId,
                                                             @Valid @RequestBody CreateCommentInput input) {
         return ResponseEntity.ok(commentService.createComment(userId, input));
     }
 
     @PutMapping
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> editComment(@AuthenticationPrincipal UUID userId,
                                                           @Valid @RequestBody EditCommentInput input) {
         return ResponseEntity.ok(commentService.editComment(userId, input));
     }
 
     @DeleteMapping("/{commentId}")
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> deleteComment(@AuthenticationPrincipal UUID userId,
                                                             @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.deleteComment(userId, commentId));

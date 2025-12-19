@@ -30,7 +30,7 @@ public class EventRegistrationResolver {
         Pageable pageable = PageRequest.of(safePage, safeSize);
 
         Page<EventRegistration> eventRegistrationPage = eventRegistrationRepository
-                .findByUserProfile_UserId(userId, pageable);
+                .findByUserId(userId, pageable);
         PageInfo pageInfo = PageUtils.from(eventRegistrationPage);
 
         return OffsetPage.<EventRegistration>builder()
@@ -48,7 +48,7 @@ public class EventRegistrationResolver {
         Pageable pageable = PageRequest.of(safePage, safeSize);
 
         Page<EventRegistration> eventRegistrationPage = eventRegistrationRepository
-                .findByEvent_EventId(eventId, pageable);
+                .findByEventId(eventId, pageable);
         PageInfo pageInfo = PageUtils.from(eventRegistrationPage);
 
         return OffsetPage.<EventRegistration>builder()
