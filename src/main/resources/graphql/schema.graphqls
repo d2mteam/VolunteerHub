@@ -26,11 +26,15 @@ type Event {
     eventLocation: String
     createdAt: String
     updatedAt: String
-    likeCount: Int
     createBy: UserProfileSummary
+
     listPost(page: Int = 0, size: Int = 10): PostPage
 
     eventState: String
+
+    memberCount: Int
+    postCount: Int
+    likeCount: Int
 }
 
 type EventSummary {
@@ -155,6 +159,9 @@ type Query {
     getPost(postId: ID!): Post
 
     findEvents(page: Int = 0, size: Int = 10, filter: JSON = null): EventPage
+
+    findEventsByEventManager(page: Int = 0, size: Int = 10): EventPage
+
     findPosts(page: Int = 0, size: Int = 10): PostPage
     findUserProfiles(page: Int = 0, size: Int = 10): UserProfilePage
 

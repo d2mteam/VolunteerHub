@@ -14,8 +14,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
+    Page<Event> findByCreatedBy_UserId(UUID userId, Pageable pageable);
+
     @Modifying
     @Query("UPDATE Event e SET e.eventState = :eventState WHERE e.eventId = :eventId")
     int updateEventStatus(@Param("eventId") Long eventId, @Param("eventState") EventState eventState);

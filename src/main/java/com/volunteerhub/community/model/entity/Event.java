@@ -20,7 +20,6 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-//@SQLDelete(sql = "UPDATE events SET is_deleted = true WHERE event_id = ?")
 public class Event {
     @Id
     @Column(name = "event_id")
@@ -48,7 +47,6 @@ public class Event {
     @Enumerated(EnumType.STRING)
     @Column(name = "event_state", nullable = false)
     private EventState eventState = EventState.PENDING;
-
 
     @OneToMany(
             mappedBy = "event",

@@ -5,7 +5,6 @@ import com.volunteerhub.community.dto.graphql.input.EventFilterInput;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
-import com.volunteerhub.community.model.entity.RoleInEvent;
 import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.*;
 import com.volunteerhub.ultis.page.OffsetPage;
@@ -20,10 +19,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @AllArgsConstructor
@@ -55,6 +56,24 @@ public class EventResolver {
                 .build();
     }
 
+    //findEventsByEventManager
+    @QueryMapping
+    public OffsetPage<Event> findEventsByEventManager(@AuthenticationPrincipal UUID userId,
+                                                      @Argument Integer page,
+                                                      @Argument Integer size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size > 0 ? size : 10;
+
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<Event> eventPage = eventRepository.findByCreatedBy_UserId(userId, pageable);
+        PageInfo pageInfo = PageUtils.from(eventPage);
+
+        return OffsetPage.<Event>builder()
+                .content(eventPage.getContent())
+                .pageInfo(pageInfo)
+                .build();
+    }
+
     @SchemaMapping(typeName = "Event", field = "listPost")
     public OffsetPage<Post> listPosts(Event event,
                                       @Argument Integer page,
@@ -74,6 +93,16 @@ public class EventResolver {
     @SchemaMapping(typeName = "Event", field = "likeCount")
     public Integer likeCount(Event event) {
         return likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
+    }
+
+    @SchemaMapping(typeName = "Event", field = "memberCount")
+    public Integer memberCount(Event event) {
+        return 10;
+    }
+
+    @SchemaMapping(typeName = "Event", field = "postCount")
+    public Integer postCount(Event event) {
+        return 10;
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")
