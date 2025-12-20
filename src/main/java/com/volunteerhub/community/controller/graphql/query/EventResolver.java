@@ -32,7 +32,6 @@ public class EventResolver {
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
     private final LikeRepository likeRepository;
-    private final RoleInEventRepository roleInEventRepository;
 
     @QueryMapping
     public Event getEvent(@Argument Long eventId) {

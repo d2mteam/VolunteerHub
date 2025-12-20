@@ -38,7 +38,7 @@ public class EventController {
     }
 
     @DeleteMapping("/{eventId}")
-    @PreAuthorize(RolePermission.EVENT_MANAGER)
+    @PreAuthorize(RolePermission.EVENT_MANAGER_OR_ADMIN)
     public ResponseEntity<ModerationResponse> deleteEvent(@AuthenticationPrincipal UUID userId,
                                                           @PathVariable Long eventId) {
         return ResponseEntity.ok(eventService.deleteEvent(userId, eventId));
@@ -49,6 +49,13 @@ public class EventController {
     public ResponseEntity<ModerationResponse> approveEvent(@AuthenticationPrincipal UUID userId,
                                                            @PathVariable Long eventId) {
         return ResponseEntity.ok(eventService.approveEvent(eventId));
+    }
+
+    @PostMapping("/{eventId}/reject")
+    @PreAuthorize(RolePermission.ADMIN)
+    public ResponseEntity<ModerationResponse> rejectEvent(@AuthenticationPrincipal UUID userId,
+                                                           @PathVariable Long eventId) {
+        return null;
     }
 
     @PutMapping("/{eventId}/participants/{userId}/status")

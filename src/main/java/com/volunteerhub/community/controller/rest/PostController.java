@@ -22,21 +22,21 @@ public class PostController {
     private final IPostService postService;
 
     @PostMapping
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> createPost(@AuthenticationPrincipal UUID userId,
                                                          @Valid @RequestBody CreatePostInput input) {
         return ResponseEntity.ok(postService.createPost(userId, input));
     }
 
     @PutMapping
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> editPost(@AuthenticationPrincipal UUID userId,
                                                        @Valid @RequestBody EditPostInput input) {
         return ResponseEntity.ok(postService.editPost(userId, input));
     }
 
     @DeleteMapping("/{postId}")
-    @PreAuthorize(RolePermission.USER)
+    @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
     public ResponseEntity<ModerationResponse> deletePost(@AuthenticationPrincipal UUID userId,
                                                          @PathVariable Long postId) {
         return ResponseEntity.ok(postService.deletePost(userId, postId));

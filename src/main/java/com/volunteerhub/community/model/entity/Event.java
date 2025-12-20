@@ -2,12 +2,15 @@ package com.volunteerhub.community.model.entity;
 
 import com.volunteerhub.community.model.db_enum.EventState;
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -17,6 +20,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+//@SQLDelete(sql = "UPDATE events SET is_deleted = true WHERE event_id = ?")
 public class Event {
     @Id
     @Column(name = "event_id")
@@ -37,6 +41,10 @@ public class Event {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+//    @Builder.Default
+//    @Column(name = "is_deleted", nullable = false)
+//    private  boolean deleted = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", updatable = false)
     private UserProfile createdBy;
@@ -45,6 +53,31 @@ public class Event {
     @Column(name = "event_state", nullable = false)
     private EventState eventState = EventState.PENDING;
 
+
+    @OneToMany(
+            mappedBy = "event",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<Post> posts;
+
+
+    @OneToMany(
+            mappedBy = "event",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<RoleInEvent> roleInEvents;
+
+    @OneToMany(
+            mappedBy = "event",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<EventRegistration> eventRegistrations;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata")

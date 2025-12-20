@@ -7,6 +7,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,6 +39,14 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", updatable = false)
     private Event event;
+
+    @OneToMany(
+            mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<Comment> posts;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata")

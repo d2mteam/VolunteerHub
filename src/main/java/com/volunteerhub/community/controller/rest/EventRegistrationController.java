@@ -43,4 +43,5 @@ public class EventRegistrationController {
     public ResponseEntity<ModerationResponse> rejectRegistration(@PathVariable Long registrationId) {
         return ResponseEntity.ok(eventRegistrationService.rejectRegistration(registrationId));
     }
+
 }

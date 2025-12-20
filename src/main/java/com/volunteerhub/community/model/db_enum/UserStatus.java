@@ -5,7 +5,7 @@ public enum UserStatus {
     ACTIVE,            // đang hoạt động bình thường
     INACTIVE,          // không hoạt động, nhưng có thể kích hoạt lại
     SUSPENDED,         // tạm khóa do vi phạm
-    BANNED,            // bị cấm vĩnh viễn
+    BANNED,            // bị cấm
     DEACTIVATED,       // user hủy kích hoạt
     LOCKED,            // khóa tạm thời (đăng nhập sai)
     ARCHIVED           // tài khoản lưu trữ, không còn dùng

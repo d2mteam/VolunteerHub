@@ -73,6 +73,7 @@ public class UserProfileService implements IUserProfileService {
         UserProfile userProfile = UserProfile.builder()
                 .userId(userId)
                 .email(input.getEmail())
+                .username(input.getUsername())
                 .fullName(input.getFullName())
                 .build();
 

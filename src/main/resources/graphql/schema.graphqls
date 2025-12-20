@@ -38,6 +38,8 @@ type EventSummary {
     eventName: String
     eventDescription: String
     eventLocation: String
+    createdAt: String
+    updatedAt: String
     eventState: String
 }
 

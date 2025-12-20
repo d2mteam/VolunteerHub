@@ -10,4 +10,7 @@ public final class RolePermission {
     public static final String EVENT_MANAGER = "hasAuthority('EVENT_MANAGER')";
     public static final String USER_OR_EVENT_MANAGER =
             "hasAnyAuthority('USER', 'EVENT_MANAGER')";
+
+    public static final String EVENT_MANAGER_OR_ADMIN =
+            "hasAnyAuthority('ADMIN', 'EVENT_MANAGER')";
 }
