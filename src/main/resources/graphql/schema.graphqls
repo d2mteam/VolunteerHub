@@ -35,6 +35,7 @@ type Event {
     memberCount: Int
     postCount: Int
     likeCount: Int
+    categories: [String!]!
 }
 
 type EventSummary {

@@ -74,7 +74,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                             e.event_state
                         )
                     AND
-                        (:categories IS NULL OR true)
+                        (
+                            :categories IS NULL
+                            OR cardinality(:categories) = 0
+                            OR (e.metadata -> 'categories') ?| :categories
+                        )
                     ORDER BY e.created_at DESC
                     """,
             nativeQuery = true

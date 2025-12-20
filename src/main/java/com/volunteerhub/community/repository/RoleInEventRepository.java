@@ -25,6 +25,8 @@ public interface RoleInEventRepository extends JpaRepository<RoleInEvent, Long> 
     @EntityGraph(value = "RoleInEvent.RoleInEvent.full", type = EntityGraph.EntityGraphType.FETCH)
     Page<RoleInEvent> findByEvent_EventId(Long eventId, Pageable pageable);
 
+    long countByEvent_EventIdAndParticipationStatus(Long eventId, ParticipationStatus participationStatus);
+
 
 
     @Modifying

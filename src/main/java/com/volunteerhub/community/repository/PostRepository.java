@@ -14,6 +14,8 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByEvent_EventId(Long eventId, Pageable pageable);
 
+    long countByEvent_EventId(Long eventId);
+
     @Query("""
             SELECT new com.volunteerhub.community.repository.view.EventPostActivitySummary(
                 p.event,

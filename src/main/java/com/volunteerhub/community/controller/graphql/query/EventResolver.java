@@ -2,6 +2,7 @@ package com.volunteerhub.community.controller.graphql.query;
 
 
 import com.volunteerhub.community.dto.graphql.input.EventFilterInput;
+import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
@@ -22,6 +23,7 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,6 +33,7 @@ import java.util.UUID;
 public class EventResolver {
     private final EventRepository eventRepository;
     private final PostRepository postRepository;
+    private final RoleInEventRepository roleInEventRepository;
     private final UserProfileRepository userProfileRepository;
     private final LikeRepository likeRepository;
 
@@ -97,12 +100,34 @@ public class EventResolver {
 
     @SchemaMapping(typeName = "Event", field = "memberCount")
     public Integer memberCount(Event event) {
-        return 10;
+        return Math.toIntExact(
+                roleInEventRepository.countByEvent_EventIdAndParticipationStatus(
+                        event.getEventId(),
+                        ParticipationStatus.APPROVED
+                )
+        );
     }
 
     @SchemaMapping(typeName = "Event", field = "postCount")
     public Integer postCount(Event event) {
-        return 10;
+        return Math.toIntExact(postRepository.countByEvent_EventId(event.getEventId()));
+    }
+
+    @SchemaMapping(typeName = "Event", field = "categories")
+    public List<String> categories(Event event) {
+        Map<String, Object> metadata = event.getMetadata();
+        if (metadata == null) {
+            return Collections.emptyList();
+        }
+
+        Object categories = metadata.getOrDefault("categories", Collections.emptyList());
+        if (categories instanceof List<?>) {
+            return ((List<?>) categories).stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+
+        return Collections.emptyList();
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")
@@ -113,9 +138,18 @@ public class EventResolver {
 
     @QueryMapping
     public List<Event> searchEvents(@Argument EventFilterInput filter) {
+        if (filter == null) {
+            return eventRepository.searchEvents(null, null, null, null, null, null);
+        }
+
+        List<String> categories = filter.getCategories();
+        String[] categoryArray = (categories == null || categories.isEmpty())
+                ? null
+                : categories.toArray(String[]::new);
+
         return eventRepository.searchEvents(filter.getKeyword(),
                 filter.getLocation(),
-                filter.getCategories().toArray(String[]::new),
+                categoryArray,
                 filter.getStartDateFrom(),
                 filter.getStartDateTo(),
                 filter.getEventState());
