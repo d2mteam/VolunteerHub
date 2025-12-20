@@ -2,6 +2,7 @@ package com.volunteerhub.configuration.security;
 
 import com.volunteerhub.authentication.service.JwtService;
 import com.volunteerhub.authentication.service.JwtService.DecodedToken;
+import com.volunteerhub.authentication.service.UserBanCacheService;
 import com.volunteerhub.ultis.exception.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,8 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,6 +30,7 @@ import java.util.UUID;
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserBanCacheService userBanCacheService;
 
     @Override
     protected void doFilterInternal(
@@ -44,6 +44,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         if (token != null) {
             try {
                 DecodedToken decoded = jwtService.decodeAndValidate(token);
+
+                if (userBanCacheService.isBanned(decoded.userId())) {
+                    respondBanned(response);
+                    return;
+                }
 
                 // Chỉ access token mới được authenticate
                 if ("access_token".equals(decoded.type())) {
@@ -80,5 +85,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return header.substring(7);
         }
         return null;
+    }
+
+    private void respondBanned(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\":\"User is banned\"}");
     }
 }

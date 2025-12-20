@@ -1,11 +1,11 @@
 package com.volunteerhub.community.service.write_service.impl;
 
+import com.volunteerhub.authentication.service.UserBanCacheService;
 import com.volunteerhub.community.dto.rest.response.ModerationAction;
 import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.response.ModerationResult;
 import com.volunteerhub.community.dto.rest.response.ModerationStatus;
 import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
-import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.db_enum.UserStatus;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
@@ -22,6 +22,7 @@ import java.util.UUID;
 public class UserManagerService implements IUserManagerService {
     private final UserProfileRepository userProfileRepository;
     private final RoleInEventRepository roleInEventRepository;
+    private final UserBanCacheService userBanCacheService;
 
     @Override
     public ModerationResponse banUser(UUID userId) {
@@ -38,6 +39,8 @@ public class UserManagerService implements IUserManagerService {
                     "USER_NOT_FOUND"
             );
         }
+
+        userBanCacheService.markBanned(userId);
 
         return ModerationResponse.success(
                 ModerationAction.BAN_USER,
@@ -63,6 +66,8 @@ public class UserManagerService implements IUserManagerService {
                     "USER_NOT_FOUND"
             );
         }
+
+        userBanCacheService.markUnbanned(userId);
 
         return ModerationResponse.success(
                 ModerationAction.UNBAN_USER,
