@@ -90,11 +90,6 @@ public class EventResolver {
                 .build();
     }
 
-    @SchemaMapping(typeName = "Event", field = "likeCount")
-    public Integer likeCount(Event event) {
-        return likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
-    }
-
     @SchemaMapping(typeName = "Event", field = "memberCount")
     public Integer memberCount(Event event) {
         return 10;
@@ -103,6 +98,16 @@ public class EventResolver {
     @SchemaMapping(typeName = "Event", field = "postCount")
     public Integer postCount(Event event) {
         return 10;
+    }
+
+    @SchemaMapping(typeName = "Event", field = "categories")
+    public List<String> categories(Event event) {
+        return List.of("Tu thien", "Tre em");
+    }
+
+    @SchemaMapping(typeName = "Event", field = "likeCount")
+    public Integer likeCount(Event event) {
+        return likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")
