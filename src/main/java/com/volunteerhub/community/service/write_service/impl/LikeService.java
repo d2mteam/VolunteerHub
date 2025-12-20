@@ -5,7 +5,10 @@ import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.response.ModerationStatus;
 import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
 import com.volunteerhub.community.model.db_enum.TableType;
+import com.volunteerhub.community.model.entity.Like;
+import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.LikeRepository;
+import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.redis_service.RedisLikeService;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
@@ -13,27 +16,34 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class LikeService implements ILikeService {
-
-    private final RedisLikeService redisLikeService;
     private final LikeRepository likeRepository;
+    private final UserProfileRepository  userProfileRepository;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
     public ModerationResponse like(UUID userId, Long targetId, String targetType) {
-        TableType.valueOf(targetType); // validate enum, sẽ throw nếu sai
+        long likeId = idGenerator.nextId();
+        UserProfile userProfile = userProfileRepository.getReferenceById(userId);
+        Like like = Like.builder()
+                .tableType(TableType.valueOf(targetType))
+                .likeId(idGenerator.nextId())
+                .targetId(targetId)
+                .createdBy(userProfile)
+                .build();
 
-        Long likeId = idGenerator.nextId();
-        redisLikeService.like(targetId, targetType, userId, likeId);
+        likeRepository.save(like);
+
         return ModerationResponse.success(
                 ModerationAction.LIKE_TARGET,
                 ModerationTargetType.LIKE,
-                likeId.toString(),
+                Long.toString(likeId),
                 ModerationStatus.LIKED,
                 "Target liked"
         );
@@ -42,12 +52,13 @@ public class LikeService implements ILikeService {
     @Override
     public ModerationResponse unlike(UUID userId, Long targetId, String targetType) {
         TableType.valueOf(targetType); // validate enum
-
-        Long likeId = redisLikeService.unlike(targetId, targetType, userId);
+        userProfileRepository.getReferenceById(userId);
+        Optional<Like> like = likeRepository.findByCreatedBy_UserIdAndTargetIdAndTableType(userId,targetId,TableType.valueOf(targetType));
+        like.ifPresent(likeRepository::delete);
         return ModerationResponse.success(
                 ModerationAction.UNLIKE_TARGET,
                 ModerationTargetType.LIKE,
-                likeId != null ? likeId.toString() : targetId.toString(),
+                like.get().getLikeId().toString(),
                 ModerationStatus.UNLIKED,
                 "Target unliked"
         );

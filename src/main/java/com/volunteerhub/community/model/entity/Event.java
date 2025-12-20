@@ -41,10 +41,6 @@ public class Event {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-//    @Builder.Default
-//    @Column(name = "is_deleted", nullable = false)
-//    private  boolean deleted = false;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", updatable = false)
     private UserProfile createdBy;
