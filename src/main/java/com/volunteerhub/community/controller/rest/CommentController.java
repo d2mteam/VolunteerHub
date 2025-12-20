@@ -5,6 +5,8 @@ import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.request.CreateCommentInput;
 import com.volunteerhub.community.dto.rest.request.EditCommentInput;
 import com.volunteerhub.community.service.write_service.ICommentService;
+import com.volunteerhub.configuration.security.permission.HasPermission;
+import com.volunteerhub.configuration.security.permission.PermissionAction;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ public class CommentController {
 
     @PostMapping
     @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
+    @HasPermission(action = PermissionAction.CREATE_COMMENT, postId = "#input.postId")
     public ResponseEntity<ModerationResponse> createComment(@AuthenticationPrincipal UUID userId,
                                                             @Valid @RequestBody CreateCommentInput input) {
         return ResponseEntity.ok(commentService.createComment(userId, input));

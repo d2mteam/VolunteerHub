@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByEvent_EventId(Long eventId, Pageable pageable);
@@ -33,4 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 WHERE p.event.eventId = :eventId
             """)
     long countByEvent(@Param("eventId") Long eventId);
+
+    @Query("SELECT p.event.eventId FROM Post p WHERE p.postId = :postId")
+    Optional<Long> findEventIdByPostId(@Param("postId") Long postId);
 }

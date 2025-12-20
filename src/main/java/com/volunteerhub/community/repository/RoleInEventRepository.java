@@ -69,4 +69,7 @@ public interface RoleInEventRepository extends JpaRepository<RoleInEvent, Long> 
             Long eventId,
             Collection<ParticipationStatus> statuses
     );
+
+    @Query("SELECT rie.participationStatus FROM RoleInEvent rie WHERE rie.userProfile.userId = :userId AND rie.event.eventId = :eventId")
+    Optional<ParticipationStatus> findParticipationStatus(@Param("userId") UUID userId, @Param("eventId") Long eventId);
 }

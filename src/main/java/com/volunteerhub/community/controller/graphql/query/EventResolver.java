@@ -8,6 +8,8 @@ import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.*;
+import com.volunteerhub.configuration.security.permission.HasPermission;
+import com.volunteerhub.configuration.security.permission.PermissionAction;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -35,6 +37,7 @@ public class EventResolver {
     private final LikeRepository likeRepository;
 
     @QueryMapping
+    @HasPermission(action = PermissionAction.GET_EVENT, eventId = "#eventId")
     public Event getEvent(@Argument Long eventId) {
         return eventRepository.findById(eventId).orElse(null);
     }
