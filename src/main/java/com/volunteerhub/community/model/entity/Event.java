@@ -73,6 +73,7 @@ public class Event {
     )
     private List<EventRegistration> eventRegistrations;
 
+    @Builder.Default
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata")
     private Map<String, Object> metadata = new HashMap<>();

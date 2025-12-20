@@ -22,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,6 +74,7 @@ public class EventService implements IEventService {
                 .eventLocation(input.getEventLocation())
                 .eventState(EventState.PENDING)
                 .createdBy(creator)
+                .metadata(buildMetadata(null, input.getCategories()))
                 .build();
 
         eventRepository.save(event);
@@ -112,6 +116,7 @@ public class EventService implements IEventService {
         event.setEventName(input.getEventName());
         event.setEventDescription(input.getEventDescription());
         event.setEventLocation(input.getEventLocation());
+        event.setMetadata(buildMetadata(event.getMetadata(), input.getCategories()));
         eventRepository.save(event);
 
         return ModerationResponse.success(
@@ -172,5 +177,15 @@ public class EventService implements IEventService {
                 ModerationStatus.UPDATED,
                 String.format("User %s has change participation status", userId)
         );
+    }
+
+    private Map<String, Object> buildMetadata(Map<String, Object> existingMetadata, List<String> categories) {
+        Map<String, Object> metadata = new HashMap<>();
+        if (existingMetadata != null) {
+            metadata.putAll(existingMetadata);
+        }
+
+        metadata.put("categories", categories == null ? List.of() : categories);
+        return metadata;
     }
 }

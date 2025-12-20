@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,4 +23,6 @@ public class CreateEventInput {
     @NotBlank(message = "Event location is required")
     @Size(max = 200, message = "Event location max 200 chars")
     private String eventLocation;
+
+    private List<String> categories;
 }

@@ -26,4 +26,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             ORDER BY MAX(p.createdAt) DESC
             """)
     List<EventPostActivitySummary> findEventPostActivitySince(@Param("since") LocalDateTime since, Pageable pageable);
+
+    @Query("""
+                SELECT COUNT(p)
+                FROM Post p
+                WHERE p.event.eventId = :eventId
+            """)
+    long countByEvent(@Param("eventId") Long eventId);
 }

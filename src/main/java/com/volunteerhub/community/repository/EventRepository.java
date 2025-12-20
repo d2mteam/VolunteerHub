@@ -73,8 +73,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                         e.event_state = COALESCE(CAST(:eventState AS varchar),
                                             e.event_state
                         )
-                    AND
-                        (:categories IS NULL OR true)
+                    AND (
+                             :categories IS NULL
+                             OR cardinality(:categories) = 0
+                             OR EXISTS (
+                                 SELECT 1
+                                 FROM jsonb_array_elements_text(e.metadata -> 'categories') c
+                                 WHERE c = ANY(:categories)
+                             )
+                         )
                     ORDER BY e.created_at DESC
                     """,
             nativeQuery = true
@@ -87,4 +94,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("startDateTo") LocalDateTime startDateTo,
             @Param("eventState") String eventState
     );
+
 }

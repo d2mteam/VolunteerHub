@@ -2,6 +2,7 @@ package com.volunteerhub.community.controller.graphql.query;
 
 
 import com.volunteerhub.community.dto.graphql.input.EventFilterInput;
+import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.entity.Post;
@@ -22,9 +23,7 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 @AllArgsConstructor
@@ -32,6 +31,7 @@ public class EventResolver {
     private final EventRepository eventRepository;
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
+    private final RoleInEventRepository roleInEventRepository;
     private final LikeRepository likeRepository;
 
     @QueryMapping
@@ -92,17 +92,29 @@ public class EventResolver {
 
     @SchemaMapping(typeName = "Event", field = "memberCount")
     public Integer memberCount(Event event) {
-        return 10;
+        return Math.toIntExact(roleInEventRepository.countByEvent(event.getEventId()));
     }
 
     @SchemaMapping(typeName = "Event", field = "postCount")
     public Integer postCount(Event event) {
-        return 10;
+        return Math.toIntExact(postRepository.countByEvent(event.getEventId()));
     }
 
     @SchemaMapping(typeName = "Event", field = "categories")
     public List<String> categories(Event event) {
-        return List.of("Tu thien", "Tre em");
+        Map<String, Object> metadata = event.getMetadata();
+        if (metadata == null) {
+            return Collections.emptyList();
+        }
+
+        Object categories = metadata.getOrDefault("categories", Collections.emptyList());
+        if (categories instanceof List<?>) {
+            return ((List<?>) categories).stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+
+        return Collections.emptyList();
     }
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
@@ -124,5 +136,14 @@ public class EventResolver {
                 filter.getStartDateFrom(),
                 filter.getStartDateTo(),
                 filter.getEventState());
+    }
+
+    @SchemaMapping(typeName = "Event", field = "isJoined")
+    public boolean isJoined(@AuthenticationPrincipal UUID userId, Event event) {
+        return roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusNotIn(userId, event.getEventId(),
+                List.of(ParticipationStatus.CANCELLED,
+                        ParticipationStatus.LEFT_EVENT,
+                        ParticipationStatus.REJECTED,
+                        ParticipationStatus.PENDING));
     }
 }
