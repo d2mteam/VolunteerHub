@@ -1,2 +1,0 @@
-INSERT INTO event_registration (registration_id, status, event_id, user_id, updated_at, created_at) VALUES (777627648166723584, 'REJECTED', 1, 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', '2025-11-16 14:50:43.000000', '2025-11-16 14:50:29.000000');
-INSERT INTO event_registration (registration_id, status, event_id, user_id, updated_at, created_at) VALUES (777627701996421120, 'CANCELLED_BY_USER', 1, 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', '2025-11-16 18:22:58.661696', '2025-11-16 14:50:25.000000');
