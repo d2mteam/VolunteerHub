@@ -1,11 +1,8 @@
 package com.volunteerhub.community.controller.graphql.query;
 
-import com.volunteerhub.community.model.db_enum.TableType;
-import com.volunteerhub.community.model.entity.Comment;
-import com.volunteerhub.community.model.entity.UserProfile;
-import com.volunteerhub.community.repository.CommentRepository;
-import com.volunteerhub.community.repository.LikeRepository;
-import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.readmodel.CommentReadModel;
+import com.volunteerhub.community.readmodel.UserProfileSummaryView;
+import com.volunteerhub.community.service.readmodel.CommentReadModelService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
@@ -13,16 +10,17 @@ import org.springframework.stereotype.Controller;
 @Controller
 @AllArgsConstructor
 public class CommentResolver {
-    private final UserProfileRepository userProfileRepository;
-    private final LikeRepository likeRepository;
+    private final CommentReadModelService commentReadModelService;
 
     @SchemaMapping(typeName = "Comment", field = "likeCount")
-    public Integer likeCount(Comment comment) {
-        return likeRepository.countByTargetIdAndTableType(comment.getCommentId(), TableType.COMMENT);
+    public Integer likeCount(CommentReadModel comment) {
+        CommentReadModel model = commentReadModelService.getComment(comment.getCommentId());
+        return model != null ? model.getLikeCount() : 0;
     }
 
     @SchemaMapping(typeName = "Comment", field = "createBy")
-    public UserProfile createBy(Comment comment) {
-        return userProfileRepository.findById(comment.getCreatedBy().getUserId()).orElse(null);
+    public UserProfileSummaryView createBy(CommentReadModel comment) {
+        CommentReadModel model = commentReadModelService.getComment(comment.getCommentId());
+        return model != null ? model.getCreatedBy() : null;
     }
 }

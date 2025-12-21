@@ -3,14 +3,17 @@ package com.volunteerhub.community.controller.graphql.query;
 
 import com.volunteerhub.community.dto.graphql.input.EventFilterInput;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
-import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
-import com.volunteerhub.community.model.entity.Post;
-import com.volunteerhub.community.model.entity.UserProfile;
-import com.volunteerhub.community.repository.*;
+import com.volunteerhub.community.readmodel.EventReadModel;
+import com.volunteerhub.community.readmodel.PostReadModel;
+import com.volunteerhub.community.readmodel.UserProfileSummaryView;
+import com.volunteerhub.community.repository.EventRepository;
+import com.volunteerhub.community.repository.RoleInEventRepository;
+import com.volunteerhub.community.service.readmodel.EventReadModelService;
+import com.volunteerhub.community.service.readmodel.PostReadModelService;
+import com.volunteerhub.configuration.security.permission.HasPermission;
+import com.volunteerhub.configuration.security.permission.PermissionAction;
 import com.volunteerhub.ultis.page.OffsetPage;
-import com.volunteerhub.ultis.page.PageInfo;
-import com.volunteerhub.ultis.page.PageUtils;
 
 import lombok.AllArgsConstructor;
 
@@ -29,117 +32,96 @@ import java.util.*;
 @AllArgsConstructor
 public class EventResolver {
     private final EventRepository eventRepository;
-    private final PostRepository postRepository;
-    private final UserProfileRepository userProfileRepository;
     private final RoleInEventRepository roleInEventRepository;
-    private final LikeRepository likeRepository;
+    private final PostReadModelService postReadModelService;
+    private final EventReadModelService eventReadModelService;
 
     @QueryMapping
-    public Event getEvent(@Argument Long eventId) {
-        return eventRepository.findById(eventId).orElse(null);
+    @HasPermission(action = PermissionAction.GET_EVENT, eventId = "#eventId")
+    public EventReadModel getEvent(@Argument Long eventId) {
+        return eventReadModelService.getEvent(eventId);
     }
 
     @QueryMapping
-    public OffsetPage<Event> findEvents(@Argument Integer page,
-                                        @Argument Integer size,
-                                        @Argument Map<String, Object> filter) {
+    public OffsetPage<EventReadModel> findEvents(@Argument Integer page,
+                                                 @Argument Integer size,
+                                                 @Argument Map<String, Object> filter) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
         Page<Event> eventPage = eventRepository.findAll(pageable);
-        PageInfo pageInfo = PageUtils.from(eventPage);
-
-        return OffsetPage.<Event>builder()
-                .content(eventPage.getContent())
-                .pageInfo(pageInfo)
-                .build();
+        return eventReadModelService.findEvents(eventPage);
     }
 
     //findEventsByEventManager
     @QueryMapping
-    public OffsetPage<Event> findEventsByEventManager(@AuthenticationPrincipal UUID userId,
-                                                      @Argument Integer page,
-                                                      @Argument Integer size) {
+    public OffsetPage<EventReadModel> findEventsByEventManager(@AuthenticationPrincipal UUID userId,
+                                                               @Argument Integer page,
+                                                               @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
         Page<Event> eventPage = eventRepository.findByCreatedBy_UserId(userId, pageable);
-        PageInfo pageInfo = PageUtils.from(eventPage);
-
-        return OffsetPage.<Event>builder()
-                .content(eventPage.getContent())
-                .pageInfo(pageInfo)
-                .build();
+        return eventReadModelService.findByManager(eventPage);
     }
 
     @SchemaMapping(typeName = "Event", field = "listPost")
-    public OffsetPage<Post> listPosts(Event event,
-                                      @Argument Integer page,
-                                      @Argument Integer size) {
+    public OffsetPage<PostReadModel> listPosts(EventReadModel event,
+                                               @Argument Integer page,
+                                               @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<Post> postPage = postRepository.findByEvent_EventId(event.getEventId(), pageable);
-        PageInfo pageInfo = PageUtils.from(postPage);
-        return OffsetPage.<Post>builder()
-                .content(postPage.getContent())
-                .pageInfo(pageInfo)
-                .build();
+        return postReadModelService.listByEvent(event.getEventId(), pageable);
     }
 
     @SchemaMapping(typeName = "Event", field = "memberCount")
-    public Integer memberCount(Event event) {
-        return Math.toIntExact(roleInEventRepository.countByEvent(event.getEventId()));
+    public Integer memberCount(EventReadModel event) {
+        EventReadModel cached = eventReadModelService.getEvent(event.getEventId());
+        return cached != null ? cached.getMemberCount() : 0;
     }
 
     @SchemaMapping(typeName = "Event", field = "postCount")
-    public Integer postCount(Event event) {
-        return Math.toIntExact(postRepository.countByEvent(event.getEventId()));
+    public Integer postCount(EventReadModel event) {
+        EventReadModel cached = eventReadModelService.getEvent(event.getEventId());
+        return cached != null ? cached.getPostCount() : 0;
     }
 
     @SchemaMapping(typeName = "Event", field = "categories")
-    public List<String> categories(Event event) {
-        Map<String, Object> metadata = event.getMetadata();
-        if (metadata == null) {
-            return Collections.emptyList();
-        }
-
-        Object categories = metadata.getOrDefault("categories", Collections.emptyList());
-        if (categories instanceof List<?>) {
-            return ((List<?>) categories).stream()
-                    .map(Object::toString)
-                    .toList();
-        }
-
-        return Collections.emptyList();
+    public List<String> categories(EventReadModel event) {
+        EventReadModel cached = eventReadModelService.getEvent(event.getEventId());
+        return cached != null ? cached.getCategories() : Collections.emptyList();
     }
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
-    public Integer likeCount(Event event) {
-        return likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
+    public Integer likeCount(EventReadModel event) {
+        EventReadModel cached = eventReadModelService.getEvent(event.getEventId());
+        return cached != null ? cached.getLikeCount() : 0;
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")
-    public UserProfile createBy(Event event) {
-        return userProfileRepository.findById(event.getCreatedBy().getUserId()).orElse(null);
+    public UserProfileSummaryView createBy(EventReadModel event) {
+        EventReadModel cached = eventReadModelService.getEvent(event.getEventId());
+        return cached != null ? cached.getCreatedBy() : null;
     }
 
 
     @QueryMapping
-    public List<Event> searchEvents(@Argument EventFilterInput filter) {
-        return eventRepository.searchEvents(filter.getKeyword(),
+    public List<EventReadModel> searchEvents(@Argument EventFilterInput filter) {
+        List<Event> events = eventRepository.searchEvents(filter.getKeyword(),
                 filter.getLocation(),
                 filter.getCategories().toArray(String[]::new),
                 filter.getStartDateFrom(),
                 filter.getStartDateTo(),
                 filter.getEventState());
+        return eventReadModelService.mapToReadModels(events);
     }
 
     @SchemaMapping(typeName = "Event", field = "isJoined")
-    public boolean isJoined(@AuthenticationPrincipal UUID userId, Event event) {
+    public boolean isJoined(@AuthenticationPrincipal UUID userId, EventReadModel event) {
         return roleInEventRepository.existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusNotIn(userId, event.getEventId(),
                 List.of(ParticipationStatus.CANCELLED,
                         ParticipationStatus.LEFT_EVENT,

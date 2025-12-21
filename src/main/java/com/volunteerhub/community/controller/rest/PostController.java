@@ -5,6 +5,8 @@ import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.request.CreatePostInput;
 import com.volunteerhub.community.dto.rest.request.EditPostInput;
 import com.volunteerhub.community.service.write_service.IPostService;
+import com.volunteerhub.configuration.security.permission.HasPermission;
+import com.volunteerhub.configuration.security.permission.PermissionAction;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ public class PostController {
 
     @PostMapping
     @PreAuthorize(RolePermission.USER_OR_EVENT_MANAGER)
+    @HasPermission(action = PermissionAction.CREATE_POST, eventId = "#input.eventId")
     public ResponseEntity<ModerationResponse> createPost(@AuthenticationPrincipal UUID userId,
                                                          @Valid @RequestBody CreatePostInput input) {
         return ResponseEntity.ok(postService.createPost(userId, input));

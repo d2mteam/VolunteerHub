@@ -6,6 +6,7 @@ import com.volunteerhub.authentication.dto.response.LoginResponse;
 import com.volunteerhub.authentication.dto.response.RefreshResponse;
 import com.volunteerhub.authentication.model.UserAuth;
 import com.volunteerhub.authentication.repository.UserAuthRepository;
+import com.volunteerhub.authentication.service.UserBanCacheService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class LoginService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserBanCacheService userBanCacheService;
 
     public LoginResponse login(LoginRequest request) {
         UserAuth userAuth = userAuthRepository.findByEmail(request.getEmail())
@@ -28,6 +30,10 @@ public class LoginService {
 
         if (!passwordEncoder.matches(request.getPassword(), userAuth.getPasswordHash())) {
             throw new LoginException("Invalid password");
+        }
+
+        if (userBanCacheService.isBanned(userAuth.getUserId())) {
+            throw new LoginException("User is banned");
         }
 
         List<String> roles = List.of(userAuth.getRole().toString());
@@ -58,6 +64,10 @@ public class LoginService {
 
         UserAuth userAuth = userAuthRepository.findById(dt.userId())
                 .orElseThrow(() -> new LoginException("User not found"));
+
+        if (userBanCacheService.isBanned(userAuth.getUserId())) {
+            throw new LoginException("User is banned");
+        }
 
         List<String> roles = List.of(userAuth.getRole().toString());
         
