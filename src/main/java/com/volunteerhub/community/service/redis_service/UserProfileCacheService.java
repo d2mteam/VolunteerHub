@@ -4,6 +4,7 @@ import com.volunteerhub.community.dto.graphql.output.UserProfileSummaryView;
 import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -14,14 +15,17 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserProfileCacheService {
-    private static final Duration CACHE_TTL = Duration.ofMinutes(10);
-    private static final String CACHE_KEY = "userprofile:summary:%s";
+    @Value("${redis.userprofile-summary-ttl-minutes:10}")
+    private long cacheTtlMinutes;
+
+    @Value("${redis.userprofile-summary-key:userprofile:summary:%s}")
+    private String cacheKeyPattern;
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserProfileRepository userProfileRepository;
 
     public UserProfileSummaryView getSummary(UUID userId) {
-        String key = CACHE_KEY.formatted(userId);
+        String key = cacheKeyPattern.formatted(userId);
         Object cached = redisTemplate.opsForValue().get(key);
         if (cached instanceof UserProfileSummaryView summary) {
             return summary;
@@ -33,7 +37,7 @@ public class UserProfileCacheService {
         }
 
         UserProfileSummaryView summary = toSummary(profile.get());
-        redisTemplate.opsForValue().set(key, summary, CACHE_TTL);
+        redisTemplate.opsForValue().set(key, summary, Duration.ofMinutes(cacheTtlMinutes));
         return summary;
     }
 
