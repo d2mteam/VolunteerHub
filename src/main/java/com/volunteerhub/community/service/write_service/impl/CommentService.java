@@ -13,12 +13,14 @@ import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.CommentRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.write_service.ICommentService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +32,7 @@ public class CommentService implements ICommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
+    private final RedisCounterService redisCounterService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
@@ -45,6 +48,9 @@ public class CommentService implements ICommentService {
                 .build();
 
         commentRepository.save(saved);
+        redisCounterService.incrementPostCommentCount(post.getPostId(), 1);
+        redisCounterService.incrementEventCommentCount(post.getEvent().getEventId(), 1);
+        redisCounterService.updateEventLatestInteractionAt(post.getEvent().getEventId(), saved.getCreatedAt());
 
         return ModerationResponse.success(
                 ModerationAction.CREATE_COMMENT,
@@ -85,8 +91,8 @@ public class CommentService implements ICommentService {
 
     @Override
     public ModerationResponse deleteComment(UUID userId, Long commentId) {
-        boolean exists = commentRepository.existsById(commentId);
-        if (!exists) {
+        Optional<Comment> optional = commentRepository.findById(commentId);
+        if (optional.isEmpty()) {
             return ModerationResponse.failure(
                     ModerationAction.DELETE_COMMENT,
                     ModerationTargetType.COMMENT,
@@ -98,7 +104,11 @@ public class CommentService implements ICommentService {
             );
         }
 
+        Comment comment = optional.get();
         commentRepository.deleteById(commentId);
+        redisCounterService.incrementPostCommentCount(comment.getPost().getPostId(), -1);
+        redisCounterService.incrementEventCommentCount(comment.getPost().getEvent().getEventId(), -1);
+        redisCounterService.updateEventLatestInteractionAt(comment.getPost().getEvent().getEventId(), LocalDateTime.now());
 
         return ModerationResponse.success(
                 ModerationAction.DELETE_COMMENT,

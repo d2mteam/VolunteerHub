@@ -3,12 +3,9 @@ package com.volunteerhub.community.controller.graphql.query;
 import com.volunteerhub.community.dto.graphql.output.DashboardEventActivity;
 import com.volunteerhub.community.dto.graphql.output.DashboardOverview;
 import com.volunteerhub.community.dto.graphql.output.DashboardTrendingEvent;
-import com.volunteerhub.community.model.db_enum.TableType;
-import com.volunteerhub.community.model.entity.Event;
-import com.volunteerhub.community.repository.EventRepository;
-import com.volunteerhub.community.repository.PostRepository;
-import com.volunteerhub.community.repository.view.EventEngagementSummary;
-import com.volunteerhub.community.repository.view.EventPostActivitySummary;
+import com.volunteerhub.community.dto.graphql.output.EventSummaryView;
+import com.volunteerhub.community.model.read.EventActivitySummary;
+import com.volunteerhub.community.repository.EventActivitySummaryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -22,8 +19,7 @@ import java.util.stream.Collectors;
 @Controller
 @AllArgsConstructor
 public class DashboardResolver {
-    private final EventRepository eventRepository;
-    private final PostRepository postRepository;
+    private final EventActivitySummaryRepository eventActivitySummaryRepository;
 
     @QueryMapping
     public DashboardOverview dashboardOverview(@Argument Integer hours,
@@ -34,14 +30,18 @@ public class DashboardResolver {
 
         PageRequest pageRequest = PageRequest.of(0, safeSize);
 
-        List<Event> recentEvents = eventRepository.findByOrderByCreatedAtDesc(pageRequest).getContent();
+        List<EventSummaryView> recentEvents = eventActivitySummaryRepository.findByOrderByCreatedAtDesc(pageRequest)
+                .stream()
+                .map(this::toEventSummaryView)
+                .collect(Collectors.toList());
 
-        List<DashboardEventActivity> postActivities = postRepository.findEventPostActivitySince(since, pageRequest)
+        List<DashboardEventActivity> postActivities = eventActivitySummaryRepository
+                .findByLatestPostAtAfterOrderByLatestPostAtDesc(since, pageRequest)
                 .stream()
                 .map(this::toDashboardEventActivity)
                 .collect(Collectors.toList());
 
-        List<DashboardTrendingEvent> trending = eventRepository.findTrendingEventsSince(since, TableType.EVENT, pageRequest)
+        List<DashboardTrendingEvent> trending = eventActivitySummaryRepository.findTrendingSince(since, pageRequest)
                 .stream()
                 .map(this::toTrendingEvent)
                 .collect(Collectors.toList());
@@ -53,21 +53,33 @@ public class DashboardResolver {
                 .build();
     }
 
-    private DashboardEventActivity toDashboardEventActivity(EventPostActivitySummary summary) {
+    private DashboardEventActivity toDashboardEventActivity(EventActivitySummary summary) {
         return DashboardEventActivity.builder()
-                .event(summary.getEvent())
+                .event(toEventSummaryView(summary))
                 .newPostCount(summary.getNewPostCount())
                 .latestPostAt(summary.getLatestPostAt())
                 .build();
     }
 
-    private DashboardTrendingEvent toTrendingEvent(EventEngagementSummary summary) {
+    private DashboardTrendingEvent toTrendingEvent(EventActivitySummary summary) {
         return DashboardTrendingEvent.builder()
-                .event(summary.getEvent())
+                .event(toEventSummaryView(summary))
                 .newMemberCount(summary.getNewMemberCount())
                 .newCommentCount(summary.getNewCommentCount())
                 .newLikeCount(summary.getNewLikeCount())
                 .latestInteractionAt(summary.getLatestInteractionAt())
+                .build();
+    }
+
+    private EventSummaryView toEventSummaryView(EventActivitySummary summary) {
+        return EventSummaryView.builder()
+                .eventId(summary.getEventId())
+                .eventName(summary.getEventName())
+                .eventDescription(summary.getEventDescription())
+                .eventLocation(summary.getEventLocation())
+                .createdAt(summary.getCreatedAt())
+                .updatedAt(summary.getUpdatedAt())
+                .eventState(summary.getEventState() == null ? null : summary.getEventState().name())
                 .build();
     }
 }
