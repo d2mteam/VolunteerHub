@@ -5,9 +5,11 @@ import com.volunteerhub.community.dto.graphql.input.EventFilterInput;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
-import com.volunteerhub.community.model.entity.Post;
-import com.volunteerhub.community.model.entity.UserProfile;
+import com.volunteerhub.community.model.read.PostRead;
 import com.volunteerhub.community.repository.*;
+import com.volunteerhub.community.dto.graphql.output.UserProfileSummaryView;
+import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.service.redis_service.UserProfileCacheService;
 import com.volunteerhub.configuration.security.permission.HasPermission;
 import com.volunteerhub.configuration.security.permission.PermissionAction;
 import com.volunteerhub.ultis.page.OffsetPage;
@@ -32,9 +34,11 @@ import java.util.*;
 public class EventResolver {
     private final EventRepository eventRepository;
     private final PostRepository postRepository;
-    private final UserProfileRepository userProfileRepository;
+    private final PostReadRepository postReadRepository;
     private final RoleInEventRepository roleInEventRepository;
     private final LikeRepository likeRepository;
+    private final RedisCounterService redisCounterService;
+    private final UserProfileCacheService userProfileCacheService;
 
     @QueryMapping
     @HasPermission(action = PermissionAction.GET_EVENT, eventId = "#eventId")
@@ -78,16 +82,16 @@ public class EventResolver {
     }
 
     @SchemaMapping(typeName = "Event", field = "listPost")
-    public OffsetPage<Post> listPosts(Event event,
+    public OffsetPage<PostRead> listPosts(Event event,
                                       @Argument Integer page,
                                       @Argument Integer size) {
         int safePage = Math.max(page, 0);
         int safeSize = size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
-        Page<Post> postPage = postRepository.findByEvent_EventId(event.getEventId(), pageable);
+        Page<PostRead> postPage = postReadRepository.findByEventId(event.getEventId(), pageable);
         PageInfo pageInfo = PageUtils.from(postPage);
-        return OffsetPage.<Post>builder()
+        return OffsetPage.<PostRead>builder()
                 .content(postPage.getContent())
                 .pageInfo(pageInfo)
                 .build();
@@ -95,12 +99,24 @@ public class EventResolver {
 
     @SchemaMapping(typeName = "Event", field = "memberCount")
     public Integer memberCount(Event event) {
-        return Math.toIntExact(roleInEventRepository.countByEvent(event.getEventId()));
+        return redisCounterService.getEventMemberCount(event.getEventId())
+                .map(Long::intValue)
+                .orElseGet(() -> {
+                    long count = roleInEventRepository.countByEvent(event.getEventId());
+                    redisCounterService.setEventMemberCount(event.getEventId(), count);
+                    return Math.toIntExact(count);
+                });
     }
 
     @SchemaMapping(typeName = "Event", field = "postCount")
     public Integer postCount(Event event) {
-        return Math.toIntExact(postRepository.countByEvent(event.getEventId()));
+        return redisCounterService.getEventPostCount(event.getEventId())
+                .map(Long::intValue)
+                .orElseGet(() -> {
+                    long count = postRepository.countByEvent(event.getEventId());
+                    redisCounterService.setEventPostCount(event.getEventId(), count);
+                    return Math.toIntExact(count);
+                });
     }
 
     @SchemaMapping(typeName = "Event", field = "categories")
@@ -122,12 +138,18 @@ public class EventResolver {
 
     @SchemaMapping(typeName = "Event", field = "likeCount")
     public Integer likeCount(Event event) {
-        return likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
+        return redisCounterService.getEventLikeCount(event.getEventId())
+                .map(Long::intValue)
+                .orElseGet(() -> {
+                    int count = likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
+                    redisCounterService.setEventLikeCount(event.getEventId(), count);
+                    return count;
+                });
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")
-    public UserProfile createBy(Event event) {
-        return userProfileRepository.findById(event.getCreatedBy().getUserId()).orElse(null);
+    public UserProfileSummaryView createBy(Event event) {
+        return userProfileCacheService.getSummary(event.getCreatedBy().getUserId());
     }
 
 

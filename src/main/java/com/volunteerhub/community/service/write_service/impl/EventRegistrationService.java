@@ -11,12 +11,14 @@ import com.volunteerhub.community.repository.EventRegistrationRepository;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.write_service.IEventRegistrationService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,6 +34,7 @@ public class EventRegistrationService implements IEventRegistrationService {
     private final EventRegistrationRepository eventRegistrationRepository;
     private final EventRepository eventRepository;
     private final UserProfileRepository userProfileRepository;
+    private final RedisCounterService redisCounterService;
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     // ========================= REGISTER =========================
@@ -123,6 +126,8 @@ public class EventRegistrationService implements IEventRegistrationService {
 
         roleInEvent.setParticipationStatus(ParticipationStatus.APPROVED);
         roleInEventRepository.save(roleInEvent);
+        redisCounterService.incrementEventMemberCount(roleInEvent.getEvent().getEventId(), 1);
+        redisCounterService.updateEventLatestInteractionAt(roleInEvent.getEvent().getEventId(), LocalDateTime.now());
 
         // ===== sync EventRegistration =====
         eventRegistrationRepository

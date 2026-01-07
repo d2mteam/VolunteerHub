@@ -13,12 +13,15 @@ import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.readmodel.PostReadService;
+import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.write_service.IPostService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +33,8 @@ public class PostService implements IPostService {
     private final PostRepository postRepository;
     private final UserProfileRepository userProfileRepository;
     private final EventRepository eventRepository;
+    private final PostReadService postReadService;
+    private final RedisCounterService redisCounterService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
@@ -45,6 +50,10 @@ public class PostService implements IPostService {
                 .build();
 
         postRepository.save(post);
+        postReadService.createFromPost(post);
+        redisCounterService.incrementEventPostCount(event.getEventId(), 1);
+        redisCounterService.updateEventLatestPostAt(event.getEventId(), post.getCreatedAt());
+        redisCounterService.updateEventLatestInteractionAt(event.getEventId(), post.getCreatedAt());
 
         return ModerationResponse.success(
                 ModerationAction.CREATE_POST,
@@ -73,6 +82,7 @@ public class PostService implements IPostService {
         Post post = optional.get();
         post.setContent(input.getContent());
         postRepository.save(post);
+        postReadService.updateContent(post);
 
         return ModerationResponse.success(
                 ModerationAction.EDIT_POST,
@@ -85,8 +95,8 @@ public class PostService implements IPostService {
 
     @Override
     public ModerationResponse deletePost(UUID userId, Long postId) {
-        boolean exists = postRepository.existsById(postId);
-        if (!exists) {
+        Optional<Post> optional = postRepository.findById(postId);
+        if (optional.isEmpty()) {
             return ModerationResponse.failure(
                     ModerationAction.DELETE_POST,
                     ModerationTargetType.POST,
@@ -98,7 +108,11 @@ public class PostService implements IPostService {
             );
         }
 
+        Post post = optional.get();
         postRepository.deleteById(postId);
+        postReadService.deleteByPostId(postId);
+        redisCounterService.incrementEventPostCount(post.getEvent().getEventId(), -1);
+        redisCounterService.updateEventLatestInteractionAt(post.getEvent().getEventId(), LocalDateTime.now());
 
         return ModerationResponse.success(
                 ModerationAction.DELETE_POST,

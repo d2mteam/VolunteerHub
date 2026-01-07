@@ -16,6 +16,8 @@ import com.volunteerhub.community.model.db_enum.EventState;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
+import com.volunteerhub.community.service.readmodel.EventActivitySummaryService;
+import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.write_service.IEventService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -36,6 +39,8 @@ public class EventService implements IEventService {
     private final EventRepository eventRepository;
     private final RoleInEventRepository roleInEventRepository;
     private final UserProfileRepository userProfileRepository;
+    private final EventActivitySummaryService eventActivitySummaryService;
+    private final RedisCounterService redisCounterService;
     private final SnowflakeIdGenerator idGenerator;
 
     @Override
@@ -78,6 +83,7 @@ public class EventService implements IEventService {
                 .build();
 
         eventRepository.save(event);
+        eventActivitySummaryService.createFromEvent(event);
 
         RoleInEvent roleInEvent = RoleInEvent.builder()
                 .id(idGenerator.nextId())
@@ -87,6 +93,8 @@ public class EventService implements IEventService {
                 .build();
 
         roleInEventRepository.save(roleInEvent);
+
+        redisCounterService.markEventDirty(event.getEventId());
 
         return ModerationResponse.success(
                 ModerationAction.CREATE_EVENT,
@@ -118,6 +126,7 @@ public class EventService implements IEventService {
         event.setEventLocation(input.getEventLocation());
         event.setMetadata(buildMetadata(event.getMetadata(), input.getCategories()));
         eventRepository.save(event);
+        eventActivitySummaryService.updateFromEvent(event);
 
         return ModerationResponse.success(
                 ModerationAction.EDIT_EVENT,
@@ -144,6 +153,7 @@ public class EventService implements IEventService {
         }
 
         eventRepository.deleteById(eventId);
+        eventActivitySummaryService.deleteByEventId(eventId);
 
         return ModerationResponse.success(
                 ModerationAction.DELETE_EVENT,
@@ -156,6 +166,7 @@ public class EventService implements IEventService {
 
     @Override
     public ModerationResponse changeParticipationStatus(Long eventId, UUID userId, ParticipationStatus participationStatus) {
+        ParticipationStatus currentStatus = roleInEventRepository.findParticipationStatus(userId, eventId).orElse(null);
         int updated = roleInEventRepository.changeParticipationStatus(eventId, userId, participationStatus);
 
         if (updated == 0) {
@@ -168,6 +179,15 @@ public class EventService implements IEventService {
                     String.format("User with ID %s does not participation event", userId),
                     "USER_NOT_PARTICIPATE_EVENT"
             );
+        }
+
+        if (currentStatus != null) {
+            boolean wasActive = isActive(currentStatus);
+            boolean isActive = isActive(participationStatus);
+            if (wasActive != isActive) {
+                redisCounterService.incrementEventMemberCount(eventId, isActive ? 1 : -1);
+                redisCounterService.updateEventLatestInteractionAt(eventId, LocalDateTime.now());
+            }
         }
 
         return ModerationResponse.success(
@@ -187,5 +207,9 @@ public class EventService implements IEventService {
 
         metadata.put("categories", categories == null ? List.of() : categories);
         return metadata;
+    }
+
+    private boolean isActive(ParticipationStatus status) {
+        return status == ParticipationStatus.APPROVED || status == ParticipationStatus.COMPLETED;
     }
 }
