@@ -48,6 +48,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 //    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 //    implementation 'io.netty:netty-all:4.2.0.Final'
+    implementation 'io.minio:minio:8.5.17'
 
 //    implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:7.0.3'
     testImplementation 'org.springframework.security:spring-security-test'
