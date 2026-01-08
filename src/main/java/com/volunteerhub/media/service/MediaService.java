@@ -6,6 +6,7 @@ import com.volunteerhub.media.dto.response.ConfirmUploadResponse;
 import com.volunteerhub.media.dto.response.DownloadUrlResponse;
 import com.volunteerhub.media.dto.response.UploadTicketResponse;
 import com.volunteerhub.media.model.MediaResource;
+import com.volunteerhub.media.model.MediaRefType;
 import com.volunteerhub.media.model.MediaStatus;
 import com.volunteerhub.media.repository.MediaResourceRepository;
 import io.minio.GetPresignedObjectUrlArgs;
@@ -19,6 +20,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -102,6 +108,54 @@ public class MediaService {
                 .build();
     }
 
+    public void syncMediaResources(UUID userId, MediaRefType refType, UUID refId, List<UUID> mediaIds) {
+        List<UUID> requestedIds = mediaIds == null ? List.of() : mediaIds.stream().distinct().toList();
+        List<MediaResource> existing = mediaResourceRepository.findByRefTypeAndRefId(refType, refId);
+        Set<UUID> requestedIdSet = new HashSet<>(requestedIds);
+
+        List<MediaResource> toUpdate = new ArrayList<>();
+        for (MediaResource resource : existing) {
+            if (!requestedIdSet.contains(resource.getId())) {
+                resource.setRefType(null);
+                resource.setRefId(null);
+                resource.setStatus(MediaStatus.DELETED);
+                toUpdate.add(resource);
+            }
+        }
+
+        if (!requestedIds.isEmpty()) {
+            List<MediaResource> requestedResources = mediaResourceRepository.findAllById(requestedIds);
+            if (requestedResources.size() != requestedIds.size()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more media resources not found");
+            }
+
+            for (MediaResource resource : requestedResources) {
+                validateMediaOwnership(resource, userId);
+                validateMediaReference(resource, refType, refId);
+                resource.setRefType(refType);
+                resource.setRefId(refId);
+                resource.setStatus(MediaStatus.ACTIVE);
+                toUpdate.add(resource);
+            }
+        }
+
+        if (!toUpdate.isEmpty()) {
+            mediaResourceRepository.saveAll(toUpdate);
+        }
+    }
+
+    public void syncMediaResources(UUID userId, MediaRefType refType, Long refId, List<UUID> mediaIds) {
+        syncMediaResources(userId, refType, toReferenceId(refType, refId), mediaIds);
+    }
+
+    public UUID toReferenceId(MediaRefType refType, Long refId) {
+        if (refId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reference id is required");
+        }
+        String raw = refType.name() + ":" + refId;
+        return UUID.nameUUIDFromBytes(raw.getBytes(StandardCharsets.UTF_8));
+    }
+
     private String getPresignedUrl(String objectKey, Method method) {
         try {
             return minioClient.getPresignedObjectUrl(
@@ -114,6 +168,23 @@ public class MediaService {
             );
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not generate URL", ex);
+        }
+    }
+
+    private void validateMediaOwnership(MediaResource resource, UUID userId) {
+        if (!resource.getOwnerId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Media owned by another user");
+        }
+        if (resource.getStatus() == MediaStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Media resource is deleted");
+        }
+    }
+
+    private void validateMediaReference(MediaResource resource, MediaRefType refType, UUID refId) {
+        if (resource.getRefType() != null && resource.getRefId() != null) {
+            if (!resource.getRefType().equals(refType) || !resource.getRefId().equals(refId)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Media already attached to another resource");
+            }
         }
     }
 
