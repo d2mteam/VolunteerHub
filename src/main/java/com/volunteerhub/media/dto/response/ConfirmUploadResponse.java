@@ -11,4 +11,7 @@ import java.util.UUID;
 public class ConfirmUploadResponse {
     private UUID resourceId;
     private MediaStatus status;
+    private String contentType;
+    private Long sizeBytes;
+    private String checksum;
 }

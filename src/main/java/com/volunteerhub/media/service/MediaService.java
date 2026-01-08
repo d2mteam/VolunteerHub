@@ -45,6 +45,9 @@ public class MediaService {
         return UploadTicketResponse.builder()
                 .resourceId(resourceId)
                 .uploadUrl(uploadUrl)
+                .method(Method.PUT.name())
+                .expiresInSeconds(presignedExpirySeconds)
+                .contentType(request.getContentType())
                 .build();
     }
 
@@ -75,6 +78,9 @@ public class MediaService {
         return ConfirmUploadResponse.builder()
                 .resourceId(resourceId)
                 .status(resource.getStatus())
+                .contentType(resource.getContentType())
+                .sizeBytes(resource.getSizeBytes())
+                .checksum(resource.getChecksum())
                 .build();
     }
 
@@ -91,6 +97,8 @@ public class MediaService {
         String url = getPresignedUrl(resource.getObjectKey(), Method.GET);
         return DownloadUrlResponse.builder()
                 .downloadUrl(url)
+                .method(Method.GET.name())
+                .expiresInSeconds(presignedExpirySeconds)
                 .build();
     }
 

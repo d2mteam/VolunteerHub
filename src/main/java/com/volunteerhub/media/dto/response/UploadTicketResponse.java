@@ -10,4 +10,7 @@ import java.util.UUID;
 public class UploadTicketResponse {
     private UUID resourceId;
     private String uploadUrl;
+    private String method;
+    private int expiresInSeconds;
+    private String contentType;
 }

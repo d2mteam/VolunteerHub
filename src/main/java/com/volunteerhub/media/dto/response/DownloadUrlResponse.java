@@ -7,4 +7,6 @@ import lombok.Data;
 @Builder
 public class DownloadUrlResponse {
     private String downloadUrl;
+    private String method;
+    private int expiresInSeconds;
 }
