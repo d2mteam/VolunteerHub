@@ -15,6 +15,8 @@ import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.write_service.ICommentService;
+import com.volunteerhub.media.model.MediaRefType;
+import com.volunteerhub.media.service.MediaService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class CommentService implements ICommentService {
     private final UserProfileRepository userProfileRepository;
     private final RedisCounterService redisCounterService;
     private final SnowflakeIdGenerator idGenerator;
+    private final MediaService mediaService;
 
     @Override
     public ModerationResponse createComment(UUID userId, CreateCommentInput input) {
@@ -48,6 +51,7 @@ public class CommentService implements ICommentService {
                 .build();
 
         commentRepository.save(saved);
+        mediaService.syncMediaResources(userId, MediaRefType.COMMENT, saved.getCommentId(), input.getMediaIds());
         redisCounterService.incrementPostCommentCount(post.getPostId(), 1);
         redisCounterService.incrementEventCommentCount(post.getEvent().getEventId(), 1);
         redisCounterService.updateEventLatestInteractionAt(post.getEvent().getEventId(), saved.getCreatedAt());
@@ -79,6 +83,7 @@ public class CommentService implements ICommentService {
         Comment comment = optional.get();
         comment.setContent(input.getContent());
         commentRepository.save(comment);
+        mediaService.syncMediaResources(userId, MediaRefType.COMMENT, comment.getCommentId(), input.getMediaIds());
 
         return ModerationResponse.success(
                 ModerationAction.EDIT_COMMENT,
