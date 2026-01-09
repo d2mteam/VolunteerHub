@@ -2,9 +2,12 @@ package com.volunteerhub.community.controller.graphql.query;
 
 import com.volunteerhub.community.model.entity.Comment;
 import com.volunteerhub.community.dto.graphql.output.UserProfileSummaryView;
+import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.model.read.PostRead;
 import com.volunteerhub.community.repository.PostReadRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.repository.PostRepository;
+import com.volunteerhub.community.service.readmodel.PostReadService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -23,12 +26,15 @@ import org.springframework.stereotype.Controller;
 @AllArgsConstructor
 public class PostResolver {
     private final PostReadRepository postReadRepository;
+    private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final RedisCounterService redisCounterService;
+    private final PostReadService postReadService;
 
     @QueryMapping
     public PostRead getPost(@Argument Long postId) {
-        return postReadRepository.findById(postId).orElse(null);
+        return postReadRepository.findById(postId)
+                .orElseGet(() -> backfillPostRead(postId));
     }
 
     @QueryMapping
@@ -39,6 +45,25 @@ public class PostResolver {
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
         Page<PostRead> postPage = postReadRepository.findAll(pageable);
+        if (postPage.isEmpty()) {
+            Page<Post> fallbackPage = postRepository.findAll(pageable);
+            if (fallbackPage.isEmpty()) {
+                PageInfo emptyInfo = PageUtils.from(postPage);
+                return OffsetPage.<PostRead>builder()
+                        .content(postPage.getContent())
+                        .pageInfo(emptyInfo)
+                        .build();
+            }
+            var backfilled = fallbackPage.getContent().stream()
+                    .map(postReadService::createFromPost)
+                    .toList();
+            PageInfo pageInfo = PageUtils.from(fallbackPage);
+            return OffsetPage.<PostRead>builder()
+                    .content(backfilled)
+                    .pageInfo(pageInfo)
+                    .build();
+        }
+
         PageInfo pageInfo = PageUtils.from(postPage);
         return OffsetPage.<PostRead>builder()
                 .content(postPage.getContent())
@@ -75,5 +100,11 @@ public class PostResolver {
                 .fullName(post.getCreatedByFullName())
                 .avatarId(post.getCreatedByAvatarId())
                 .build();
+    }
+
+    private PostRead backfillPostRead(Long postId) {
+        return postRepository.findById(postId)
+                .map(postReadService::createFromPost)
+                .orElse(null);
     }
 }

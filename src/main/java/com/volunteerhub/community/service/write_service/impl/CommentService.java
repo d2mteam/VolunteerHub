@@ -13,7 +13,7 @@ import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.CommentRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.write_service.ICommentService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;

@@ -4,7 +4,7 @@ import com.volunteerhub.community.dto.graphql.output.UserProfileSummaryView;
 import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Comment;
 import com.volunteerhub.community.repository.LikeRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.redis_service.UserProfileCacheService;
 import lombok.AllArgsConstructor;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;

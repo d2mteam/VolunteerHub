@@ -2,7 +2,7 @@ package com.volunteerhub.community.service.sync;
 
 import com.volunteerhub.community.model.read.PostRead;
 import com.volunteerhub.community.repository.PostReadRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
