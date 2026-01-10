@@ -1,6 +1,6 @@
 package com.volunteerhub.community.model.entity;
 
-import com.volunteerhub.community.model.db_enum.UserStatus;
+import com.volunteerhub.community.module.userstatus.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

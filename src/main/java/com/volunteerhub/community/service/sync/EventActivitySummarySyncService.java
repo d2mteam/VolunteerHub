@@ -4,7 +4,7 @@ import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.read.EventActivitySummary;
 import com.volunteerhub.community.repository.EventActivitySummaryRepository;
 import com.volunteerhub.community.repository.EventRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.redis_service.UserProfileCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
