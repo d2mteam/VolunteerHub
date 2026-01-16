@@ -1,5 +1,6 @@
 package com.volunteerhub.community.repository;
 
+import com.volunteerhub.community.model.db_enum.EventRole;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.model.entity.RoleInEvent;
 
@@ -67,6 +68,19 @@ public interface RoleInEventRepository extends JpaRepository<RoleInEvent, Long> 
     boolean existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusNotIn(
             UUID userId,
             Long eventId,
+            Collection<ParticipationStatus> statuses
+    );
+
+    boolean existsByUserProfile_UserIdAndEvent_EventIdAndParticipationStatusIn(
+            UUID userId,
+            Long eventId,
+            Collection<ParticipationStatus> statuses
+    );
+
+    boolean existsByUserProfile_UserIdAndEvent_EventIdAndEventRoleAndParticipationStatusIn(
+            UUID userId,
+            Long eventId,
+            EventRole eventRole,
             Collection<ParticipationStatus> statuses
     );
 

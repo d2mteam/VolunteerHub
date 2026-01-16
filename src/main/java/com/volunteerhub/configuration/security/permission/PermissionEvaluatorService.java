@@ -1,10 +1,9 @@
 package com.volunteerhub.configuration.security.permission;
 
 import com.volunteerhub.community.model.db_enum.EventState;
-import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
-import com.volunteerhub.community.repository.RoleInEventRepository;
+import com.volunteerhub.configuration.security.fga.FgaAuthorizationEngine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -12,8 +11,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.EnumSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,13 +18,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PermissionEvaluatorService {
 
-    private static final Set<ParticipationStatus> ACTIVE_STATUSES =
-            EnumSet.of(ParticipationStatus.APPROVED, ParticipationStatus.COMPLETED);
     private static final Set<String> MANAGER_AUTHORITIES = Set.of("ADMIN", "EVENT_MANAGER");
 
     private final EventRepository eventRepository;
-    private final RoleInEventRepository roleInEventRepository;
     private final PostRepository postRepository;
+    private final FgaAuthorizationEngine fgaAuthorizationEngine;
 
     public void check(PermissionAction action, Long eventId, Long postId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -48,13 +43,14 @@ public class PermissionEvaluatorService {
             throw new AccessDeniedException("Event is pending; posting is disabled");
         }
 
-        if (!isManager && requiresMembership(action)) {
-            ParticipationStatus status = findParticipationStatus(userId, resolvedEventId)
-                    .orElseThrow(() -> new AccessDeniedException("User is not a member of this event"));
+        if (isManager) {
+            return;
+        }
 
-            if (!ACTIVE_STATUSES.contains(status)) {
-                throw new AccessDeniedException("User is not approved to access this event");
-            }
+        FgaTarget target = resolveTarget(action, eventId, postId);
+        boolean allowed = fgaAuthorizationEngine.check(userId, target.objectType(), target.objectId(), target.relation());
+        if (!allowed) {
+            throw new AccessDeniedException("User is not allowed to perform this action");
         }
     }
 
@@ -76,14 +72,17 @@ public class PermissionEvaluatorService {
                 .orElseThrow(() -> new AccessDeniedException("Event not found"));
     }
 
-    private Optional<ParticipationStatus> findParticipationStatus(UUID userId, Long eventId) {
-        return roleInEventRepository.findParticipationStatus(userId, eventId);
-    }
-
-    private boolean requiresMembership(PermissionAction action) {
-        return action == PermissionAction.GET_EVENT
-                || action == PermissionAction.CREATE_POST
-                || action == PermissionAction.CREATE_COMMENT;
+    private FgaTarget resolveTarget(PermissionAction action, Long eventId, Long postId) {
+        return switch (action) {
+            case GET_EVENT -> new FgaTarget("event", String.valueOf(resolveEventId(eventId, postId)), "viewer");
+            case CREATE_POST -> new FgaTarget("event", String.valueOf(resolveEventId(eventId, postId)), "poster");
+            case CREATE_COMMENT -> {
+                if (postId == null) {
+                    throw new AccessDeniedException("Post context is required");
+                }
+                yield new FgaTarget("post", String.valueOf(postId), "commenter");
+            }
+        };
     }
 
     private UUID extractUserId(Object principal) {
@@ -95,4 +94,6 @@ public class PermissionEvaluatorService {
         }
         throw new AccessDeniedException("Unsupported principal type");
     }
+
+    private record FgaTarget(String objectType, String objectId, String relation) {}
 }

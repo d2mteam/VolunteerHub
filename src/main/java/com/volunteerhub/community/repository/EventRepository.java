@@ -27,6 +27,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e.eventState FROM Event e WHERE e.eventId = :eventId")
     Optional<EventState> findEventStateByEventId(@Param("eventId") Long eventId);
 
+    @Query("SELECT e.createdBy.userId FROM Event e WHERE e.eventId = :eventId")
+    Optional<java.util.UUID> findCreatedByUserId(@Param("eventId") Long eventId);
+
     Page<Event> findByOrderByCreatedAtDesc(Pageable pageable);
 
     @Query("""
