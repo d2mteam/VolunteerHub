@@ -3,6 +3,8 @@ package com.volunteerhub.community.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
@@ -13,6 +15,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "posts")
+@SQLDelete(sql = "UPDATE posts SET is_deleted = true WHERE post_id = ?")
+@Where(clause = "is_deleted = false")
 @Getter
 @Setter
 @Builder
@@ -52,6 +56,10 @@ public class Post {
     @Column(name = "metadata")
     private Map<String, Object> metadata = new HashMap<>();
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
@@ -63,4 +71,3 @@ public class Post {
         this.updatedAt = LocalDateTime.now();
     }
 }
-

@@ -3,6 +3,8 @@ package com.volunteerhub.community.model.entity;
 import com.volunteerhub.community.model.db_enum.RegistrationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,6 +13,8 @@ import java.util.UUID;
 @Table(name = "event_registration", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "event_id"})
 })
+@SQLDelete(sql = "UPDATE event_registration SET is_deleted = true WHERE registration_id = ?")
+@Where(clause = "is_deleted = false")
 @NamedEntityGraph(
         name = "EventRegistration.full",
         attributeNodes = {
@@ -53,6 +57,9 @@ public class EventRegistration {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     @PrePersist
     public void prePersist() {

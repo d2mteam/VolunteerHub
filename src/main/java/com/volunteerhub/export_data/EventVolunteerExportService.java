@@ -94,7 +94,9 @@ public class EventVolunteerExportService {
                 .append(" FROM events e \n")
                 .append("JOIN role_in_event r ON e.event_id = r.event_id \n")
                 .append("JOIN user_profiles u ON u.user_id = r.user_profile_id \n")
-                .append("WHERE 1=1 ");
+                .append("WHERE e.is_deleted = false ")
+                .append("AND r.is_deleted = false ")
+                .append("AND u.is_deleted = false ");
 
         if (request.getEventIds() != null && !request.getEventIds().isEmpty()) {
             sql.append("AND e.event_id IN (:eventIds) ");

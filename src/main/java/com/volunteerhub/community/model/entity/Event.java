@@ -15,6 +15,8 @@ import java.util.Map;
 
 @Entity
 @Table(name = "events")
+@SQLDelete(sql = "UPDATE events SET is_deleted = true WHERE event_id = ?")
+@Where(clause = "is_deleted = false")
 @Getter
 @Setter
 @Builder
@@ -77,6 +79,10 @@ public class Event {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata")
     private Map<String, Object> metadata = new HashMap<>();
+
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     @PrePersist
     public void prePersist() {

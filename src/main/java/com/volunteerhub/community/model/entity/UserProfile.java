@@ -3,12 +3,16 @@ package com.volunteerhub.community.model.entity;
 import com.volunteerhub.community.model.db_enum.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_profiles")
+@SQLDelete(sql = "UPDATE user_profiles SET is_deleted = true WHERE user_id = ?")
+@Where(clause = "is_deleted = false")
 @Getter
 @Setter
 @Builder
@@ -38,6 +42,10 @@ public class UserProfile {
 
     @Column(name = "avatar_id")
     private String avatarId;
+
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
