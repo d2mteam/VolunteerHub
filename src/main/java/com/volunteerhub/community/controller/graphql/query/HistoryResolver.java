@@ -42,8 +42,8 @@ public class HistoryResolver {
     public OffsetPage<RoleInEvent> userHistory(@AuthenticationPrincipal UUID userId,
                                                @Argument Integer page,
                                                @Argument Integer size) {
-        int safePage = Math.max(page, 0);
-        int safeSize = size > 0 ? size : 10;
+        int safePage = page != null ? Math.max(page, 0) : 0;
+        int safeSize = size != null && size > 0 ? size : 10;
 
         Pageable pageable = PageRequest.of(safePage, safeSize);
         Page<RoleInEvent> memberPage = roleInEventRepository.findByUserProfile_UserId(userId, pageable);

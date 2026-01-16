@@ -1,7 +1,7 @@
 package com.volunteerhub.community.repository;
 
 import com.volunteerhub.community.model.entity.UserProfile;
-import com.volunteerhub.community.model.db_enum.UserStatus;
+import com.volunteerhub.community.module.userstatus.UserStatus;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

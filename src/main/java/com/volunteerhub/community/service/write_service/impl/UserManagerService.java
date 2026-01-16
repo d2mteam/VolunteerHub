@@ -6,7 +6,7 @@ import com.volunteerhub.community.dto.rest.response.ModerationResponse;
 import com.volunteerhub.community.dto.rest.response.ModerationResult;
 import com.volunteerhub.community.dto.rest.response.ModerationStatus;
 import com.volunteerhub.community.dto.rest.response.ModerationTargetType;
-import com.volunteerhub.community.model.db_enum.UserStatus;
+import com.volunteerhub.community.module.userstatus.UserStatus;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.write_service.IUserManagerService;

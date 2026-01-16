@@ -1,4 +1,4 @@
-package com.volunteerhub.community.service.redis_service;
+package com.volunteerhub.community.module.counter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

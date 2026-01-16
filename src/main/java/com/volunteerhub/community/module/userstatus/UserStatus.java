@@ -1,4 +1,4 @@
-package com.volunteerhub.community.model.db_enum;
+package com.volunteerhub.community.module.userstatus;
 
 public enum UserStatus {
     PENDING,           // vừa đăng ký, chưa xác nhận

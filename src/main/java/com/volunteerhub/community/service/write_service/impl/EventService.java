@@ -17,7 +17,7 @@ import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.RoleInEventRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.readmodel.EventActivitySummaryService;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.write_service.IEventService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;

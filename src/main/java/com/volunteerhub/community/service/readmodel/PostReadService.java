@@ -3,7 +3,7 @@ package com.volunteerhub.community.service.readmodel;
 import com.volunteerhub.community.model.entity.Post;
 import com.volunteerhub.community.model.read.PostRead;
 import com.volunteerhub.community.repository.PostReadRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.redis_service.UserProfileCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,8 +17,10 @@ public class PostReadService {
     private final UserProfileCacheService userProfileCacheService;
     private final RedisCounterService redisCounterService;
 
-    public void createFromPost(Post post) {
+    public PostRead createFromPost(Post post) {
         var creator = userProfileCacheService.toSummary(post.getCreatedBy());
+        var likeCount = redisCounterService.getPostLikeCount(post.getPostId());
+        var commentCount = redisCounterService.getPostCommentCount(post.getPostId());
         PostRead postRead = PostRead.builder()
                 .postId(post.getPostId())
                 .content(post.getContent())
@@ -29,13 +31,18 @@ public class PostReadService {
                 .createdByAvatarId(creator.getAvatarId())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
-                .likeCount(0)
-                .commentCount(0)
+                .likeCount(likeCount.orElse(0L))
+                .commentCount(commentCount.orElse(0L))
                 .build();
-        postReadRepository.save(postRead);
-        redisCounterService.setPostLikeCount(post.getPostId(), 0);
-        redisCounterService.setPostCommentCount(post.getPostId(), 0);
+        PostRead saved = postReadRepository.save(postRead);
+        if (likeCount.isEmpty()) {
+            redisCounterService.setPostLikeCount(post.getPostId(), saved.getLikeCount());
+        }
+        if (commentCount.isEmpty()) {
+            redisCounterService.setPostCommentCount(post.getPostId(), saved.getCommentCount());
+        }
         redisCounterService.markPostDirty(post.getPostId());
+        return saved;
     }
 
     public void updateContent(Post post) {

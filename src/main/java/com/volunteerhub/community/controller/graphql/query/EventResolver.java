@@ -8,7 +8,7 @@ import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.read.PostRead;
 import com.volunteerhub.community.repository.*;
 import com.volunteerhub.community.dto.graphql.output.UserProfileSummaryView;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.redis_service.UserProfileCacheService;
 import com.volunteerhub.configuration.security.permission.HasPermission;
 import com.volunteerhub.configuration.security.permission.PermissionAction;

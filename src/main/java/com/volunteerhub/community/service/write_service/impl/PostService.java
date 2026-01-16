@@ -14,7 +14,7 @@ import com.volunteerhub.community.repository.EventRepository;
 import com.volunteerhub.community.repository.PostRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.readmodel.PostReadService;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.write_service.IPostService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;

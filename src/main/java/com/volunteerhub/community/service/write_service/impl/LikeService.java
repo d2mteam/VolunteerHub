@@ -9,7 +9,7 @@ import com.volunteerhub.community.model.entity.Like;
 import com.volunteerhub.community.model.entity.UserProfile;
 import com.volunteerhub.community.repository.LikeRepository;
 import com.volunteerhub.community.repository.UserProfileRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.module.counter.RedisCounterService;
 import com.volunteerhub.community.service.write_service.ILikeService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;

@@ -37,4 +37,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p.event.eventId FROM Post p WHERE p.postId = :postId")
     Optional<Long> findEventIdByPostId(@Param("postId") Long postId);
+
+    @Query("SELECT p.createdBy.userId FROM Post p WHERE p.postId = :postId")
+    Optional<java.util.UUID> findCreatedByUserId(@Param("postId") Long postId);
 }
