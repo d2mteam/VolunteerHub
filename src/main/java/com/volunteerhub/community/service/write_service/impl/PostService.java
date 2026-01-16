@@ -16,6 +16,8 @@ import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.readmodel.PostReadService;
 import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.write_service.IPostService;
+import com.volunteerhub.media.model.MediaRefType;
+import com.volunteerhub.media.service.MediaService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ public class PostService implements IPostService {
     private final PostReadService postReadService;
     private final RedisCounterService redisCounterService;
     private final SnowflakeIdGenerator idGenerator;
+    private final MediaService mediaService;
 
     @Override
     public ModerationResponse createPost(UUID userId, CreatePostInput input) {
@@ -50,6 +53,7 @@ public class PostService implements IPostService {
                 .build();
 
         postRepository.save(post);
+        mediaService.syncMediaResources(userId, MediaRefType.POST, post.getPostId(), input.getMediaIds());
         postReadService.createFromPost(post);
         redisCounterService.incrementEventPostCount(event.getEventId(), 1);
         redisCounterService.updateEventLatestPostAt(event.getEventId(), post.getCreatedAt());
@@ -82,6 +86,7 @@ public class PostService implements IPostService {
         Post post = optional.get();
         post.setContent(input.getContent());
         postRepository.save(post);
+        mediaService.syncMediaResources(userId, MediaRefType.POST, post.getPostId(), input.getMediaIds());
         postReadService.updateContent(post);
 
         return ModerationResponse.success(

@@ -19,6 +19,8 @@ import com.volunteerhub.community.repository.UserProfileRepository;
 import com.volunteerhub.community.service.readmodel.EventActivitySummaryService;
 import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.write_service.IEventService;
+import com.volunteerhub.media.model.MediaRefType;
+import com.volunteerhub.media.service.MediaService;
 import com.volunteerhub.ultis.SnowflakeIdGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,7 @@ public class EventService implements IEventService {
     private final EventActivitySummaryService eventActivitySummaryService;
     private final RedisCounterService redisCounterService;
     private final SnowflakeIdGenerator idGenerator;
+    private final MediaService mediaService;
 
     @Override
     public ModerationResponse approveEvent(Long eventId) {
@@ -83,6 +86,7 @@ public class EventService implements IEventService {
                 .build();
 
         eventRepository.save(event);
+        mediaService.syncMediaResources(userId, MediaRefType.EVENT, event.getEventId(), input.getMediaIds());
         eventActivitySummaryService.createFromEvent(event);
 
         RoleInEvent roleInEvent = RoleInEvent.builder()
@@ -126,6 +130,7 @@ public class EventService implements IEventService {
         event.setEventLocation(input.getEventLocation());
         event.setMetadata(buildMetadata(event.getMetadata(), input.getCategories()));
         eventRepository.save(event);
+        mediaService.syncMediaResources(userId, MediaRefType.EVENT, event.getEventId(), input.getMediaIds());
         eventActivitySummaryService.updateFromEvent(event);
 
         return ModerationResponse.success(

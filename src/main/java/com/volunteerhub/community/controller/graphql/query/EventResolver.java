@@ -3,11 +3,12 @@ package com.volunteerhub.community.controller.graphql.query;
 
 import com.volunteerhub.community.dto.graphql.input.EventFilterInput;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
-import com.volunteerhub.community.model.db_enum.TableType;
 import com.volunteerhub.community.model.entity.Event;
 import com.volunteerhub.community.model.read.PostRead;
 import com.volunteerhub.community.repository.*;
 import com.volunteerhub.community.dto.graphql.output.UserProfileSummaryView;
+import com.volunteerhub.community.service.metric.MetricBatchService;
+import com.volunteerhub.community.service.metric.MetricKey;
 import com.volunteerhub.community.service.redis_service.RedisCounterService;
 import com.volunteerhub.community.service.redis_service.UserProfileCacheService;
 import com.volunteerhub.configuration.security.permission.HasPermission;
@@ -21,6 +22,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -36,9 +38,9 @@ public class EventResolver {
     private final PostRepository postRepository;
     private final PostReadRepository postReadRepository;
     private final RoleInEventRepository roleInEventRepository;
-    private final LikeRepository likeRepository;
     private final RedisCounterService redisCounterService;
     private final UserProfileCacheService userProfileCacheService;
+    private final MetricBatchService metricBatchService;
 
     @QueryMapping
     @HasPermission(action = PermissionAction.GET_EVENT, eventId = "#eventId")
@@ -136,15 +138,9 @@ public class EventResolver {
         return Collections.emptyList();
     }
 
-    @SchemaMapping(typeName = "Event", field = "likeCount")
-    public Integer likeCount(Event event) {
-        return redisCounterService.getEventLikeCount(event.getEventId())
-                .map(Long::intValue)
-                .orElseGet(() -> {
-                    int count = likeRepository.countByTargetIdAndTableType(event.getEventId(), TableType.EVENT);
-                    redisCounterService.setEventLikeCount(event.getEventId(), count);
-                    return count;
-                });
+    @BatchMapping(typeName = "Event", field = "likeCount")
+    public Map<Event, Integer> likeCount(List<Event> events) {
+        return metricBatchService.loadCountMetric(MetricKey.EVENT_LIKE_COUNT, events);
     }
 
     @SchemaMapping(typeName = "Event", field = "createBy")

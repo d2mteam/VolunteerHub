@@ -4,6 +4,8 @@ import com.volunteerhub.community.model.db_enum.EventRole;
 import com.volunteerhub.community.model.db_enum.ParticipationStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +13,8 @@ import java.time.LocalDateTime;
 @Table(name = "role_in_event", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_profile_id", "event_id"})
 })
+@SQLDelete(sql = "UPDATE role_in_event SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
 @Getter
 @Setter
 @Builder
@@ -51,6 +55,10 @@ public class RoleInEvent {
     @Enumerated(EnumType.STRING)
     @Column(name = "participation_status", nullable = false)
     private ParticipationStatus participationStatus = ParticipationStatus.APPROVED;
+
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 
     @PrePersist
     public void prePersist() {

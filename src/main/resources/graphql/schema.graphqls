@@ -9,6 +9,8 @@ type UserProfile {
     bio: String
     status: String
     createdAt: String
+    history(page: Int = 0, size: Int = 10): RoleInEventPage
+    registrations(page: Int = 0, size: Int = 10): EventRegistrationPage
 }
 
 type UserProfileSummary {

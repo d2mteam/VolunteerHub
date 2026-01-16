@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -25,4 +26,6 @@ public class CreateEventInput {
     private String eventLocation;
 
     private List<String> categories;
+
+    private List<UUID> mediaIds;
 }

@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+import java.util.UUID;
+
 @Data
 @Builder
 public class EditPostInput {
@@ -15,4 +18,6 @@ public class EditPostInput {
     @NotBlank(message = "Content cannot be empty")
     @Size(max = 500, message = "Content max 500 characters")
     private String content;
+
+    private List<UUID> mediaIds;
 }

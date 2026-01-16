@@ -4,7 +4,8 @@ import com.volunteerhub.community.model.entity.Comment;
 import com.volunteerhub.community.dto.graphql.output.UserProfileSummaryView;
 import com.volunteerhub.community.model.read.PostRead;
 import com.volunteerhub.community.repository.PostReadRepository;
-import com.volunteerhub.community.service.redis_service.RedisCounterService;
+import com.volunteerhub.community.service.metric.MetricBatchService;
+import com.volunteerhub.community.service.metric.MetricKey;
 import com.volunteerhub.ultis.page.OffsetPage;
 import com.volunteerhub.ultis.page.PageInfo;
 import com.volunteerhub.ultis.page.PageUtils;
@@ -14,17 +15,21 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
+
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @AllArgsConstructor
 public class PostResolver {
     private final PostReadRepository postReadRepository;
     private final CommentRepository commentRepository;
-    private final RedisCounterService redisCounterService;
+    private final MetricBatchService metricBatchService;
 
     @QueryMapping
     public PostRead getPost(@Argument Long postId) {
@@ -60,11 +65,9 @@ public class PostResolver {
                 .build();
     }
 
-    @SchemaMapping(typeName = "Post", field = "likeCount")
-    public Integer likeCount(PostRead post) {
-        return redisCounterService.getPostLikeCount(post.getPostId())
-                .map(Long::intValue)
-                .orElse((int) post.getLikeCount());
+    @BatchMapping(typeName = "Post", field = "likeCount")
+    public Map<PostRead, Integer> likeCount(List<PostRead> posts) {
+        return metricBatchService.loadCountMetric(MetricKey.POST_LIKE_COUNT, posts);
     }
 
     @SchemaMapping(typeName = "Post", field = "createBy")
